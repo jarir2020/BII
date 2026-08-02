@@ -9,6 +9,10 @@ DirectoryIndex index.html
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
+    # 0) Explicit opt-in: serve anything under /runtime/ as-is (do NOT route
+    #    through Yii2 or the SPA fallback).
+    RewriteRule ^runtime/ - [L,NC]
+
     # 1) Serve real files/dirs directly (React static assets, uploaded files, etc.)
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
