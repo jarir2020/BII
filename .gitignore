@@ -1,0 +1,44 @@
+# ── Secrets ────────────────────────────────────────────────
+.env
+*.env
+!.env.example
+*.env.local
+*.env.production
+
+# ── PHP / Yii2 ─────────────────────────────────────────────
+vendor/
+runtime/
+*.log
+web/assets/*
+!web/assets/index.html
+Backend/.env
+
+# ── Node / React ───────────────────────────────────────────
+node_modules/
+build/
+dist/
+*.log
+
+# ── OS / editor ────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# ── Replit / misc repo noise ───────────────────────────────
+.zip
+*.zip
+.replit
+replit.nix
+uv.lock
+# Replit runtime internals (auto-generated)
+.agents/
+.emergent/
+.local/
+.config/
+.gitconfig
+.deploy-venv/
+# Duplicate nested project copies (bloat)
+zip-repl-1zip/zip-repl-1zip (2)/
+zip-repl-1zip/zipFile/

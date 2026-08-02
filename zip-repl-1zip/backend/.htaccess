@@ -1,0 +1,62 @@
+# ============================================================
+# .htaccess — Bengali Islamic Institute — cPanel / Passenger
+# Place this file in your public_html (app root) directory.
+# ============================================================
+
+# ── Tell Apache to run the Python WSGI app via Passenger ────────────────────
+PassengerEnabled On
+PassengerAppType wsgi
+PassengerStartupFile passenger_wsgi.py
+
+# ── URL rewriting ────────────────────────────────────────────────────────────
+RewriteEngine On
+
+# 1. Serve real files on disk directly (JS, CSS, images, fonts, manifest, etc.)
+#    This bypasses Passenger entirely — much faster for static assets.
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# 2. Serve real directories on disk directly
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# 3. Pass /api/* requests to Passenger (FastAPI handles these)
+RewriteCond %{REQUEST_URI} ^/api/
+RewriteRule ^ - [QSA,L]
+
+# 4. SPA fallback — React client-side routes (e.g. /courses, /admin) are not
+#    real files. Apache serves index.html directly; React Router handles routing.
+RewriteRule ^ /index.html [L]
+
+# ── Security headers ─────────────────────────────────────────────────────────
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# ── Gzip compression (saves bandwidth) ──────────────────────────────────────
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css application/javascript \
+        application/json application/xml text/plain image/svg+xml
+</IfModule>
+
+# ── Browser caching for static assets ───────────────────────────────────────
+<IfModule mod_expires.c>
+    ExpiresActive On
+    # Hashed filenames (e.g. main.f48f01c3.js) can be cached forever
+    ExpiresByType application/javascript   "access plus 1 year"
+    ExpiresByType text/css                 "access plus 1 year"
+    ExpiresByType image/png                "access plus 1 month"
+    ExpiresByType image/jpeg               "access plus 1 month"
+    ExpiresByType image/webp               "access plus 1 month"
+    ExpiresByType image/svg+xml            "access plus 1 month"
+    ExpiresByType image/x-icon             "access plus 1 year"
+    ExpiresByType font/woff2               "access plus 1 year"
+    # index.html must NOT be cached — it's the SPA entry point
+    <FilesMatch "^index\.html$">
+        ExpiresDefault "access plus 0 seconds"
+        Header always set Cache-Control "no-store, no-cache, must-revalidate"
+    </FilesMatch>
+</IfModule>

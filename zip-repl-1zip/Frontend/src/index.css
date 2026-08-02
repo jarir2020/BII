@@ -1,0 +1,146 @@
+@import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&family=Hind+Siliguri:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --bii-cream: #F9F6F0;
+    --bii-surface: #FFFFFF;
+    --bii-card: #FDFCF9;
+    --bii-emerald: #0A422B;
+    --bii-emerald-2: #0D5739;
+    --bii-gold: #D4AF37;
+    --bii-gold-2: #E6BE40;
+    --bii-text: #11261E;
+    --bii-text-soft: #4A5F55;
+    --bii-border: #E5E0D5;
+}
+
+* { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+/* Hide Replit badge */
+[data-replit-badge], #replit-badge, .replit-badge,
+iframe[src*="replit.com/badge"],
+div[style*="replit"] { display: none !important; }
+
+html, body {
+    margin: 0;
+    background: var(--bii-cream);
+    color: var(--bii-text);
+    font-family: 'Hind Siliguri', 'Inter', system-ui, sans-serif;
+}
+
+h1, h2, h3, .font-heading {
+    font-family: 'Tiro Bangla', 'Cormorant Garamond', serif;
+    letter-spacing: -0.01em;
+}
+
+.font-eng-heading {
+    font-family: 'Cormorant Garamond', 'Tiro Bangla', serif;
+}
+
+/* Islamic geometric pattern overlay */
+.islamic-pattern {
+    background-image: radial-gradient(circle at 1px 1px, rgba(212,175,55,0.18) 1px, transparent 0);
+    background-size: 22px 22px;
+}
+
+.gold-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--bii-gold), transparent);
+}
+
+/* tactile card */
+.bii-card {
+    background: var(--bii-card);
+    border: 1px solid var(--bii-border);
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(10,66,43,0.06);
+    transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+}
+.bii-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(10,66,43,0.12);
+    border-color: rgba(212,175,55,0.55);
+}
+
+.bii-btn-primary {
+    background: var(--bii-emerald);
+    color: #fff;
+    border-radius: 0.85rem;
+    padding: 0.75rem 1.25rem;
+    font-weight: 500;
+    transition: background .2s ease, transform .15s ease;
+    box-shadow: 0 6px 14px rgba(10,66,43,0.18);
+}
+.bii-btn-primary:hover { background: var(--bii-emerald-2); }
+.bii-btn-primary:active { transform: translateY(1px); }
+
+.bii-btn-gold {
+    background: var(--bii-gold);
+    color: var(--bii-emerald);
+    border-radius: 0.85rem;
+    padding: 0.7rem 1.2rem;
+    font-weight: 600;
+    transition: background .2s ease;
+}
+.bii-btn-gold:hover { background: var(--bii-gold-2); }
+
+.bii-input {
+    background: #fff;
+    border: 1px solid var(--bii-border);
+    border-radius: 0.75rem;
+    padding: 0.75rem 0.95rem;
+    width: 100%;
+    color: var(--bii-text);
+    transition: border-color .2s, box-shadow .2s;
+}
+.bii-input:focus {
+    outline: none;
+    border-color: var(--bii-gold);
+    box-shadow: 0 0 0 3px rgba(212,175,55,0.18);
+}
+
+/* arch decoration */
+.arch-top {
+    border-top-left-radius: 50% 18%;
+    border-top-right-radius: 50% 18%;
+}
+
+@layer base {
+    :root {
+        --background: 39 35% 96%;
+        --foreground: 153 36% 11%;
+        --card: 39 30% 99%;
+        --card-foreground: 153 36% 11%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 153 36% 11%;
+        --primary: 153 74% 15%;
+        --primary-foreground: 39 35% 96%;
+        --secondary: 44 64% 53%;
+        --secondary-foreground: 153 74% 15%;
+        --muted: 39 25% 92%;
+        --muted-foreground: 158 14% 33%;
+        --accent: 44 64% 53%;
+        --accent-foreground: 153 74% 15%;
+        --destructive: 0 60% 40%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 40 21% 87%;
+        --input: 40 21% 87%;
+        --ring: 44 64% 53%;
+        --radius: 0.85rem;
+    }
+}
+
+@layer base {
+    * { @apply border-border; }
+    body { @apply bg-background text-foreground; }
+}
+
+/* Scrollbar polish */
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-thumb { background: rgba(10,66,43,0.25); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(10,66,43,0.45); }
+
+::selection { background: rgba(212,175,55,0.45); color: var(--bii-emerald); }

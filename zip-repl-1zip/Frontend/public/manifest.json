@@ -1,0 +1,32 @@
+{
+  "short_name": "BII",
+  "name": "বাঙালি ইসলামিক ইনস্টিটিউট",
+  "description": "বাংলাভাষী মুসলিমদের জন্য অনলাইন ইসলামিক শিক্ষার প্ল্যাটফর্ম",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0A422B",
+  "background_color": "#F5F0E8",
+  "lang": "bn",
+  "categories": ["education", "lifestyle"],
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ]
+}

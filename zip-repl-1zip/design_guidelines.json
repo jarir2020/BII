@@ -1,0 +1,125 @@
+{
+  "theme": "LIGHT",
+  "archetype": "Archetype 5: Luxury & Heritage (Adapted for Islamic Scholarship)",
+  "brand": {
+    "name": "বাঙালি ইসলামিক ইনস্টিটিউট (Bengali Islamic Institute)",
+    "logo_concept": "A modern, minimalist geometric Islamic star seamlessly morphing into an open book or a traditional Bengali arch. SVG implementation using deep emerald (#0A422B) and gold (#D4AF37) accents."
+  },
+  "colors": {
+    "background": "#F9F6F0",
+    "surface": "#FFFFFF",
+    "surface_glass": "rgba(255, 255, 255, 0.8)",
+    "primary": "#0A422B",
+    "primary_hover": "#0D5739",
+    "secondary": "#D4AF37",
+    "secondary_hover": "#E6BE40",
+    "text_primary": "#11261E",
+    "text_secondary": "#4A5F55",
+    "border": "#E5E0D5",
+    "error": "#9E2A2B",
+    "success": "#2D6A4F",
+    "card_background": "#FDFCF9"
+  },
+  "typography": {
+    "fonts": {
+      "heading": "'Tiro Bangla', 'Cormorant Garamond', serif",
+      "body": "'Hind Siliguri', 'Inter', sans-serif",
+      "monospace": "'JetBrains Mono', monospace"
+    },
+    "hierarchy": {
+      "h1": "text-3xl sm:text-4xl lg:text-5xl tracking-tight font-bold text-primary",
+      "h2": "text-2xl sm:text-3xl tracking-tight font-semibold text-primary",
+      "h3": "text-xl sm:text-2xl font-medium text-text_primary",
+      "body": "text-base leading-relaxed text-text_secondary",
+      "caption": "text-sm tracking-wide text-text_secondary uppercase",
+      "button": "text-base font-medium tracking-wide"
+    }
+  },
+  "spacing_and_layout": {
+    "container_padding": "p-4 sm:p-6 lg:p-8",
+    "section_gap": "gap-8 sm:gap-12",
+    "card_padding": "p-4 sm:p-6",
+    "border_radius": {
+      "card": "rounded-2xl",
+      "button": "rounded-xl",
+      "profile": "rounded-full"
+    },
+    "grid_system": "Bento Grid approach. grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 for the main menu items. Mobile-first grid using pure CSS Grid with direct children."
+  },
+  "components": {
+    "header": {
+      "style": "Glassmorphism header (backdrop-blur-xl bg-[#0A422B]/90) with subtle gold bottom border. Ensures high contrast for the top navigation.",
+      "shadow": "shadow-sm"
+    },
+    "profile_banner": {
+      "style": "Deep Emerald (#0A422B) solid background with an overlaid subtle gold geometric watermark pattern (10% opacity). Profile image is circular with a 4px solid gold (#D4AF37) border. Student ID displayed elegantly below."
+    },
+    "cards": {
+      "style": "Soft UI variants for grid menu. bg-[#FDFCF9], 1px subtle border (#E5E0D5), soft ambient shadow (shadow-[0_4px_20px_rgba(10,66,43,0.06)]). On hover: -translate-y-1, shadow-lg, border-[#D4AF37]/50 transition-all duration-300."
+    },
+    "buttons": {
+      "primary": "bg-primary text-white hover:bg-primary_hover rounded-xl px-6 py-3 transition-colors shadow-md",
+      "secondary": "bg-transparent border-2 border-secondary text-primary hover:bg-secondary/10 rounded-xl px-6 py-3 transition-colors"
+    },
+    "sidebar": {
+      "style": "Fixed, h-screen, bg-surface, border-r border-border, shadow-2xl. Drawer style on mobile with smooth transform translate-x animation. Include elegant dividers between link groups."
+    }
+  },
+  "motion": {
+    "hover": "transition-transform duration-300 ease-out",
+    "page_load": "framer-motion staggered fade-in up (y: 15, opacity: 0 -> 1) for menu grid cards.",
+    "menu_open": "spring transition for sidebar drawer overlay and panel."
+  },
+  "icons": {
+    "library": "@phosphor-icons/react",
+    "style": "weight='duotone' for elegant illustrative feel. Use primary (#0A422B) and secondary (#D4AF37) colors.",
+    "usage": "Use illustrative sizes for the grid cards (e.g., 36px to 48px). Ensure icons are visually balanced and center-aligned above the Bengali text."
+  },
+  "media": {
+    "hero_backgrounds": [
+      {
+        "url": "https://images.pexels.com/photos/10559197/pexels-photo-10559197.jpeg",
+        "description": "Detailed gold geometric pattern inspired by traditional Islamic art. Use with very low opacity (5-10%) over the Deep Emerald banner to add texture.",
+        "category": "background_pattern"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1519817650390-64a93db51149",
+        "description": "Elegant Blue Mosque during golden hour. Great for a welcome/login page background with an emerald overlay.",
+        "category": "hero_image"
+      }
+    ],
+    "course_thumbnails": [
+      {
+        "url": "https://images.pexels.com/photos/29607829/pexels-photo-29607829.jpeg",
+        "description": "Intricate Arabic calligraphy featured on a geometric dome ceiling with gold patterns. Ideal for Quranic or Arabic language course cards.",
+        "category": "course_image"
+      },
+      {
+        "url": "https://images.pexels.com/photos/5788294/pexels-photo-5788294.jpeg",
+        "description": "Muslim student reading/studying. Good for general course thumbnails, 'Live Class' banners, or 'My Courses' empty state.",
+        "category": "student_lifestyle"
+      }
+    ],
+    "placeholders": [
+      {
+        "url": "https://images.pexels.com/photos/5340338/pexels-photo-5340338.jpeg",
+        "description": "Placeholder for student profile photo.",
+        "category": "profile_image"
+      }
+    ]
+  },
+  "accessibility": {
+    "contrast": "Ensure white text on #0A422B is > 4.5:1. Use #11261E for text on #F9F6F0. Buttons must have distinct focus states.",
+    "testing": "All interactive elements MUST include data-testid. Example: data-testid='menu-item-live-class' or data-testid='sidebar-logout-btn'."
+  },
+  "instructions_to_main_agent": [
+    "Install required dependencies: framer-motion, @phosphor-icons/react.",
+    "Use pure HTML/Tailwind for the main custom layouts (Profile banner, Grid menu) to achieve the organic bento-grid feel. Use Shadcn only for complex functional components (Dialogs, Tabs, Forms).",
+    "CRITICAL: Do NOT use generic 'Inter' for headings. Import 'Tiro Bangla' or 'Hind Siliguri' via Google Fonts in index.css.",
+    "Apply 'Archetype 5: Luxury & Heritage'. Reject generic SaaS 'tech' colors. Use parchment/cream (bg-[#F9F6F0]) for the main app background, and deep emerald (bg-[#0A422B]) for the header/profile banner.",
+    "Grid Menu Cards: Implement as a responsive grid (grid-cols-2 mobile, grid-cols-3 desktop). Cards should have a soft, tactile, elevated look (1px border, soft shadow), not flat minimalist blocks.",
+    "Logo: Create an SVG component named 'BrandLogo' using an overlapping star/arch design in emerald and gold.",
+    "Sidebar: Must be a smooth sliding drawer on mobile, overlapping the main content with a dark semi-transparent backdrop. Desktop can keep it hidden behind a hamburger or fixed left.",
+    "Implement the Bengali/English language context toggle visually in the header or sidebar."
+  ]
+}

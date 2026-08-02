@@ -1,0 +1,17 @@
+# Production-only requirements for cPanel deployment
+# (Dev tools like pytest, black, pandas removed — cuts install time by ~80%)
+fastapi==0.110.1
+uvicorn==0.25.0
+motor==3.3.1
+pymongo==4.6.3
+pydantic>=2.6.4
+email-validator>=2.2.0
+pyjwt>=2.10.1
+bcrypt==4.1.3
+cryptography>=42.0.8
+python-dotenv>=1.0.1
+python-multipart>=0.0.9
+requests>=2.31.0
+firebase-admin>=6.5.0
+tzdata>=2024.2
+a2wsgi>=1.10.0

@@ -1,0 +1,6 @@
+[project]
+name = "repl-nix-workspace"
+version = "0.1.0"
+description = "BII backend dependencies"
+requires-python = ">=3.12"
+dependencies = []

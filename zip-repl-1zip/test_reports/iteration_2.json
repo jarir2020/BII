@@ -1,0 +1,42 @@
+{
+  "summary": "Backend + frontend testing for iteration 2 (Welcome page + file upload). All 26 pytest backend tests pass (18 regression + 8 new upload tests). All frontend critical flows verified including Welcome page, admin image upload via Emergent object storage, /api/files/<id> serving, protected routing, register/login redirect to /home, and 9-card grid menu on dashboard. One minor UX deviation: logout redirects to /login instead of /.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Logout flow", "issues": ["After clicking sb-logout-btn the app redirects to /login, while the PR spec stated it should land on '/' (Welcome). Both are valid UX patterns but should align with the spec — likely a one-line change in AuthContext/Sidebar logout handler (navigate('/') instead of navigate('/login'))."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_bii_api.py",
+    "/app/backend/tests/test_upload.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "OPTIONAL/Minor: Align logout redirect with PR spec — currently goes to /login, PR expected '/' (Welcome). Update sb-logout-btn handler to navigate to '/'."
+  ],
+  "critical_code_review_comments": [
+    "server.py now ~905 lines, growing further. Recommend splitting into modules: routers/(auth, courses, posts, videos, live, quizzes, notifications, files, contact, settings), models.py, storage.py, seed.py.",
+    "Storage key caching uses a module-level global and refreshes on 403 only — fine, but if the storage service returns 5xx, the key is not refreshed and the upload will fail without retry. Consider refreshing on any auth-related error.",
+    "/api/upload reads entire file into memory before size check. For large rejected files this still allocates RAM. Consider streaming + early abort on Content-Length, or using file.size when available.",
+    "/api/files/{file_id} streams the full object body through the FastAPI process (proxy pattern). For larger files (PDFs, videos) consider redirecting to a signed object-storage URL or using StreamingResponse with chunked iteration to avoid memory pressure.",
+    "No rate limiting on /api/upload — an authenticated user could upload many 5MB files. Consider per-user daily quota or rate limiter.",
+    "MIME validation is extension-based only — does not sniff actual content. A user could rename a .exe to .png and it would pass. For an Islamic education platform this is low risk but worth noting.",
+    "Logout endpoint deletes cookie but does not invalidate the JWT (JWT remains valid until exp). For sensitive sessions, maintain a server-side denylist.",
+    "Still no brute-force lockout on /api/auth/login (carry-over from iteration 1)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_upload.py (NEW)"
+  ],
+  "success_rate": {"backend": "100% (26/26)", "frontend": "100% (all critical flows pass; 1 minor UX deviation noted)"},
+  "test_credentials": "Admin: admin@bii.edu / Admin@123 ; Students created at runtime via /api/auth/register (e.g. upltest+<hex>@bii.edu / Test@123)",
+  "seed_data_creation": "Backend tests created and deleted: 1 TEST course with uploaded cover, several uploaded image files (PNG/JPG) via Emergent object storage. Frontend test created 1 admin course 'টেস্ট আপলোড কোর্স <ts>' with uploaded cover image and registered fresh student accounts.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Iteration 2 verified the new file-upload subsystem end-to-end. Pytest file /app/backend/tests/test_upload.py covers: admin PNG upload + fetch (signature verified), JPEG upload, student upload (auth-any), unauth → 401, .txt unsupported → 400, >5MB → 400 with Bengali msg ৫MB, missing file → 404, course referencing uploaded /api/files/<id> cover. Frontend Playwright verified: welcome-page renders (login/register/CTA testids), welcome-login-btn → /login, '/' redirects to /home for logged-in users, login as admin shows home-page with ADMIN student id and 9 menu cards (menu-our-courses, menu-my-courses, menu-live-class, menu-videos, menu-quiz, menu-shop, menu-notifications, menu-contact, menu-complaint), /admin/courses upload widget (ac-cover-upload-file-input) lets admin upload an image which is preview shown then submitted via ac-submit-btn and appears in list with /api/files/<id> src, /home + /profile + /my-courses are protected and redirect to /login when unauth, register flow lands on /home with student_id 2026XXXX visible. NOTE: Login uses [data-testid=login-email-input/login-password-input/login-submit-btn]; Register uses [data-testid=reg-name/reg-email/reg-password/register-submit-btn] — NOT *-input suffix on register fields. Logout currently goes to /login (PR expected /); flagged as minor.",
+  "rca of the issue": "Logout redirect mismatch RCA: PR spec states logout → '/'. Observation: after sb-logout-btn click, URL becomes /login. Reproduction: login as admin → open-sidebar-btn → sb-logout-btn → URL ends up at /login. Mitigation: in the logout handler (likely in AuthContext logout() or Sidebar's onClick), change navigate('/login') to navigate('/'). Since Welcome.jsx renders the landing page at '/' and itself redirects authenticated users to /home, '/' is the correct destination for guests."
+}
