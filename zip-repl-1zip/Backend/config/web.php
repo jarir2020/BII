@@ -13,6 +13,10 @@ $config = [
     'name' => 'Bengali Islamic Institute API',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
+    // Server-side app lock (payment/maintenance gate). Runs before every
+    // request; when enabled, only /api/health and the admin maintenance toggle
+    // are reachable — everything else returns 503.
+    'on beforeRequest' => [\app\helpers\License::class, 'gate'],
     'language' => 'en',
     'timeZone' => 'Asia/Dhaka',
     'aliases' => [
@@ -110,6 +114,7 @@ $config = [
 
                 // ── Admin / misc ──────────────────────────────────────────
                 'api/backup/export' => 'api/backup/export',
+                'api/admin/maintenance' => 'api/admins/maintenance',
                 'api/admins/<id>' => 'api/admins/delete',
                 'api/teachers/<id>' => 'api/teachers/view',
 

@@ -50,6 +50,19 @@ class AdminsController extends ApiController
         return $this->json(['ok' => true, 'deleted' => 1]);
     }
 
+    /**
+     * POST /api/admin/maintenance  {"enabled": true|false}
+     * Lock/unlock the app (server-side). Super admin only.
+     */
+    public function actionMaintenance(): \yii\web\Response
+    {
+        $this->requireSuperAdmin();
+        $b = Yii::$app->request->post();
+        $enabled = (bool) ($b['enabled'] ?? false);
+        \app\helpers\License::setMaintenance($enabled);
+        return $this->json(['ok' => true, 'maintenance_enabled' => $enabled]);
+    }
+
     private function safe(array $r): array
     {
         unset($r['password_hash']);
