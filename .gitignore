@@ -42,3 +42,6 @@ uv.lock
 # Duplicate nested project copies (bloat)
 zip-repl-1zip/zip-repl-1zip (2)/
 zip-repl-1zip/zipFile/
+
+# CI/CD build artifact (assembled merged public_html)
+deploy/_staging/

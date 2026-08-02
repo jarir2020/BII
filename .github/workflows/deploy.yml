@@ -1,0 +1,72 @@
+name: Deploy to Production (FTP)
+
+# MANUAL trigger for now (safe). To switch to auto-deploy on every push to
+# main, add this back:
+#   on:
+#     push:
+#       branches: [main]
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build + FTP deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      FTP_HOST: ${{ secrets.FTP_HOST }}
+      FTP_USER: ${{ secrets.FTP_USERNAME }}
+      FTP_PASS: ${{ secrets.FTP_PASSWORD }}
+      FTP_PORT: ${{ secrets.FTP_PORT || '21' }}
+      FTP_TARGET: ${{ secrets.FTP_TARGET }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: pdo_mysql, mbstring, intl, bcmath, curl, openssl, fileinfo
+          tools: composer:v2
+
+      - name: Backend — composer install
+        working-directory: zip-repl-1zip/Backend
+        run: |
+          composer install --no-dev --prefer-dist --no-interaction --no-progress
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+          cache-dependency-path: zip-repl-1zip/Frontend/yarn.lock
+
+      - name: Frontend — yarn install + build
+        working-directory: zip-repl-1zip/Frontend
+        run: |
+          yarn install --frozen-lockfile
+          yarn build
+
+      - name: Assemble merged public_html (staging)
+        run: bash deploy/build-staging.sh
+
+      - name: Install lftp
+        run: |
+          which lftp || sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+
+      - name: Deploy via FTP
+        run: |
+          lftp -u "$FTP_USER","$FTP_PASS" -p "$FTP_PORT" "$FTP_HOST" \
+            -e "set ftp:ssl-allow yes; set ssl:verify-certificate no; \
+                mirror -R --delete --parallel=4 \
+                --exclude-glob '.well-known' --exclude-glob '.well-known/**' \
+                --exclude-glob '.git' --exclude-glob '.env' --exclude-glob '.env/**' \
+                deploy/_staging/ $FTP_TARGET/ ; quit"
+        shell: bash

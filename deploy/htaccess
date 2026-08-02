@@ -1,0 +1,27 @@
+# Merged public_html root: React SPA + Yii2 API on the same docroot.
+Options -MultiViews -Indexes
+DirectoryIndex index.html
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Pass through the Authorization header so Yii2 JWT auth can read the Bearer token.
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # 1) Serve real files/dirs directly (React static assets, uploaded files, etc.)
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # 2) /api/* → Yii2 front controller
+    RewriteRule ^api(/?)(.*)$ index.php [L,QSA]
+
+    # 3) SPA fallback: any other path → React app
+    RewriteRule ^ index.html [L]
+</IfModule>
+
+# Basic security
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
