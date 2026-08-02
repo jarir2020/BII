@@ -115,6 +115,7 @@ $config = [
                 // ── Admin / misc ──────────────────────────────────────────
                 'api/backup/export' => 'api/backup/export',
                 'api/admin/maintenance' => 'api/admins/maintenance',
+                'api/telegram/webhook' => 'api/telegram/webhook',
                 'api/admins/<id>' => 'api/admins/delete',
                 'api/teachers/<id>' => 'api/teachers/view',
 

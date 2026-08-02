@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace app\modules\api\controllers;
 
+use app\helpers\Telegram;
 use app\helpers\Time;
 use app\helpers\Uuid;
 use Yii;
@@ -68,6 +69,9 @@ class PaymentsController extends ApiController
             'processed_by' => '',
         ];
         Yii::$app->db->createCommand()->insert('payment_requests', $payReq)->execute();
+
+        // Notify admins on Telegram when TELEGRAM_BOT_TOKEN + CHAT_ID are set.
+        Telegram::notifyPaymentRequest($payReq);
 
         return $this->json(['ok' => true, 'id' => $payReq['id']]);
     }
