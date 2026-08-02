@@ -50,6 +50,10 @@ jobs:
 
       - name: Frontend — yarn install + build
         working-directory: zip-repl-1zip/Frontend
+        env:
+          # GitHub sets CI=true which makes CRA treat ESLint warnings as build
+          # errors. We want warnings (not failures), so unset it.
+          CI: "false"
         run: |
           yarn install --frozen-lockfile
           yarn build
@@ -68,5 +72,5 @@ jobs:
                 mirror -R --delete --parallel=4 \
                 --exclude-glob '.well-known' --exclude-glob '.well-known/**' \
                 --exclude-glob '.git' --exclude-glob '.env' --exclude-glob '.env/**' \
-                deploy/_staging/ $FTP_TARGET/ ; quit"
+                deploy/_staging/ $FTP_TARGET ; quit"
         shell: bash
