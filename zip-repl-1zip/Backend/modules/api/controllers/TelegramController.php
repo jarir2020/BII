@@ -32,7 +32,23 @@ class TelegramController extends ApiController
             return ['ok' => true];
         }
 
-        // We only handle callback_query (button presses).
+        // Plain message (e.g. /start or any text) → reply with the chat ID so the
+        // admin can discover TELEGRAM_CHAT_ID. This is the onboarding helper.
+        $msg = $body['message'] ?? null;
+        if (is_array($msg)) {
+            $chatId = $msg['chat']['id'] ?? null;
+            $first = (string) ($msg['from']['first_name'] ?? $msg['chat']['first_name'] ?? '');
+            if ($chatId !== null) {
+                Telegram::api('sendMessage', [
+                    'chat_id' => $chatId,
+                    'text' => "👋 আসসালামু আলাইকুম, {$first}!\n\nআপনার Telegram Chat ID:\n<code>{$chatId}</code>\n\nএটি অ্যাডমিনকে জানিয়ে দিন — এটি TELEGRAM_CHAT_ID হিসেবে ব্যবহার হবে।",
+                    'parse_mode' => 'HTML',
+                ]);
+            }
+            return ['ok' => true];
+        }
+
+        // We only handle callback_query (button presses) after plain messages.
         $cb = $body['callback_query'] ?? null;
         if (!is_array($cb)) {
             return ['ok' => true];
