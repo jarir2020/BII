@@ -5,6 +5,7 @@ Confirmed by the client (2026-08-04). For testing the deployed app.
 | Role | Email | Password |
 |------|-------|----------|
 | Student / Normal User | `saidurmollah10@gmail.com` | `saidur12` |
+| Student / forgot-password test | `jarircse16@gmail.com` | `12345678` |
 | Admin User | `bengaliislamicinstitute@gmail.com` | `12345678` |
 
 ## Production status (verified 2026-08-04 via `/api/auth/login`)
