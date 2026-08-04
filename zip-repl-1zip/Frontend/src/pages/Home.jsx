@@ -282,7 +282,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="space-y-8" data-testid="home-page">
+    <div className="space-y-5" data-testid="home-page">
       {/* PROFILE BANNER */}
       <section className="relative overflow-hidden rounded-3xl bg-[var(--bii-emerald)] text-white">
         <div className="islamic-pattern absolute inset-0 opacity-25" />
@@ -351,31 +351,7 @@ export default function Home() {
       {/* WINNER REVIEWS */}
       <WinnerReviews reviews={reviews} />
 
-      {/* SOCIAL MEDIA */}
-      {activeSocials.length > 0 && (
-        <section className="bii-card p-5">
-          <h2 className="font-heading text-lg text-[var(--bii-emerald)] mb-4 text-center">
-            📱 {t("ourSocialMedia")}
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {activeSocials.map(({ key, label, Icon, bg }) => (
-              <motion.a
-                key={key}
-                href={mergedSocial[key]}
-                target="_blank"
-                rel="noreferrer"
-                whileTap={{ scale: 0.93 }}
-                whileHover={{ scale: 1.04 }}
-                className="flex flex-col items-center justify-center gap-2 py-4 rounded-2xl text-white shadow-sm hover:shadow-md transition-shadow"
-                style={{ backgroundColor: bg }}
-              >
-                <Icon size={32} weight="fill" />
-                <span className="text-sm font-semibold">{label}</span>
-              </motion.a>
-            ))}
-          </div>
-        </section>
-      )}
+      {/* SOCIAL MEDIA — rendered in the global footer (Layout.jsx) */}
     </div>
   );
 }

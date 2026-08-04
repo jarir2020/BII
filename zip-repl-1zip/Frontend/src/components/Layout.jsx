@@ -209,20 +209,14 @@ export default function Layout() {
         )}
       </AnimatePresence>
 
-      {/* Leaderboard ad — shown between nav and content on all public pages */}
-      <div className="max-w-5xl mx-auto px-4 pt-2">
-        <AdBanner slot="header-banner" format="responsive" />
-      </div>
-
       {/* MAIN */}
-      <main className="max-w-5xl mx-auto px-4 py-5">
+      <main className="max-w-5xl mx-auto px-4 py-3">
         <Outlet />
       </main>
 
       {/* FOOTER */}
-      <footer className="max-w-5xl mx-auto px-4 py-8 text-center">
-        <AdBanner slot="footer-banner" format="responsive" className="mb-2" />
-        <div className="gold-divider mb-5" />
+      <footer className="max-w-5xl mx-auto px-4 py-4 text-center">
+        <div className="gold-divider mb-3" />
 
         {/* Social icons in footer */}
         {activeSocials.length > 0 && (
