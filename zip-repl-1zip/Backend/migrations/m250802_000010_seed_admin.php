@@ -38,7 +38,6 @@ class m250802_000010_seed_admin extends Migration
                 'password_hash' => User::hashPassword(self::PASSWORD),
                 'updated_at' => Time::now(),
             ], ['id' => $exists['id']])->execute();
-            $this->stdout("Updated {$email} → " . self::ROLE . "\n");
             return;
         }
 
@@ -58,12 +57,10 @@ class m250802_000010_seed_admin extends Migration
             'created_at' => Time::now(),
             'updated_at' => null,
         ])->execute();
-        $this->stdout("Created {$email} → " . self::ROLE . "\n");
     }
 
     public function safeDown(): void
     {
         // Reverse is intentionally a no-op: we do not delete a real user on rollback.
-        $this->stdout("Seed migration rolled back (user left untouched).\n");
     }
 }

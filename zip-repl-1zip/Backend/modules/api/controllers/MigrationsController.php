@@ -50,9 +50,20 @@ class MigrationsController extends ApiController
 
         @set_time_limit(0);
 
+        $db = Yii::$app->db;
+
+        // Ensure the Yii migration-history table exists (mirrors the console
+        // MigrateController::createMigrationHistoryTable()).
+        if ($db->schema->getTableSchema('migration') === null) {
+            $db->createCommand()->createTable('migration', [
+                'version' => 'varchar(180) NOT NULL PRIMARY KEY',
+                'apply_time' => 'integer',
+            ])->execute();
+        }
+
         $dir = Yii::getAlias('@app/migrations');
         $applied = array_fill_keys(
-            Yii::$app->db->createCommand('SELECT version FROM migration')->queryColumn(),
+            $db->createCommand('SELECT version FROM migration')->queryColumn(),
             true
         );
 
@@ -74,8 +85,16 @@ class MigrationsController extends ApiController
                 require_once $file;
                 /** @var \yii\db\Migration $migration */
                 $migration = new $version();
-                // up() runs safeUp() inside a transaction and records the version.
-                $migration->up();
+                // up() runs the migration inside a transaction and throws on failure.
+                if ($migration->up() === false) {
+                    $errors[$version] = 'Migration returned false (no changes applied).';
+                    continue;
+                }
+                // Record history like the console MigrateController::addMigrationHistory().
+                $db->createCommand()->insert('migration', [
+                    'version' => $version,
+                    'apply_time' => time(),
+                ])->execute();
                 $appliedNow[] = $version;
             } catch (Throwable $e) {
                 $errors[$version] = $e->getMessage();
