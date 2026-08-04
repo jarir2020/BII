@@ -132,6 +132,21 @@ final class Telegram
             "",
             "💰 <b>মোট:</b> ৳" . self::esc((string) ($order['total'] ?? 0)),
             "💰 <b>পেমেন্ট:</b> " . self::esc(strtoupper((string) ($order['payment_method'] ?? ''))),
+        ]);
+
+        // Optional fields — only show if present
+        if (!empty($order['payment_number'])) {
+            $text .= "\n📱 <b>পেমেন্ট নম্বর:</b> " . self::esc((string) $order['payment_number']);
+        }
+        if (!empty($order['transaction_id'])) {
+            $text .= "\n🔖 <b>ট্রানজেকশন ID:</b> <code>" . self::esc((string) $order['transaction_id']) . "</code>";
+        }
+        if (!empty($order['order_number'])) {
+            $text .= "\n📋 <b>অর্ডার নম্বর:</b> " . self::esc((string) $order['order_number']);
+        }
+
+        $text .= implode("\n", [
+            "",
             "🏠 <b>ডেলিভারি:</b> " . self::esc((string) ($order['delivery_address'] ?? '—')),
             "🕐 <b>সময়:</b> " . self::esc(substr((string) ($order['created_at'] ?? ''), 0, 19)),
         ]);

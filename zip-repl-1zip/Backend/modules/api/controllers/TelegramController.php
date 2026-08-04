@@ -98,6 +98,13 @@ class TelegramController extends ApiController
                 "👤 <b>ক্রেতা:</b> " . $this->h($order['user_name'] ?? ''),
                 "📱 <b>মোবাইল:</b> " . $this->h($order['user_phone'] ?? '—'),
                 "💰 <b>মোট:</b> ৳" . $this->h((string) ($order['total'] ?? 0)),
+            ]);
+
+            if (!empty($order['transaction_id'])) {
+                $newText .= "\n🔖 <b>ট্রানজেকশন ID:</b> <code>" . $this->h($order['transaction_id']) . "</code>";
+            }
+
+            $newText .= implode("\n", [
                 "🏠 <b>ডেলিভারি:</b> " . $this->h($order['delivery_address'] ?? '—'),
                 "",
                 "{$emoji} @{$by} কর্তৃক " . ($newStatus === 'confirmed' ? 'অনুমোদিত' : 'বাতিল') . ' — ' . Time::utc(),

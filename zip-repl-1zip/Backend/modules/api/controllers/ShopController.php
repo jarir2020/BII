@@ -115,6 +115,9 @@ class ShopController extends ApiController
             'items'            => $orderLines,
             'total'            => $finalTotal,
             'payment_method'   => (string) ($body['payment_method'] ?? ''),
+            'payment_number'   => (string) ($body['payment_number'] ?? ''),
+            'transaction_id'   => (string) ($body['transaction_id'] ?? ''),
+            'order_number'     => $orderNumber,
             'delivery_address' => (string) ($body['customer_address'] ?? ''),
             'created_at'       => $now,
         ]);
