@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Bengali Islamic Institute</string>
+    <string name="title_activity_main">Bengali Islamic Institute</string>
+    <string name="package_name">com.bengaliislamic.institute</string>
+    <string name="custom_url_scheme">com.bengaliislamic.institute</string>
+</resources>

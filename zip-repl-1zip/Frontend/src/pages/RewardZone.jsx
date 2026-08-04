@@ -131,9 +131,9 @@ function LeaderboardTab() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
-  if (loading) return <div className="flex justify-center py-16"><div className="w-8 h-8 rounded-full border-4 border-[var(--bii-emerald)] border-t-transparent animate-spin" /></div>;
+  if (loading) return <div className="flex justify-center py-8"><div className="w-8 h-8 rounded-full border-4 border-[var(--bii-emerald)] border-t-transparent animate-spin" /></div>;
   if (!list.length) return (
-    <div className="text-center py-16 text-[var(--bii-text-soft)]">
+    <div className="text-center py-8 text-[var(--bii-text-soft)]">
       <Trophy size={48} weight="duotone" className="mx-auto mb-3 text-[var(--bii-emerald)] opacity-40" />
       <p className="text-sm">{t("noData")}</p>
     </div>
@@ -251,10 +251,10 @@ function CashoutHistoryTab() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="flex justify-center py-16"><div className="w-8 h-8 rounded-full border-4 border-[var(--bii-emerald)] border-t-transparent animate-spin" /></div>;
+  if (loading) return <div className="flex justify-center py-8"><div className="w-8 h-8 rounded-full border-4 border-[var(--bii-emerald)] border-t-transparent animate-spin" /></div>;
 
   if (!history.length) return (
-    <div className="text-center py-16 px-6 text-[var(--bii-text-soft)]">
+    <div className="text-center py-8 px-6 text-[var(--bii-text-soft)]">
       <Money size={48} weight="duotone" className="mx-auto mb-3 text-[var(--bii-emerald)] opacity-40" />
       <p className="font-semibold text-[var(--bii-text)] mb-1">{pick("কোনো ক্যাশআউট নেই", "No cashouts yet")}</p>
       <p className="text-sm">{pick("কয়েন জমান এবং টাকায় রূপান্তর করুন!", "Earn coins and convert to cash!")}</p>
@@ -390,7 +390,7 @@ export default function RewardZone() {
   };
 
   if (loading) return (
-    <div className="flex items-center justify-center py-24">
+    <div className="flex items-center justify-center py-10">
       <div className="w-10 h-10 rounded-full border-4 border-[var(--bii-emerald)] border-t-transparent animate-spin" />
     </div>
   );

@@ -33,7 +33,7 @@ export default function MyCourses() {
   );
 
   return (
-    <div data-testid="my-courses-page" className="space-y-8">
+    <div data-testid="my-courses-page" className="space-y-5">
       <h1 className="font-heading text-3xl text-[var(--bii-emerald)]">{t("menuMyCourses")}</h1>
 
       {loading && <div className="text-center text-[var(--bii-text-soft)] py-8">{t("loading")}</div>}

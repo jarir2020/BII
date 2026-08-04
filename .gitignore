@@ -45,3 +45,5 @@ zip-repl-1zip/zipFile/
 
 # CI/CD build artifact (assembled merged public_html)
 deploy/_staging/
+ANDROID_APP_PLAN.md
+API_DOCUMENTATION.md

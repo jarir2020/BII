@@ -252,7 +252,7 @@ export default function MyCourseDetail() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-3">
+      <div className="flex flex-col items-center justify-center py-10 gap-3">
         <div className="w-10 h-10 rounded-full border-4 border-[var(--bii-emerald)] border-t-transparent animate-spin" />
         <p className="text-[var(--bii-text-soft)] text-sm">লোড হচ্ছে...</p>
       </div>

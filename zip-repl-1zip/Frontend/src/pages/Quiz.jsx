@@ -519,7 +519,7 @@ function QuizTaking({ quiz, session, onDone, onCancel }) {
   }, [doSubmit]);
 
   if (!questions.length || !shuffleMap.length) return (
-    <div className="flex flex-col items-center py-20 gap-3">
+    <div className="flex flex-col items-center py-10 gap-3">
       <div className="w-10 h-10 rounded-full border-4 border-[var(--bii-emerald)] border-t-transparent animate-spin" />
       <p className="text-sm text-[var(--bii-text-soft)]">{pick("প্রশ্নপত্র লোড হচ্ছে...", "Loading questions...")}</p>
     </div>
@@ -947,7 +947,7 @@ export default function Quiz() {
   };
 
   if (loading) return (
-    <div className="flex flex-col items-center justify-center py-24 gap-3">
+    <div className="flex flex-col items-center justify-center py-10 gap-3">
       <div className="w-12 h-12 rounded-full border-4 border-[var(--bii-emerald)] border-t-transparent animate-spin" />
       <p className="text-[var(--bii-text-soft)]">{t("loading")}</p>
     </div>

@@ -1,0 +1,13 @@
+{
+  "appId": "com.bengaliislamic.institute",
+  "appName": "Bengali Islamic Institute",
+  "webDir": "build",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    }
+  }
+}
