@@ -144,3 +144,8 @@ h1, h2, h3, .font-heading {
 ::-webkit-scrollbar-thumb:hover { background: rgba(10,66,43,0.45); }
 
 ::selection { background: rgba(212,175,55,0.45); color: var(--bii-emerald); }
+
+/* ── Collapse unfilled AdSense units so they don't leave whitespace gaps ── */
+ins.adsbygoogle[data-ad-status="unfilled"] { display: none !important; }
+/* Hide the AdBanner wrapper entirely (removes its margins too) when unfilled */
+div:has(> ins.adsbygoogle[data-ad-status="unfilled"]) { display: none !important; }
