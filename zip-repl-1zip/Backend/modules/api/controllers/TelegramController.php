@@ -68,6 +68,48 @@ class TelegramController extends ApiController
         }
 
         [$action, $pid] = explode(':', $data, 2);
+
+        // ── Shop order approve / reject ──
+        if ($action === 'approve_order' || $action === 'reject_order') {
+            $order = Yii::$app->db->createCommand(
+                'SELECT * FROM shop_orders WHERE id = :id', [':id' => $pid]
+            )->queryOne();
+            if ($order === false) {
+                Telegram::api('answerCallbackQuery', ['callback_query_id' => $callbackId, 'text' => '❌ অর্ডার পাওয়া যায়নি', 'show_alert' => true]);
+                return ['ok' => true];
+            }
+            if ($order['status'] !== 'pending') {
+                Telegram::api('answerCallbackQuery', ['callback_query_id' => $callbackId, 'text' => "ℹ️ ইতিমধ্যে {$order['status']}", 'show_alert' => true]);
+                return ['ok' => true];
+            }
+            $newStatus = $action === 'approve_order' ? 'confirmed' : 'cancelled';
+            $emoji = $action === 'approve_order' ? '✅' : '❌';
+            Yii::$app->db->createCommand()->update('shop_orders', [
+                'status' => $newStatus, 'updated_at' => Time::utc(),
+            ], ['id' => $pid])->execute();
+            Telegram::api('answerCallbackQuery', [
+                'callback_query_id' => $callbackId,
+                'text' => $emoji . ' ' . ($newStatus === 'confirmed' ? 'অর্ডার অনুমোদন হয়েছে!' : 'অর্ডার বাতিল হয়েছে'),
+            ]);
+            // Edit the original message to show the decision
+            $newText = implode("\n", [
+                $emoji . ' <b>' . ($newStatus === 'confirmed' ? 'অর্ডার অনুমোদিত!' : 'অর্ডার বাতিল!') . '</b>',
+                "",
+                "👤 <b>ক্রেতা:</b> " . $this->h($order['user_name'] ?? ''),
+                "📱 <b>মোবাইল:</b> " . $this->h($order['user_phone'] ?? '—'),
+                "💰 <b>মোট:</b> ৳" . $this->h((string) ($order['total'] ?? 0)),
+                "🏠 <b>ডেলিভারি:</b> " . $this->h($order['delivery_address'] ?? '—'),
+                "",
+                "{$emoji} @{$by} কর্তৃক " . ($newStatus === 'confirmed' ? 'অনুমোদিত' : 'বাতিল') . ' — ' . Time::utc(),
+            ]);
+            Telegram::api('editMessageText', [
+                'chat_id' => $tgChatId, 'message_id' => $tgMsgId,
+                'text' => $newText, 'parse_mode' => 'HTML',
+            ]);
+            return ['ok' => true];
+        }
+
+        // ── Course payment approve / reject ──
         $req = Yii::$app->db->createCommand(
             'SELECT * FROM payment_requests WHERE id = :id', [':id' => $pid]
         )->queryOne();

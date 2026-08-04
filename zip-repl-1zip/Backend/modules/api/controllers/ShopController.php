@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace app\modules\api\controllers;
 
 use app\helpers\Uuid;
+use app\helpers\Telegram;
 use Yii;
 
 /**
@@ -104,6 +105,19 @@ class ShopController extends ApiController
                 $line
             ))->execute();
         }
+
+        // Notify admins on Telegram when TELEGRAM_BOT_TOKEN + CHAT_ID are set.
+        Telegram::notifyShopOrder([
+            'id'               => $orderId,
+            'user_name'        => $user['name'] ?? '',
+            'user_phone'       => $user['phone'] ?? '',
+            'user_email'       => $user['email'] ?? '',
+            'items'            => $orderLines,
+            'total'            => $finalTotal,
+            'payment_method'   => (string) ($body['payment_method'] ?? ''),
+            'delivery_address' => (string) ($body['customer_address'] ?? ''),
+            'created_at'       => $now,
+        ]);
 
         $doc = [
             'order_number' => $orderNumber,

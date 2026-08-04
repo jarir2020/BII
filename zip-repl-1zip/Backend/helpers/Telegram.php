@@ -102,4 +102,54 @@ final class Telegram
         $resp = self::api('sendMessage', $payload);
         return isset($resp['ok']) && $resp['ok'] === true;
     }
+
+    /** Send a shop order alert to the admin Telegram chat. */
+    public static function notifyShopOrder(array $order): bool
+    {
+        $chatId = self::chatId();
+        if (self::token() === '' || $chatId === '') {
+            return false;
+        }
+
+        // Build item list
+        $lines = [];
+        foreach ($order['items'] ?? [] as $item) {
+            $lines[] = "  • " . self::esc((string) ($item['product_name'] ?? ''))
+                     . " ×" . self::esc((string) ($item['qty'] ?? 1))
+                     . " — ৳" . self::esc((string) ($item['subtotal'] ?? 0));
+        }
+        $itemBlock = $lines !== '' ? implode("\n", $lines) : '  (কোনো আইটেম নেই)';
+
+        $text = implode("\n", [
+            "🛒 <b>নতুন অনলাইন অর্ডার!</b>",
+            "",
+            "👤 <b>ক্রেতা:</b> " . self::esc((string) ($order['user_name'] ?? '')),
+            "📱 <b>মোবাইল:</b> " . self::esc((string) ($order['user_phone'] ?? '—')),
+            "📧 <b>ইমেইল:</b> " . self::esc((string) ($order['user_email'] ?? '')),
+            "",
+            "📦 <b>আইটেম:</b>",
+            $itemBlock,
+            "",
+            "💰 <b>মোট:</b> ৳" . self::esc((string) ($order['total'] ?? 0)),
+            "💰 <b>পেমেন্ট:</b> " . self::esc(strtoupper((string) ($order['payment_method'] ?? ''))),
+            "🏠 <b>ডেলিভারি:</b> " . self::esc((string) ($order['delivery_address'] ?? '—')),
+            "🕐 <b>সময়:</b> " . self::esc(substr((string) ($order['created_at'] ?? ''), 0, 19)),
+        ]);
+
+        $payload = [
+            'chat_id' => $chatId,
+            'text' => $text,
+            'parse_mode' => 'HTML',
+            'disable_web_page_preview' => true,
+            'reply_markup' => [
+                'inline_keyboard' => [[
+                    ['text' => '✅ অর্ডার অনুমোদন', 'callback_data' => "approve_order:{$order['id']}"],
+                    ['text' => '❌ অর্ডার বাতিল', 'callback_data' => "reject_order:{$order['id']}"],
+                ]],
+            ],
+        ];
+
+        $resp = self::api('sendMessage', $payload);
+        return isset($resp['ok']) && $resp['ok'] === true;
+    }
 }
