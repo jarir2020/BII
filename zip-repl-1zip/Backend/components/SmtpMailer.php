@@ -25,47 +25,68 @@ class SmtpMailer
         $pass = (string) ($s['smtp_pass'] ?? '');
         $from = trim((string) ($s['smtp_from'] ?? $user));
 
-        if ($host === '' || $user === '' || $pass === '') {
-            throw new RuntimeException('SMTP not configured');
-        }
-
-        $errno = 0;
-        $errstr = '';
-        $conn = @stream_socket_client(
-            "tcp://{$host}:{$port}",
-            $errno,
-            $errstr,
-            10,
-            STREAM_CLIENT_CONNECT
-        );
-        if ($conn === false) {
-            throw new RuntimeException("SMTP connect failed: {$errstr} ({$errno})");
-        }
+        // ── Debug trace: record every SMTP step + the server reply, so a failure
+        //    can report the exact step delivery got stuck at. ───────────────────
+        $steps = [];   // e.g. ["connect => tcp://smtp.gmail.com:587", "starttls => 220 2.0.0 Ready to start TLS", ...]
+        $last = '';    // label of the step that most recently ran
 
         try {
-            self::expect($conn, '220');
-
-            self::command($conn, "EHLO " . (gethostname() ?: 'localhost'));
-            // skip multiline greeting (codes like 250-...)
-
-            // STARTTLS when supported (always attempt)
-            self::command($conn, 'STARTTLS');
-            stream_set_timeout($conn, 10);
-            if (!stream_socket_enable_crypto($conn, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
-                throw new RuntimeException('SMTP STARTTLS negotiation failed');
+            if ($host === '' || $user === '' || $pass === '') {
+                throw new RuntimeException('SMTP not configured (host/user/pass missing)');
             }
 
-            self::command($conn, "EHLO " . (gethostname() ?: 'localhost'));
+            $errno = 0;
+            $errstr = '';
+            $conn = @stream_socket_client(
+                "tcp://{$host}:{$port}",
+                $errno,
+                $errstr,
+                10,
+                STREAM_CLIENT_CONNECT
+            );
+            if ($conn === false) {
+                throw new RuntimeException("connect failed: {$errstr} ({$errno})");
+            }
+            $steps[] = "connect => tcp://{$host}:{$port}";
 
-            // AUTH LOGIN
-            self::command($conn, 'AUTH LOGIN', '334');
-            self::command($conn, base64_encode($user), '334');
-            self::command($conn, base64_encode($pass), '235');
+            $steps[] = 'greeting => ' . trim(self::expect($conn, '220'));
+            $last = 'greeting';
 
-            self::command($conn, "MAIL FROM:<{$from}>", '250');
-            self::command($conn, "RCPT TO:<{$to}>", '250');
+            $steps[] = 'ehlo => ' . trim(self::command($conn, 'EHLO ' . (gethostname() ?: 'localhost')));
+            $last = 'ehlo';
 
-            self::command($conn, 'DATA', '354');
+            // STARTTLS — note: SMTP servers reply 220 (NOT 250) to STARTTLS (RFC 3207).
+            $steps[] = 'starttls => ' . trim(self::command($conn, 'STARTTLS', '220'));
+            $last = 'starttls';
+
+            stream_set_timeout($conn, 10);
+            if (!stream_socket_enable_crypto($conn, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+                throw new RuntimeException('STARTTLS negotiation failed');
+            }
+            $steps[] = 'tls => enabled';
+            $last = 'tls';
+
+            $steps[] = 'ehlo-tls => ' . trim(self::command($conn, 'EHLO ' . (gethostname() ?: 'localhost')));
+            $last = 'ehlo-tls';
+
+            $steps[] = 'auth-login => ' . trim(self::command($conn, 'AUTH LOGIN', '334'));
+            $last = 'auth-login';
+
+            $steps[] = 'auth-user => ' . trim(self::command($conn, base64_encode($user), '334'));
+            $last = 'auth-user';
+
+            $steps[] = 'auth-pass => ' . trim(self::command($conn, base64_encode($pass), '235'));
+            $last = 'auth-pass';
+
+            $steps[] = 'mail-from => ' . trim(self::command($conn, "MAIL FROM:<{$from}>", '250'));
+            $last = 'mail-from';
+
+            $steps[] = 'rcpt-to => ' . trim(self::command($conn, "RCPT TO:<{$to}>", '250'));
+            $last = 'rcpt-to';
+
+            $steps[] = 'data => ' . trim(self::command($conn, 'DATA', '354'));
+            $last = 'data';
+
             $message = "Subject: {$subject}\r\n"
                 . "From: {$from}\r\n"
                 . "To: {$to}\r\n"
@@ -74,11 +95,23 @@ class SmtpMailer
                 . "\r\n"
                 . $html . "\r\n.\r\n";
             fwrite($conn, $message);
-            self::expect($conn, '250');
+            $steps[] = 'send-data => ' . trim(self::expect($conn, '250'));
+            $last = 'send-data';
 
-            self::command($conn, 'QUIT');
+            // QUIT — servers reply 221 when closing the connection (RFC 5321).
+            $steps[] = 'quit => ' . trim(self::command($conn, 'QUIT', '221'));
+            $last = 'quit';
+        } catch (Throwable $e) {
+            $trace = implode(' | ', $steps);
+            throw new RuntimeException(
+                'SMTP stuck at step [' . $last . '] -> ' . $e->getMessage() . ' || steps: ' . $trace,
+                0,
+                $e
+            );
         } finally {
-            fclose($conn);
+            if (isset($conn) && is_resource($conn)) {
+                @fclose($conn);
+            }
         }
     }
 

@@ -141,11 +141,32 @@ class AuthController extends ApiController
 
         try {
             $this->sendOtpEmail($email, $otp, $user['name'] ?? '');
+            return $this->json($always);
         } catch (Throwable $ex) {
             Yii::warning("OTP email failed: {$ex->getMessage()}", __METHOD__);
+            // Debug aid: a super_admin caller sees the exact SMTP step delivery got
+            // stuck at (see SmtpMailer::$steps). Public callers keep the generic
+            // response so an email's existence is never disclosed.
+            if ($this->isSuperAdmin()) {
+                return $this->json([
+                    'ok' => false,
+                    'message' => 'OTP email failed to send',
+                    'debug' => $ex->getMessage(),
+                ]);
+            }
+            return $this->json($always);
         }
+    }
 
-        return $this->json($always);
+    /** True when the current caller is authenticated as a super_admin. */
+    private function isSuperAdmin(): bool
+    {
+        try {
+            $u = $this->user();
+            return ($u['role'] ?? '') === 'super_admin';
+        } catch (Throwable $e) {
+            return false;
+        }
     }
 
     public function actionResetPassword(): \yii\web\Response
