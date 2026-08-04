@@ -60,7 +60,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-[var(--bii-cream)] text-[var(--bii-text)]">
       {/* HEADER */}
-      <header className="sticky top-0 z-30 bg-[var(--bii-emerald)] text-white shadow-md">
+      <header className="sticky top-0 z-40 bg-[var(--bii-emerald)] text-white shadow-md">
         <div className="islamic-pattern absolute inset-0 opacity-20 pointer-events-none" />
         <div className="relative max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
           <button
