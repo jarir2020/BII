@@ -204,12 +204,25 @@ class AuthController extends ApiController
         return $this->json(['ok' => true]);
     }
 
-    /** Send the OTP email using SMTP settings from the settings table. */
+    /** Send the OTP email. Hardcoded SMTP config (config/smtp.php) is authoritative;
+     *  the DB `settings` row is only used to fill keys missing from that file. */
     private function sendOtpEmail(string $to, string $otp, string $name): void
     {
+        $s = require __DIR__ . '/../../../config/smtp.php';
+        if (!is_array($s)) {
+            $s = [];
+        }
+
+        // Fall back to the DB settings only where a hardcoded key is empty.
         $row = Yii::$app->db->createCommand('SELECT data FROM settings WHERE id = :id', [':id' => 'main'])->queryOne();
         $data = $row !== false ? json_decode($row['data'], true) : null;
-        $s = is_array($data) ? $data : [];
+        if (is_array($data)) {
+            foreach (['smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_from'] as $key) {
+                if (empty($s[$key]) && !empty($data[$key])) {
+                    $s[$key] = $data[$key];
+                }
+            }
+        }
 
         $html = $this->otpHtml($otp, $name);
         SmtpMailer::send($s, $to, 'পাসওয়ার্ড রিসেট OTP — বাঙালি ইসলামিক ইনস্টিটিউট', $html);
