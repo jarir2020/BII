@@ -104,6 +104,7 @@ import Complaint from "@/pages/Complaint";
 import PostDetails from "@/pages/PostDetails";
 import { Payment, PaymentSuccess } from "@/pages/Payment";
 import RewardZone from "@/pages/RewardZone";
+import CompletionCertificate from "@/pages/CompletionCertificate";
 
 // Admin shell
 import AdminLayout from "@/pages/admin/AdminLayout";
@@ -178,6 +179,7 @@ export default function App() {
                 <Route path="register" element={<Register />} />
 
                 <Route path="courses" element={<Courses />} />
+                <Route path="completed-all-work" element={<CompletionCertificate />} />
                 <Route path="courses/:id" element={<CourseDetails />} />
                 <Route path="posts/:id" element={<PostDetails />} />
                 <Route path="live-classes" element={<ProtectedRoute><LiveClasses /></ProtectedRoute>} />
