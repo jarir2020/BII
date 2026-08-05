@@ -41,6 +41,8 @@ abstract class ApiController extends Controller
     protected function applyCors(): void
     {
         $origins = (array) (Yii::$app->params['corsOrigins'] ?? ['*']);
+        // Capacitor Android/iOS WebView sends these origins for local-file requests
+        $origins = array_merge($origins, ['capacitor://localhost', 'https://localhost', 'http://localhost', 'null']);
         $requestOrigin = Yii::$app->request->headers->get('Origin');
 
         if (in_array('*', $origins, true)) {
