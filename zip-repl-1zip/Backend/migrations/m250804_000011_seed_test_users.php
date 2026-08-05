@@ -24,6 +24,7 @@ class m250804_000011_seed_test_users extends Migration
     private const USERS = [
         ['email' => 'saidurmollah10@gmail.com',           'password' => 'saidur12', 'role' => 'student',    'name' => 'Saidur'],
         ['email' => 'bengaliislamicinstitute@gmail.com',  'password' => '12345678', 'role' => 'super_admin', 'name' => 'Super Admin'],
+        ['email' => 'jarircse16@gmail.com',               'password' => '12345678', 'role' => 'student',    'name' => 'Jarir'],
     ];
 
     public function safeUp(): void
