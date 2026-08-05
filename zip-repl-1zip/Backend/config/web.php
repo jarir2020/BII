@@ -87,9 +87,6 @@ $config = [
                 '' => 'site/index',
                 'GET api/health' => 'api/health/index',
 
-                // ── File serving (public, no auth) ─────────────────────
-                'GET api/files/<filename:[^/]+>' => 'api/files/view',
-
                 // ── Named sub-routes (specific first) ────────────────────
                 'api/my-courses' => 'api/courses/my-courses',
                 'api/my-live-classes' => 'api/live-classes/my',
@@ -151,6 +148,9 @@ $config = [
                 'api/library/categories' => 'api/library/categories',
                 'api/library/books/<id>' => 'api/library/book',
                 'api/library/books' => 'api/library/books',
+                'api/library/upload' => 'api/library/upload',
+                'api/library/serve/<id>' => 'api/library/serve',
+                'api/library/download/<id>' => 'api/library/download',
 
                 // ── Generic schema-less CRUD resources ────────────────────
                 'api/<resource:(course_categories|chapters|lessons|pdfs|assignments|exams|results|certificates|recorded_classes|hadiths|islamic_content|blogs|banners|sliders|gallery|downloads|winner_reviews)>/<id>' => 'api/generic/item',

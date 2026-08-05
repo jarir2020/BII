@@ -6,9 +6,10 @@ namespace app\modules\api\controllers;
 
 use app\helpers\Uuid;
 use Yii;
+use yii\web\UploadedFile;
 
 /**
- * /api/library/* — categories + books.
+ * /api/library/* — categories + books + file upload/serve/download.
  */
 class LibraryController extends ApiController
 {
@@ -83,9 +84,16 @@ class LibraryController extends ApiController
             $like = '%' . $search . '%';
             $params[':s1'] = $like; $params[':s2'] = $like; $params[':s3'] = $like; $params[':s4'] = $like;
         }
-        $sql = 'SELECT * FROM books WHERE ' . implode(' AND ', $where) . ' ORDER BY sort_order ASC LIMIT ' . ((int) $limit) . ' OFFSET ' . ((int) $skip);
+
+        $whereClause = implode(' AND ', $where);
+
+        // Count total matching records
+        $countSql = 'SELECT COUNT(*) FROM books WHERE ' . $whereClause;
+        $total = (int) Yii::$app->db->createCommand($countSql, $params)->queryScalar();
+
+        $sql = 'SELECT * FROM books WHERE ' . $whereClause . ' ORDER BY sort_order ASC LIMIT ' . ((int) $limit) . ' OFFSET ' . ((int) $skip);
         $rows = Yii::$app->db->createCommand($sql, $params)->queryAll();
-        return $this->json(array_map(fn ($r) => $this->bookDoc($r), $rows));
+        return $this->json(['total' => $total, 'books' => array_map(fn ($r) => $this->bookDoc($r), $rows)]);
     }
 
     public function actionBook(string $id): \yii\web\Response
@@ -109,6 +117,132 @@ class LibraryController extends ApiController
         return $this->json($this->bookDoc($row));
     }
 
+    // ── File Upload (admin only, no size limit) ──────────────────
+    public function actionUpload(): \yii\web\Response
+    {
+        $this->requireAdmin();
+
+        // Unlimited upload: remove PHP time and memory limits
+        set_time_limit(0);
+        ini_set('memory_limit', '-1');
+
+        $file = UploadedFile::getInstanceByName('file');
+        if ($file === null || $file->error !== UPLOAD_ERR_OK || $file->name === '') {
+            $this->badRequest('No file');
+        }
+
+        $ext = strtolower(pathinfo($file->name, PATHINFO_EXTENSION));
+        $allowed = ['pdf', 'epub', 'html', 'htm', 'png', 'jpg', 'jpeg', 'webp'];
+        if (!in_array($ext, $allowed, true)) {
+            $this->badRequest('Unsupported file type: ' . $ext);
+        }
+
+        $dir = Yii::getAlias('@webroot') . '/uploads/library';
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0775, true);
+        }
+
+        $fileId = Uuid::v4();
+        $name = $fileId . '.' . $ext;
+        try {
+            $file->saveAs($dir . '/' . $name);
+        } catch (\Throwable $e) {
+            $this->badRequest('Upload failed: ' . $e->getMessage());
+        }
+
+        return $this->json([
+            'url' => '/uploads/library/' . $name,
+            'file_type' => $ext,
+            'file_size' => $file->size,
+        ]);
+    }
+
+    // ── File Serve (authenticated users, streams with proper headers) ──
+    public function actionServe(string $id): void
+    {
+        $this->user();
+
+        $row = Yii::$app->db->createCommand('SELECT * FROM books WHERE id = :id', [':id' => $id])->queryOne();
+        if ($row === false || empty($row['file_url'])) {
+            Yii::$app->response->statusCode = 404;
+            echo 'Book or file not found';
+            return;
+        }
+
+        $filePath = Yii::getAlias('@webroot') . $row['file_url'];
+        if (!file_exists($filePath)) {
+            Yii::$app->response->statusCode = 404;
+            echo 'File not found on disk';
+            return;
+        }
+
+        $ext = $row['file_type'] ?: strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+        $mimeMap = [
+            'pdf' => 'application/pdf',
+            'epub' => 'application/epub+zip',
+            'html' => 'text/html',
+            'htm' => 'text/html',
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'webp' => 'image/webp',
+        ];
+        $contentType = $mimeMap[$ext] ?? 'application/octet-stream';
+
+        $response = Yii::$app->response;
+        $response->statusCode = 200;
+        $response->headers->set('Content-Type', $contentType);
+        $response->headers->set('Content-Disposition', 'inline');
+        $response->headers->set('Content-Length', (string) filesize($filePath));
+        $response->headers->set('Cache-Control', 'public, max-age=3600');
+        $response->content = file_get_contents($filePath);
+    }
+
+    // ── File Download (authenticated users, triggers browser download) ──
+    public function actionDownload(string $id): void
+    {
+        $this->user();
+
+        $row = Yii::$app->db->createCommand('SELECT * FROM books WHERE id = :id', [':id' => $id])->queryOne();
+        if ($row === false || empty($row['file_url'])) {
+            Yii::$app->response->statusCode = 404;
+            echo 'Book or file not found';
+            return;
+        }
+
+        $filePath = Yii::getAlias('@webroot') . $row['file_url'];
+        if (!file_exists($filePath)) {
+            Yii::$app->response->statusCode = 404;
+            echo 'File not found on disk';
+            return;
+        }
+
+        $ext = $row['file_type'] ?: strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+        $title = $row['title_en'] ?: $row['title_bn'];
+        $safeTitle = preg_replace('/[^a-zA-Z0-9_-]/', '_', $title);
+        $filename = $safeTitle . '.' . $ext;
+
+        $mimeMap = [
+            'pdf' => 'application/pdf',
+            'epub' => 'application/epub+zip',
+            'html' => 'text/html',
+            'htm' => 'text/html',
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'webp' => 'image/webp',
+        ];
+        $contentType = $mimeMap[$ext] ?? 'application/octet-stream';
+
+        $response = Yii::$app->response;
+        $response->statusCode = 200;
+        $response->headers->set('Content-Type', $contentType);
+        $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '"');
+        $response->headers->set('Content-Length', (string) filesize($filePath));
+        $response->content = file_get_contents($filePath);
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────
     private function bookFields(array $b): array
     {
         return [
@@ -120,6 +254,9 @@ class LibraryController extends ApiController
             'description' => (string) ($b['description'] ?? ''),
             'cover_image' => (string) ($b['cover_image'] ?? ''),
             'pdf_url' => (string) ($b['pdf_url'] ?? ''),
+            'file_url' => (string) ($b['file_url'] ?? ''),
+            'file_type' => (string) ($b['file_type'] ?? ''),
+            'file_size' => (int) ($b['file_size'] ?? 0),
             'is_published' => ($b['is_published'] ?? true) ? 1 : 0,
             'is_featured' => ($b['is_featured'] ?? false) ? 1 : 0,
             'sort_order' => (int) ($b['sort_order'] ?? 0),

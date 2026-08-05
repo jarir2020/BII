@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { MagnifyingGlass, Books, Star, BookOpen, ArrowRight, Funnel } from "@phosphor-icons/react";
+import { MagnifyingGlass, Books, Star, BookOpen, ArrowRight, Funnel, SquaresFour, List, FilePdf, FileHtml, File } from "@phosphor-icons/react";
 import { api, imgUrl } from "../lib/api";
 import { useLang } from "../contexts/LangContext";
 import AdBanner from "../components/AdBanner";
@@ -16,15 +16,43 @@ const BG_COLORS = [
   "from-lime-700 to-green-900","from-fuchsia-700 to-purple-900",
 ];
 
-function BookCard({ book, idx }) {
+const FILE_ICONS = { pdf: FilePdf, epub: BookOpen, html: FileHtml, htm: FileHtml };
+
+function BookCard({ book, idx, viewMode }) {
   const { pick } = useLang();
   const title = pick(book.title_bn, book.title_en) || book.title_en || book.title_bn;
   const author = pick(book.author_bn, book.author_en) || book.author_en || book.author_bn;
   const bg = BG_COLORS[idx % BG_COLORS.length];
-  const gutCover = book.gutenberg_id
-    ? `https://www.gutenberg.org/cache/epub/${book.gutenberg_id}/pg${book.gutenberg_id}.cover.medium.jpg`
-    : null;
-  const cover = book.cover_image ? imgUrl(book.cover_image) : gutCover;
+  const cover = book.cover_image ? imgUrl(book.cover_image) : null;
+  const FileIcon = FILE_ICONS[book.file_type] || File;
+
+  if (viewMode === "list") {
+    return (
+      <Link to={`/library/${book.id}`}
+        className="bii-card flex items-center gap-3 p-3 hover:shadow-md transition-shadow duration-200">
+        <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${bg} flex items-center justify-center flex-shrink-0`}>
+          {cover ? (
+            <img src={cover} alt="" className="w-full h-full object-cover rounded-lg" />
+          ) : (
+            <FileIcon size={20} weight="duotone" className="text-white" />
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-heading text-sm text-[var(--bii-emerald)] truncate">{title}</h3>
+          <p className="text-xs text-[var(--bii-text-soft)] truncate">{author || "—"}</p>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {book.file_type && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bii-emerald)]/10 text-[var(--bii-emerald)] font-medium uppercase">
+              {book.file_type}
+            </span>
+          )}
+          {book.is_featured && <Star size={12} weight="fill" className="text-[var(--bii-gold)]" />}
+          <ArrowRight size={14} className="text-[var(--bii-text-soft)]" />
+        </div>
+      </Link>
+    );
+  }
 
   return (
     <Link to={`/library/${book.id}`}
@@ -36,7 +64,7 @@ function BookCard({ book, idx }) {
             onError={e => { e.currentTarget.style.display="none"; }} />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center p-4 text-white">
-            <div className="text-5xl mb-2">{CAT_ICON[book.category] || "📚"}</div>
+            <FileIcon size={40} weight="duotone" className="mb-2 opacity-80" />
             <div className="text-center text-sm font-semibold leading-snug line-clamp-3 opacity-90">{title}</div>
           </div>
         )}
@@ -45,10 +73,12 @@ function BookCard({ book, idx }) {
             <Star size={10} weight="fill" /> Featured
           </div>
         )}
-        <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-black/60 to-transparent" />
-        {book.year > 0 && (
-          <span className="absolute bottom-2 right-2 text-[10px] text-white/70">{book.year}</span>
+        {book.file_type && (
+          <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+            {book.file_type}
+          </div>
         )}
+        <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-black/60 to-transparent" />
       </div>
       {/* Info */}
       <div className="p-3 flex flex-col flex-1">
@@ -56,9 +86,8 @@ function BookCard({ book, idx }) {
         {author && <p className="text-xs text-[var(--bii-text-soft)] line-clamp-1">{author}</p>}
         <div className="mt-auto pt-2 flex items-center justify-between">
           <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--bii-emerald)]/10 text-[var(--bii-emerald)] font-medium">
-            {CAT_ICON[book.category]} {book.category}
+            {CAT_ICON[book.category] || "📚"} {book.category}
           </span>
-          {book.pages > 0 && <span className="text-[10px] text-[var(--bii-text-soft)]">{book.pages}p</span>}
         </div>
       </div>
     </Link>
@@ -75,6 +104,7 @@ export default function Library() {
   const [loading, setLoading]     = useState(true);
   const [total, setTotal]         = useState(0);
   const [page, setPage]           = useState(0);
+  const [viewMode, setViewMode]   = useState("grid");
   const PER = 40;
 
   useEffect(() => {
@@ -87,7 +117,11 @@ export default function Library() {
     if (catVal && catVal !== "all") params.set("category", catVal);
     if (searchVal) params.set("search", searchVal);
     api.get(`/library/books?${params}`)
-      .then(r => { const d = r.data || {}; setBooks(Array.isArray(d.books) ? d.books : []); setTotal(d.total || 0); })
+      .then(r => {
+        const d = r.data || {};
+        if (Array.isArray(d)) { setBooks(d); setTotal(d.length); }
+        else { setBooks(Array.isArray(d.books) ? d.books : []); setTotal(d.total || 0); }
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -140,29 +174,49 @@ export default function Library() {
         ))}
       </div>
 
-      {/* Stats */}
+      {/* Stats + View Toggle */}
       <div className="flex items-center justify-between text-sm text-[var(--bii-text-soft)]">
         <span>{pick(`${total}টি বই পাওয়া গেছে`, `${total} books found`)}</span>
-        {total > PER && (
-          <div className="flex gap-1">
-            {page > 0 && <button onClick={() => setPage(p=>p-1)} className="px-3 py-1 rounded-lg border border-[var(--bii-border)] text-xs hover:border-[var(--bii-emerald)] transition">←</button>}
-            <span className="px-3 py-1 text-xs">{page+1}/{Math.ceil(total/PER)}</span>
-            {(page+1)*PER < total && <button onClick={() => setPage(p=>p+1)} className="px-3 py-1 rounded-lg border border-[var(--bii-border)] text-xs hover:border-[var(--bii-emerald)] transition">→</button>}
+        <div className="flex items-center gap-2">
+          {/* View mode toggle */}
+          <div className="flex items-center border border-[var(--bii-border)] rounded-lg overflow-hidden">
+            <button onClick={() => setViewMode("grid")}
+              className={`p-1.5 transition ${viewMode === "grid" ? "bg-[var(--bii-emerald)] text-white" : "hover:bg-[var(--bii-cream)]"}`}
+              title={pick("গ্রিড ভিউ", "Grid view")}>
+              <SquaresFour size={16} />
+            </button>
+            <button onClick={() => setViewMode("list")}
+              className={`p-1.5 transition ${viewMode === "list" ? "bg-[var(--bii-emerald)] text-white" : "hover:bg-[var(--bii-cream)]"}`}
+              title={pick("লিস্ট ভিউ", "List view")}>
+              <List size={16} />
+            </button>
           </div>
-        )}
+          {/* Pagination */}
+          {total > PER && (
+            <div className="flex gap-1">
+              {page > 0 && <button onClick={() => setPage(p=>p-1)} className="px-3 py-1 rounded-lg border border-[var(--bii-border)] text-xs hover:border-[var(--bii-emerald)] transition">←</button>}
+              <span className="px-3 py-1 text-xs">{page+1}/{Math.ceil(total/PER)}</span>
+              {(page+1)*PER < total && <button onClick={() => setPage(p=>p+1)} className="px-3 py-1 rounded-lg border border-[var(--bii-border)] text-xs hover:border-[var(--bii-emerald)] transition">→</button>}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Grid */}
+      {/* Grid / List */}
       {loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className={viewMode === "grid" ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" : "space-y-2"}>
           {Array.from({length:8}).map((_,i)=>(
-            <div key={i} className="bii-card overflow-hidden animate-pulse">
-              <div className="h-52 bg-[var(--bii-border)]" />
-              <div className="p-3 space-y-2">
-                <div className="h-4 bg-[var(--bii-border)] rounded w-3/4" />
-                <div className="h-3 bg-[var(--bii-border)] rounded w-1/2" />
+            viewMode === "grid" ? (
+              <div key={i} className="bii-card overflow-hidden animate-pulse">
+                <div className="h-52 bg-[var(--bii-border)]" />
+                <div className="p-3 space-y-2">
+                  <div className="h-4 bg-[var(--bii-border)] rounded w-3/4" />
+                  <div className="h-3 bg-[var(--bii-border)] rounded w-1/2" />
+                </div>
               </div>
-            </div>
+            ) : (
+              <div key={i} className="bii-card h-16 animate-pulse" />
+            )
           ))}
         </div>
       ) : books.length === 0 ? (
@@ -170,9 +224,13 @@ export default function Library() {
           <Books size={48} weight="duotone" className="text-[var(--bii-text-soft)] mx-auto mb-3" />
           <p className="text-[var(--bii-text-soft)]">{pick("কোনো বই পাওয়া যায়নি", "No books found")}</p>
         </div>
-      ) : (
+      ) : viewMode === "grid" ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {books.map((b, i) => <BookCard key={b.id} book={b} idx={i} />)}
+          {books.map((b, i) => <BookCard key={b.id} book={b} idx={i} viewMode="grid" />)}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {books.map((b, i) => <BookCard key={b.id} book={b} idx={i} viewMode="list" />)}
         </div>
       )}
     </div>

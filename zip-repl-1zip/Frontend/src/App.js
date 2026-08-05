@@ -149,7 +149,7 @@ import AdminPromoCodes from "@/pages/admin/AdminPromoCodes";
 import AdminRewardZone from "@/pages/admin/AdminRewardZone";
 
 import AdminMonthlyQuiz from "@/pages/admin/AdminMonthlyQuiz";
-import { AdminLibrary } from "@/pages/admin/CrudPages";
+import AdminLibrary from "@/pages/admin/AdminLibrary";
 import AdminComplaints from "@/pages/admin/AdminComplaints";
 import AdminDua from "@/pages/admin/AdminDua";
 import Library from "@/pages/Library";

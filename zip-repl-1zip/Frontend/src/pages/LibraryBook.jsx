@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { BookOpen, ArrowLeft, ShareNetwork, Books, Star, Clock, Globe, DeviceMobile } from "@phosphor-icons/react";
+import { BookOpen, ArrowLeft, ShareNetwork, Books, Star, Download, FilePdf, FileHtml, File } from "@phosphor-icons/react";
 import { api, imgUrl } from "../lib/api";
 import { useLang } from "../contexts/LangContext";
+
+const FILE_ICONS = { pdf: FilePdf, epub: BookOpen, html: FileHtml, htm: FileHtml };
 
 export default function LibraryBook() {
   const { id } = useParams();
@@ -18,7 +20,11 @@ export default function LibraryBook() {
         setBook(r.data);
         return api.get(`/library/books?category=${r.data.category}&limit=6`);
       })
-      .then(r => setRelated((r.data.books || []).filter(b => b.id !== id).slice(0,5)))
+      .then(r => {
+        const d = r.data;
+        const list = Array.isArray(d) ? d : (d.books || []);
+        setRelated(list.filter(b => b.id !== id).slice(0, 5));
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [id]);
@@ -51,11 +57,10 @@ export default function LibraryBook() {
 
   const title  = pick(book.title_bn, book.title_en) || book.title_en;
   const author = pick(book.author_bn, book.author_en) || book.author_en;
-  const desc   = pick(book.description_bn, book.description_en) || book.description_en;
-  const gutCover = book.gutenberg_id
-    ? `https://www.gutenberg.org/cache/epub/${book.gutenberg_id}/pg${book.gutenberg_id}.cover.medium.jpg`
-    : null;
-  const cover = book.cover_image ? imgUrl(book.cover_image) : gutCover;
+  const desc   = book.description || pick(book.description_bn, book.description_en) || "";
+  const cover  = book.cover_image ? imgUrl(book.cover_image) : null;
+  const FileIcon = FILE_ICONS[book.file_type] || File;
+  const hasFile = !!book.file_url;
 
   return (
     <div className="space-y-6" data-testid="library-book-page">
@@ -72,7 +77,7 @@ export default function LibraryBook() {
                 onError={e=>{e.currentTarget.style.display="none";}} />
             ) : (
               <div className="text-center text-white p-6">
-                <Books size={64} weight="duotone" className="mx-auto mb-3 opacity-80"/>
+                <FileIcon size={64} weight="duotone" className="mx-auto mb-3 opacity-80"/>
                 <div className="font-heading text-lg leading-snug">{title}</div>
               </div>
             )}
@@ -80,12 +85,20 @@ export default function LibraryBook() {
 
           {/* Action buttons */}
           <div className="space-y-2">
-            <Link to={`/library/${id}/read`}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white transition"
-              style={{background:"linear-gradient(90deg,#d49b18,#b77900)",boxShadow:"0 4px 14px rgba(212,155,24,0.28)"}}>
-              <DeviceMobile size={18} weight="fill"/>
-              {pick("ওয়েবসাইটে পড়ুন","Read inside website")}
-            </Link>
+            {hasFile && (
+              <Link to={`/library/${id}/read`}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-white transition"
+                style={{background:"linear-gradient(90deg,#d49b18,#b77900)",boxShadow:"0 4px 14px rgba(212,155,24,0.28)"}}>
+                <BookOpen size={18} weight="fill"/>
+                {pick("ওয়েবসাইটে পড়ুন","Read inside website")}
+              </Link>
+            )}
+            {hasFile && (
+              <a href={`/api/library/download/${book.id}`}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-[var(--bii-border)] text-sm text-[var(--bii-text-soft)] hover:border-[var(--bii-emerald)] hover:text-[var(--bii-emerald)] transition">
+                <Download size={16}/> {pick("ডাউনলোড করুন","Download")}
+              </a>
+            )}
             <button onClick={share}
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-[var(--bii-border)] text-sm text-[var(--bii-text-soft)] hover:border-[var(--bii-emerald)] transition">
               <ShareNetwork size={16}/> {pick("শেয়ার করুন","Share")}
@@ -107,24 +120,16 @@ export default function LibraryBook() {
                 {book.category}
               </span>
             )}
-            {book.language && (
-              <span className="flex items-center gap-1 px-3 py-1 rounded-full text-xs bg-blue-50 text-blue-700 border border-blue-100">
-                <Globe size={12}/> {book.language.toUpperCase()}
-              </span>
-            )}
-            {book.pages > 0 && (
+            {book.file_type && (
               <span className="flex items-center gap-1 px-3 py-1 rounded-full text-xs bg-[var(--bii-cream)] text-[var(--bii-text-soft)] border border-[var(--bii-border)]">
-                <BookOpen size={12}/> {book.pages} {pick("পৃষ্ঠা","pages")}
+                <FileIcon size={12}/> {book.file_type.toUpperCase()}
               </span>
             )}
-            {book.year > 0 && (
-              <span className="flex items-center gap-1 px-3 py-1 rounded-full text-xs bg-[var(--bii-cream)] text-[var(--bii-text-soft)] border border-[var(--bii-border)]">
-                <Clock size={12}/> {book.year}
-              </span>
-            )}
-            {book.total_reads > 0 && (
-              <span className="flex items-center gap-1 px-3 py-1 rounded-full text-xs bg-amber-50 text-amber-700 border border-amber-100">
-                <Star size={12}/> {book.total_reads} {pick("বার পড়া হয়েছে","reads")}
+            {book.file_size > 0 && (
+              <span className="px-3 py-1 rounded-full text-xs bg-[var(--bii-cream)] text-[var(--bii-text-soft)] border border-[var(--bii-border)]">
+                {book.file_size < 1024 * 1024
+                  ? (book.file_size / 1024).toFixed(1) + " KB"
+                  : (book.file_size / (1024 * 1024)).toFixed(1) + " MB"}
               </span>
             )}
           </div>
@@ -136,11 +141,13 @@ export default function LibraryBook() {
             </div>
           )}
 
-          <div className="bii-card p-4 border-[var(--bii-emerald)]/20 bg-[var(--bii-emerald)]/5">
-            <p className="text-sm text-[var(--bii-emerald)]">
-              {pick("এই বইটি আপনার ওয়েবসাইটের ভিতরের Reader-এ বাংলা ও ইংরেজিতে পড়তে পারবেন।", "Read this book in Bengali or English using the Reader inside your website.")}
-            </p>
-          </div>
+          {hasFile && (
+            <div className="bii-card p-4 border-[var(--bii-emerald)]/20 bg-[var(--bii-emerald)]/5">
+              <p className="text-sm text-[var(--bii-emerald)]">
+                {pick("এই বইটি আপনার ওয়েবসাইটের ভিতরের Reader-এ পড়তে পারবেন।", "Read this book using the Reader inside your website.")}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -150,15 +157,14 @@ export default function LibraryBook() {
           <h2 className="font-heading text-lg text-[var(--bii-emerald)] mb-3">{pick("একই ধরনের বই","Related Books")}</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
             {related.map(b => {
-              const rc = b.cover_image ? imgUrl(b.cover_image)
-                : b.gutenberg_id ? `https://www.gutenberg.org/cache/epub/${b.gutenberg_id}/pg${b.gutenberg_id}.cover.medium.jpg`
-                : null;
+              const rc = b.cover_image ? imgUrl(b.cover_image) : null;
+              const RIcon = FILE_ICONS[b.file_type] || File;
               return (
                 <Link key={b.id} to={`/library/${b.id}`} className="bii-card overflow-hidden group hover:shadow-md transition-shadow">
                   <div className="aspect-[3/4] bg-gradient-to-br from-[var(--bii-emerald)] to-teal-900 flex items-center justify-center overflow-hidden">
                     {rc ? <img src={rc} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                       onError={e=>{e.currentTarget.style.display="none";}} />
-                      : <Books size={28} weight="duotone" className="text-white opacity-60"/>}
+                      : <RIcon size={28} weight="duotone" className="text-white opacity-60"/>}
                   </div>
                   <div className="p-2">
                     <p className="text-xs font-medium text-[var(--bii-emerald)] line-clamp-2 leading-snug">
