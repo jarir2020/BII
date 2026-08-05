@@ -24,7 +24,7 @@ const SOCIAL_META = [
   { key: "whatsapp_channel", label: "WhatsApp",   Icon: WhatsappLogo,  bg: "#25D366" },
 ];
 
-const PLACEHOLDER_AVATAR = "https://images.pexels.com/photos/5340338/pexels-photo-5340338.jpeg";
+const PLACEHOLDER_AVATAR = "/placeholder-avatar.jpg";
 const RANK_EMOJI = { 1: "🥇", 2: "🥈", 3: "🥉" };
 const RANK_BN = { 1: "১ম", 2: "২য়", 3: "৩য়" };
 
@@ -70,6 +70,7 @@ function ReviewCard({ r }) {
           <img
             src={imgUrl(r.winner_photo) || PLACEHOLDER_AVATAR}
             alt={r.winner_name}
+            onError={(e) => { e.target.src = PLACEHOLDER_AVATAR; }}
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
           />
           {/* Rank badge */}
@@ -143,6 +144,7 @@ function ReviewCard({ r }) {
           <img
             src={imgUrl(r.winner_photo)}
             alt={r.winner_name}
+            onError={(e) => { e.target.src = PLACEHOLDER_AVATAR; }}
             className="max-w-full max-h-[90vh] rounded-2xl shadow-2xl object-contain"
           />
         </div>
@@ -292,6 +294,7 @@ export default function Home() {
             <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-white p-1 ring-4 ring-[var(--bii-gold)]/80 shadow-xl">
               <img
                 src={imgUrl(user?.profile_photo) || PLACEHOLDER_AVATAR}
+                onError={(e) => { e.target.src = PLACEHOLDER_AVATAR; }}
                 alt="profile"
                 className="w-full h-full object-cover rounded-full"
                 data-testid="home-profile-photo"
