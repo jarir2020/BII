@@ -72,5 +72,6 @@ jobs:
                 mirror -R --delete --parallel=4 \
                 --exclude-glob '.well-known' --exclude-glob '.well-known/**' \
                 --exclude-glob '.git' --exclude-glob '.env' --exclude-glob '.env/**' \
+                --exclude-glob 'uploads' --exclude-glob 'uploads/**' \
                 deploy/_staging/ $FTP_TARGET ; quit"
         shell: bash
