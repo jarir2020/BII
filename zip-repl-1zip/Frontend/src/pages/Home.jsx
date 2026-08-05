@@ -299,11 +299,11 @@ export default function Home() {
             </div>
           </div>
           <h1 className="font-heading text-2xl sm:text-3xl mt-4">
-            {`${t("welcome")}, ${user?.name}`}
+            {`${t("welcome")}, ${user?.name || user?.email || ""}`}
           </h1>
           <div className="mt-2 inline-flex items-center gap-2 bg-white/10 px-4 py-1.5 rounded-full text-sm">
             <span className="text-[var(--bii-gold)] uppercase tracking-wider text-[11px]">{t("studentId")}</span>
-            <span className="font-mono" data-testid="home-student-id">{user?.student_id}</span>
+            <span className="font-mono" data-testid="home-student-id">{user?.student_id || "—"}</span>
           </div>
         </div>
       </section>
