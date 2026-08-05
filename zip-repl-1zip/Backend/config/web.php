@@ -87,6 +87,9 @@ $config = [
                 '' => 'site/index',
                 'GET api/health' => 'api/health/index',
 
+                // ── File serving (public, no auth) ─────────────────────
+                'GET api/files/<filename:[^/]+>' => 'api/files/view',
+
                 // ── Named sub-routes (specific first) ────────────────────
                 'api/my-courses' => 'api/courses/my-courses',
                 'api/my-live-classes' => 'api/live-classes/my',
