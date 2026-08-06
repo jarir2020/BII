@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, BookOpen, Download, Warning } from "@phosphor-icons/react";
+import { ArrowLeft, BookOpen, CaretLeft, CaretRight, Download, Warning } from "@phosphor-icons/react";
 import { api } from "../lib/api";
 import { useLang } from "../contexts/LangContext";
 
@@ -10,8 +10,10 @@ export default function LibraryReader() {
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [epubError, setEpubError] = useState(false);
+  const [location, setLocation] = useState({ current: 0, total: 0 }); // 2026-08-06: EPUB nav
   const epubRef = useRef(null);
   const epubInstance = useRef(null);
+  const renditionRef = useRef(null);
 
   useEffect(() => {
     setLoading(true);
@@ -69,6 +71,21 @@ export default function LibraryReader() {
         });
 
         rendition.display();
+        renditionRef.current = rendition;
+
+        // 2026-08-06: Track location for page indicator
+        rendition.on("relocated", (loc) => {
+          setLocation({
+            current: loc.start?.location?.displayed?.page || 0,
+            total: loc.start?.location?.total || 0,
+          });
+        });
+
+        // 2026-08-06: Keyboard navigation
+        rendition.on("keydown", (e) => {
+          if (e.key === "ArrowRight") rendition.next();
+          if (e.key === "ArrowLeft") rendition.prev();
+        });
       } catch (err) {
         console.error("EPUB load error:", err);
         setEpubError(true);
@@ -82,6 +99,7 @@ export default function LibraryReader() {
         epubInstance.current.destroy();
         epubInstance.current = null;
       }
+      renditionRef.current = null;
     };
   }, [book, id]);
 
@@ -210,6 +228,25 @@ export default function LibraryReader() {
       {/* Viewer */}
       <div className="bii-card p-2 sm:p-4">
         {renderViewer()}
+
+        {/* 2026-08-06: EPUB navigation controls */}
+        {book.file_type === "epub" && location.total > 0 && (
+          <div className="flex items-center justify-center gap-4 mt-3 py-2 border-t border-[var(--bii-border)]">
+            <button onClick={() => renditionRef.current?.prev()}
+              className="p-2 rounded-lg border border-[var(--bii-border)] hover:border-[var(--bii-emerald)] hover:text-[var(--bii-emerald)] transition disabled:opacity-40"
+              disabled={location.current <= 1}>
+              <CaretLeft size={18} />
+            </button>
+            <span className="text-xs text-[var(--bii-text-soft)] tabular-nums">
+              {location.current} / {location.total}
+            </span>
+            <button onClick={() => renditionRef.current?.next()}
+              className="p-2 rounded-lg border border-[var(--bii-border)] hover:border-[var(--bii-emerald)] hover:text-[var(--bii-emerald)] transition disabled:opacity-40"
+              disabled={location.current >= location.total}>
+              <CaretRight size={18} />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Footer */}

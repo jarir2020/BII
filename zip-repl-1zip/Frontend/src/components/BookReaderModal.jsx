@@ -1,13 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Download, X, Warning } from "@phosphor-icons/react";
+import { CaretLeft, CaretRight, Download, X, Warning } from "@phosphor-icons/react";
 import { useLang } from "../contexts/LangContext";
 
 // 2026-08-06: Reusable full-viewport book reader modal (PDF/EPUB/HTML)
 export default function BookReaderModal({ book, onClose }) {
   const { pick } = useLang();
   const [epubError, setEpubError] = useState(false);
+  const [location, setLocation] = useState({ current: 0, total: 0 }); // 2026-08-06: EPUB nav
   const epubRef = useRef(null);
   const epubInstance = useRef(null);
+  const renditionRef = useRef(null);
 
   // Escape key + body scroll lock
   useEffect(() => {
@@ -66,6 +68,21 @@ export default function BookReaderModal({ book, onClose }) {
         });
 
         rendition.display();
+        renditionRef.current = rendition;
+
+        // 2026-08-06: Track location for page indicator
+        rendition.on("relocated", (loc) => {
+          setLocation({
+            current: loc.start?.location?.displayed?.page || 0,
+            total: loc.start?.location?.total || 0,
+          });
+        });
+
+        // 2026-08-06: Keyboard navigation
+        rendition.on("keydown", (e) => {
+          if (e.key === "ArrowRight") rendition.next();
+          if (e.key === "ArrowLeft") rendition.prev();
+        });
       } catch (err) {
         console.error("EPUB load error:", err);
         setEpubError(true);
@@ -79,6 +96,7 @@ export default function BookReaderModal({ book, onClose }) {
         epubInstance.current.destroy();
         epubInstance.current = null;
       }
+      renditionRef.current = null;
     };
   }, [book]);
 
@@ -169,9 +187,30 @@ export default function BookReaderModal({ book, onClose }) {
       </div>
 
       {/* Viewer content */}
-      <div className="flex-1 overflow-hidden bg-[var(--bii-border)]"
+      <div className="flex-1 overflow-hidden bg-[var(--bii-border)] flex flex-col"
         onClick={e => e.stopPropagation()}>
-        {renderViewer()}
+        <div className="flex-1 overflow-hidden">
+          {renderViewer()}
+        </div>
+
+        {/* 2026-08-06: EPUB navigation controls */}
+        {book.file_type === "epub" && location.total > 0 && (
+          <div className="flex items-center justify-center gap-4 py-2 border-t border-[var(--bii-border)] bg-white flex-shrink-0">
+            <button onClick={() => renditionRef.current?.prev()}
+              className="p-2 rounded-lg border border-[var(--bii-border)] hover:border-[var(--bii-emerald)] hover:text-[var(--bii-emerald)] transition disabled:opacity-40"
+              disabled={location.current <= 1}>
+              <CaretLeft size={18} />
+            </button>
+            <span className="text-xs text-[var(--bii-text-soft)] tabular-nums">
+              {location.current} / {location.total}
+            </span>
+            <button onClick={() => renditionRef.current?.next()}
+              className="p-2 rounded-lg border border-[var(--bii-border)] hover:border-[var(--bii-emerald)] hover:text-[var(--bii-emerald)] transition disabled:opacity-40"
+              disabled={location.current >= location.total}>
+              <CaretRight size={18} />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
