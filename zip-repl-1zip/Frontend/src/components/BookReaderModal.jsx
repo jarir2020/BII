@@ -6,7 +6,8 @@ import { useLang } from "../contexts/LangContext";
 export default function BookReaderModal({ book, onClose }) {
   const { pick } = useLang();
   const [epubError, setEpubError] = useState(false);
-  const [location, setLocation] = useState({ current: 0, total: 0 }); // 2026-08-06: EPUB nav
+  const [location, setLocation] = useState({ current: 1, total: 0 }); // 2026-08-06: EPUB nav
+  const [pageInput, setPageInput] = useState(""); // 2026-08-06: editable page number
   const epubRef = useRef(null);
   const epubInstance = useRef(null);
   const renditionRef = useRef(null);
@@ -78,12 +79,14 @@ export default function BookReaderModal({ book, onClose }) {
           }
         });
 
+        // 2026-08-06: Generate locations for accurate page count + jump-to-page
+        await bookInstance.locations.generate(1024);
+        setLocation({ current: 1, total: bookInstance.locations.length() });
+
         // 2026-08-06: Track location for page indicator
         rendition.on("relocated", (loc) => {
-          setLocation({
-            current: loc.start?.location?.displayed?.page || 0,
-            total: loc.start?.location?.total || 0,
-          });
+          const pageNum = bookInstance.locations.pageFromCfi(loc.start?.cfi) || 1;
+          setLocation({ current: pageNum, total: bookInstance.locations.length() });
         });
 
         // 2026-08-06: Keyboard navigation
@@ -201,21 +204,46 @@ export default function BookReaderModal({ book, onClose }) {
           {renderViewer()}
         </div>
 
-        {/* 2026-08-06: EPUB navigation controls */}
-        {book.file_type === "epub" && location.total > 0 && (
-          <div className="flex items-center justify-center gap-4 py-2 border-t border-[var(--bii-border)] bg-white flex-shrink-0">
+        {/* 2026-08-06: EPUB navigation controls — always visible, big + editable page */}
+        {book.file_type === "epub" && (
+          <div className="flex items-center justify-center gap-3 sm:gap-5 py-3 border-t border-[var(--bii-border)] bg-white flex-shrink-0">
             <button onClick={() => renditionRef.current?.prev()}
-              className="p-2 rounded-lg border border-[var(--bii-border)] hover:border-[var(--bii-emerald)] hover:text-[var(--bii-emerald)] transition disabled:opacity-40"
-              disabled={location.current <= 1}>
-              <CaretLeft size={18} />
+              className="flex items-center justify-center w-12 h-12 rounded-xl border-2 border-[var(--bii-border)] hover:border-[var(--bii-emerald)] hover:text-[var(--bii-emerald)] hover:bg-[var(--bii-emerald)]/5 transition disabled:opacity-30"
+              disabled={location.current <= 1}
+              title={pick("আগের পৃষ্ঠা", "Previous page")}>
+              <CaretLeft size={24} weight="bold" />
             </button>
-            <span className="text-xs text-[var(--bii-text-soft)] tabular-nums">
-              {location.current} / {location.total}
-            </span>
+
+            <div className="flex items-center gap-1.5 text-sm font-medium text-[var(--bii-text)]">
+              <input
+                type="number"
+                min="1"
+                max={location.total || 9999}
+                value={pageInput || location.current}
+                onChange={(e) => setPageInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    const pg = parseInt(e.target.value, 10);
+                    if (pg >= 1 && pg <= location.total && epubInstance.current) {
+                      const cfi = epubInstance.current.locations.cfiFromPage(pg);
+                      if (cfi) renditionRef.current?.display(cfi);
+                    }
+                    setPageInput("");
+                  }
+                }}
+                onBlur={() => setPageInput("")}
+                className="w-16 text-center px-1 py-1 rounded-lg border border-[var(--bii-border)] focus:border-[var(--bii-emerald)] focus:ring-1 focus:ring-[var(--bii-emerald)] outline-none text-sm tabular-nums bg-white"
+                title={pick("পৃষ্ঠা নম্বর লিখে Enter চাপুন", "Type page number and press Enter")}
+              />
+              <span className="text-[var(--bii-text-soft)]">/</span>
+              <span className="tabular-nums min-w-[2ch]">{location.total || "—"}</span>
+            </div>
+
             <button onClick={() => renditionRef.current?.next()}
-              className="p-2 rounded-lg border border-[var(--bii-border)] hover:border-[var(--bii-emerald)] hover:text-[var(--bii-emerald)] transition disabled:opacity-40"
-              disabled={location.current >= location.total}>
-              <CaretRight size={18} />
+              className="flex items-center justify-center w-12 h-12 rounded-xl border-2 border-[var(--bii-border)] hover:border-[var(--bii-emerald)] hover:text-[var(--bii-emerald)] hover:bg-[var(--bii-emerald)]/5 transition disabled:opacity-30"
+              disabled={location.total > 0 && location.current >= location.total}
+              title={pick("পরবর্তী পৃষ্ঠা", "Next page")}>
+              <CaretRight size={24} weight="bold" />
             </button>
           </div>
         )}
