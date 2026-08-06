@@ -234,6 +234,8 @@ class LibraryController extends ApiController
                 $subExt = strtolower(pathinfo($subPath, PATHINFO_EXTENSION));
                 $subMime = $mimeMap[$subExt] ?? 'application/octet-stream';
 
+                // 2026-08-06: Bypass Yii response formatter for raw file delivery
+                Yii::$app->response->format = \yii\web\Response::FORMAT_RAW;
                 $response = Yii::$app->response;
                 $response->statusCode = 200;
                 $response->headers->set('Content-Type', $subMime);
@@ -246,6 +248,8 @@ class LibraryController extends ApiController
 
         $contentType = $mimeMap[$ext] ?? 'application/octet-stream';
 
+        // 2026-08-06: Bypass Yii response formatter — output raw file bytes
+        Yii::$app->response->format = \yii\web\Response::FORMAT_RAW;
         $response = Yii::$app->response;
         $response->statusCode = 200;
         $response->headers->set('Content-Type', $contentType);
