@@ -158,11 +158,20 @@ class LibraryController extends ApiController
     }
 
     // ── File Serve (authenticated users, streams with proper headers) ──
+    // 2026-08-06: Added EPUB sub-path support for epub.js (META-INF/container.xml, OEBPS/*, etc.)
     public function actionServe(string $id): void
     {
         $this->user();
 
-        $row = Yii::$app->db->createCommand('SELECT * FROM books WHERE id = :id', [':id' => $id])->queryOne();
+        // EPUB sub-path: route sends "uuid/sub/path" as $id — split on first /
+        $bookId = $id;
+        $subPath = null;
+        if (($pos = strpos($id, '/')) !== false) {
+            $bookId = substr($id, 0, $pos);
+            $subPath = substr($id, $pos + 1);
+        }
+
+        $row = Yii::$app->db->createCommand('SELECT * FROM books WHERE id = :id', [':id' => $bookId])->queryOne();
         if ($row === false || empty($row['file_url'])) {
             Yii::$app->response->statusCode = 404;
             echo 'Book or file not found';
@@ -187,6 +196,35 @@ class LibraryController extends ApiController
             'jpeg' => 'image/jpeg',
             'webp' => 'image/webp',
         ];
+
+        // EPUB sub-path: extract file from inside the .epub zip archive
+        if ($subPath && $ext === 'epub' && class_exists('ZipArchive')) {
+            $zip = new \ZipArchive();
+            if ($zip->open($filePath) === true) {
+                $subPath = urldecode($subPath);
+                $name = $zip->locateName($subPath);
+                if ($name === false) {
+                    $zip->close();
+                    Yii::$app->response->statusCode = 404;
+                    echo 'File not found in EPUB archive';
+                    return;
+                }
+                $content = $zip->getFromName($subPath);
+                $zip->close();
+
+                $subExt = strtolower(pathinfo($subPath, PATHINFO_EXTENSION));
+                $subMime = $mimeMap[$subExt] ?? 'application/octet-stream';
+
+                $response = Yii::$app->response;
+                $response->statusCode = 200;
+                $response->headers->set('Content-Type', $subMime);
+                $response->headers->set('Content-Length', (string) strlen($content));
+                $response->headers->set('Cache-Control', 'public, max-age=3600');
+                $response->content = $content;
+                return;
+            }
+        }
+
         $contentType = $mimeMap[$ext] ?? 'application/octet-stream';
 
         $response = Yii::$app->response;

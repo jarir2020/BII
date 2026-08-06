@@ -149,7 +149,7 @@ $config = [
                 'api/library/books/<id>' => 'api/library/book',
                 'api/library/books' => 'api/library/books',
                 'api/library/upload' => 'api/library/upload',
-                'api/library/serve/<id>' => 'api/library/serve',
+                'api/library/serve/<id:path>' => 'api/library/serve',
                 'api/library/download/<id>' => 'api/library/download',
 
                 // ── Generic schema-less CRUD resources ────────────────────
