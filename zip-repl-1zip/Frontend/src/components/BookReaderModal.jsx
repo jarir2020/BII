@@ -26,6 +26,16 @@ export default function BookReaderModal({ book, onClose }) {
 
     const loadEpub = async () => {
       try {
+        // 2026-08-06: Load JSZip first (epub.js dependency), then epub.js
+        if (!window.JSZip) {
+          await new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src = "https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js";
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+          });
+        }
         if (!window.ePub) {
           await new Promise((resolve, reject) => {
             const script = document.createElement("script");
