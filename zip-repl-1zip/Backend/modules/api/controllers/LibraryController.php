@@ -234,29 +234,27 @@ class LibraryController extends ApiController
                 $subExt = strtolower(pathinfo($subPath, PATHINFO_EXTENSION));
                 $subMime = $mimeMap[$subExt] ?? 'application/octet-stream';
 
-                // 2026-08-06: Bypass Yii response formatter for raw file delivery
-                Yii::$app->response->format = \yii\web\Response::FORMAT_RAW;
-                $response = Yii::$app->response;
-                $response->statusCode = 200;
-                $response->headers->set('Content-Type', $subMime);
-                $response->headers->set('Content-Length', (string) strlen($content));
-                $response->headers->set('Cache-Control', 'public, max-age=3600');
-                $response->content = $content;
+                // 2026-08-06: Bypass Yii response component entirely — native PHP output
+                header_remove('X-Powered-By');
+                header('Content-Type: ' . $subMime);
+                header('Content-Length: ' . strlen($content));
+                header('Cache-Control: public, max-age=3600');
+                echo $content;
+                exit;
                 return;
             }
         }
 
         $contentType = $mimeMap[$ext] ?? 'application/octet-stream';
 
-        // 2026-08-06: Bypass Yii response formatter — output raw file bytes
-        Yii::$app->response->format = \yii\web\Response::FORMAT_RAW;
-        $response = Yii::$app->response;
-        $response->statusCode = 200;
-        $response->headers->set('Content-Type', $contentType);
-        $response->headers->set('Content-Disposition', 'inline');
-        $response->headers->set('Content-Length', (string) filesize($filePath));
-        $response->headers->set('Cache-Control', 'public, max-age=3600');
-        $response->content = file_get_contents($filePath);
+        // 2026-08-06: Bypass Yii response component entirely — native PHP file output
+        header_remove('X-Powered-By');
+        header('Content-Type: ' . $contentType);
+        header('Content-Disposition: inline');
+        header('Content-Length: ' . filesize($filePath));
+        header('Cache-Control: public, max-age=3600');
+        readfile($filePath);
+        exit;
     }
 
     // ── File Download (authenticated users, triggers browser download) ──
