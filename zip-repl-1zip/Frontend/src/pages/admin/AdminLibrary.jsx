@@ -7,6 +7,7 @@ import { api, formatApiError } from "../../lib/api";
 import { useLang } from "../../contexts/LangContext";
 import ImageUpload from "../../components/ImageUpload";
 import FileUpload from "../../components/FileUpload";
+import BookReaderModal from "../../components/BookReaderModal";
 
 const CATEGORIES = [
   "general", "islamic", "science", "history", "literature",
@@ -35,6 +36,7 @@ export default function AdminLibrary() {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
   const [confirmDel, setConfirmDel] = useState(null);
+  const [readingBook, setReadingBook] = useState(null); // 2026-08-06: inline book reader modal
   const PER = 20;
 
   const load = useCallback((p, q) => {
@@ -244,9 +246,14 @@ export default function AdminLibrary() {
                     <Icon size={20} weight="duotone" className="text-[var(--bii-emerald)]" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[var(--bii-text)] truncate">
+                    <button
+                      onClick={() => b.file_url && setReadingBook(b)}
+                      className="text-sm font-medium text-[var(--bii-text)] truncate text-left hover:text-[var(--bii-emerald)] transition cursor-pointer disabled:opacity-50 disabled:cursor-default"
+                      disabled={!b.file_url}
+                      title={b.file_url ? pick("পড়ুন", "Read") : pick("কোনো ফাইল নেই", "No file")}
+                    >
                       {pick(b.title_bn, b.title_en) || b.title_en}
-                    </p>
+                    </button>
                     <p className="text-xs text-[var(--bii-text-soft)]">
                       {b.author_en || b.author_bn || "—"} · {b.category} · {b.file_type?.toUpperCase() || "—"}
                       {b.file_size > 0 && ` · ${formatSize(b.file_size)}`}
@@ -303,6 +310,11 @@ export default function AdminLibrary() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* 2026-08-06: Inline book reader modal */}
+      {readingBook && (
+        <BookReaderModal book={readingBook} onClose={() => setReadingBook(null)} />
       )}
     </div>
   );
