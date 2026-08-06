@@ -70,6 +70,14 @@ export default function BookReaderModal({ book, onClose }) {
         rendition.display();
         renditionRef.current = rendition;
 
+        // 2026-08-06: Remove sandbox from epub.js internal iframe to allow script execution
+        rendition.hooks.content.register((contents) => {
+          const iframe = contents.document?.defaultView?.frameElement;
+          if (iframe && iframe.hasAttribute("sandbox")) {
+            iframe.removeAttribute("sandbox");
+          }
+        });
+
         // 2026-08-06: Track location for page indicator
         rendition.on("relocated", (loc) => {
           setLocation({
@@ -143,7 +151,7 @@ export default function BookReaderModal({ book, onClose }) {
             src={`/api/library/serve/${book.id}`}
             className="w-full"
             style={{ height: viewerHeight }}
-            sandbox="allow-same-origin"
+            sandbox="allow-same-origin allow-scripts"
             title={title}
           />
         );
