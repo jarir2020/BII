@@ -200,12 +200,13 @@ export default function LibraryReader() {
 
       case "html":
       case "htm":
+        // 2026-08-06: allow-same-origin lets HTML access cookies/localStorage; allow-scripts runs JS
         return (
           <iframe
             src={`/api/library/serve/${id}`}
             className="w-full rounded-xl border border-[var(--bii-border)]"
             style={{ height: "80vh" }}
-            sandbox="allow-same-origin allow-scripts"
+            sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
             title={title}
           />
         );

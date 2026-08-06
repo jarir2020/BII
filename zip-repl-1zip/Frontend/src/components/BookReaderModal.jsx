@@ -163,12 +163,13 @@ export default function BookReaderModal({ book, onClose }) {
 
       case "html":
       case "htm":
+        // 2026-08-06: allow-same-origin lets HTML access cookies/localStorage; allow-scripts runs JS
         return (
           <iframe
             src={`/api/library/serve/${book.id}`}
             className="w-full"
             style={{ height: viewerHeight }}
-            sandbox="allow-same-origin allow-scripts"
+            sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
             title={title}
           />
         );
