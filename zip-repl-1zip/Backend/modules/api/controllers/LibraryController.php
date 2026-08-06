@@ -54,6 +54,7 @@ class LibraryController extends ApiController
     }
 
     // ── Books ────────────────────────────────────────────────────
+    // 2026-08-06: Added try-catch for better error diagnostics
     public function actionBooks(): \yii\web\Response
     {
         if (Yii::$app->request->isPost) {
@@ -64,36 +65,41 @@ class LibraryController extends ApiController
             return $this->json($doc);
         }
 
-        $category = (string) Yii::$app->request->get('category', '');
-        $search = (string) Yii::$app->request->get('search', '');
-        $featured = (bool) Yii::$app->request->get('featured', false);
-        $skip = (int) Yii::$app->request->get('skip', 0);
-        $limit = (int) Yii::$app->request->get('limit', 40);
+        try {
+            $category = (string) Yii::$app->request->get('category', '');
+            $search = (string) Yii::$app->request->get('search', '');
+            $featured = (bool) Yii::$app->request->get('featured', false);
+            $skip = (int) Yii::$app->request->get('skip', 0);
+            $limit = (int) Yii::$app->request->get('limit', 40);
 
-        $where = ['is_published = 1'];
-        $params = [];
-        if ($category !== '' && $category !== 'all') {
-            $where[] = 'category = :c';
-            $params[':c'] = $category;
+            $where = ['is_published = 1'];
+            $params = [];
+            if ($category !== '' && $category !== 'all') {
+                $where[] = 'category = :c';
+                $params[':c'] = $category;
+            }
+            if ($featured) {
+                $where[] = 'is_featured = 1';
+            }
+            if ($search !== '') {
+                $where[] = '(title_bn LIKE :s1 OR title_en LIKE :s2 OR author_en LIKE :s3 OR author_bn LIKE :s4)';
+                $like = '%' . $search . '%';
+                $params[':s1'] = $like; $params[':s2'] = $like; $params[':s3'] = $like; $params[':s4'] = $like;
+            }
+
+            $whereClause = implode(' AND ', $where);
+
+            // Count total matching records
+            $countSql = 'SELECT COUNT(*) FROM books WHERE ' . $whereClause;
+            $total = (int) Yii::$app->db->createCommand($countSql, $params)->queryScalar();
+
+            $sql = 'SELECT * FROM books WHERE ' . $whereClause . ' ORDER BY sort_order ASC LIMIT ' . ((int) $limit) . ' OFFSET ' . ((int) $skip);
+            $rows = Yii::$app->db->createCommand($sql, $params)->queryAll();
+            return $this->json(['total' => $total, 'books' => array_map(fn ($r) => $this->bookDoc($r), $rows)]);
+        } catch (\Throwable $e) {
+            Yii::$app->response->statusCode = 500;
+            return $this->json(['error' => $e->getMessage(), 'trace' => YII_DEBUG ? $e->getTraceAsString() : null]);
         }
-        if ($featured) {
-            $where[] = 'is_featured = 1';
-        }
-        if ($search !== '') {
-            $where[] = '(title_bn LIKE :s1 OR title_en LIKE :s2 OR author_en LIKE :s3 OR author_bn LIKE :s4)';
-            $like = '%' . $search . '%';
-            $params[':s1'] = $like; $params[':s2'] = $like; $params[':s3'] = $like; $params[':s4'] = $like;
-        }
-
-        $whereClause = implode(' AND ', $where);
-
-        // Count total matching records
-        $countSql = 'SELECT COUNT(*) FROM books WHERE ' . $whereClause;
-        $total = (int) Yii::$app->db->createCommand($countSql, $params)->queryScalar();
-
-        $sql = 'SELECT * FROM books WHERE ' . $whereClause . ' ORDER BY sort_order ASC LIMIT ' . ((int) $limit) . ' OFFSET ' . ((int) $skip);
-        $rows = Yii::$app->db->createCommand($sql, $params)->queryAll();
-        return $this->json(['total' => $total, 'books' => array_map(fn ($r) => $this->bookDoc($r), $rows)]);
     }
 
     public function actionBook(string $id): \yii\web\Response
