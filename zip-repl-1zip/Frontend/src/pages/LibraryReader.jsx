@@ -44,7 +44,13 @@ export default function LibraryReader() {
         }
 
         const Book = window.ePub;
-        const bookInstance = new Book(`/api/library/serve/${id}`);
+
+        // 2026-08-06: Fetch EPUB as Blob to avoid relative path resolution issues
+        // (epub.js resolves META-INF/* relative to serve URL, dropping the book UUID)
+        const resp = await fetch(`/api/library/serve/${id}`, { credentials: 'include' });
+        if (!resp.ok) throw new Error(`EPUB fetch failed: ${resp.status}`);
+        const blob = await resp.blob();
+        const bookInstance = new Book(blob);
         epubInstance.current = bookInstance;
 
         const rendition = bookInstance.renderTo(epubRef.current, {
