@@ -177,17 +177,23 @@ class LibraryController extends ApiController
             $subPath = substr($id, $pos + 1);
         }
 
+        // 2026-08-06: Debug — log what we received
+        error_log("[LibraryServe] id=$id bookId=$bookId subPath=" . ($subPath ?: 'none'));
+
         $row = Yii::$app->db->createCommand('SELECT * FROM books WHERE id = :id', [':id' => $bookId])->queryOne();
         if ($row === false || empty($row['file_url'])) {
+            // 2026-08-06: If no book found and there's a sub-path, the route may not have <id:path>
+            // Return CORS-friendly 404 so the browser console shows the real issue
             Yii::$app->response->statusCode = 404;
-            echo 'Book or file not found';
+            header('Content-Type: application/json');
+            echo json_encode(['error' => 'Book not found', 'received_id' => $id, 'hint' => 'If you see META-INF as the id, the <id:path> route is not deployed']);
             return;
         }
 
         $filePath = Yii::getAlias('@webroot') . $row['file_url'];
         if (!file_exists($filePath)) {
             Yii::$app->response->statusCode = 404;
-            echo 'File not found on disk';
+            echo json_encode(['error' => 'File not found on disk', 'path' => $filePath]);
             return;
         }
 
@@ -208,11 +214,18 @@ class LibraryController extends ApiController
             $zip = new \ZipArchive();
             if ($zip->open($filePath) === true) {
                 $subPath = urldecode($subPath);
+                error_log("[LibraryServe] EPUB sub-path lookup: $subPath");
                 $name = $zip->locateName($subPath);
                 if ($name === false) {
+                    // List first 10 entries to help debug
+                    $entries = [];
+                    for ($i = 0; $i < min(10, $zip->numFiles); $i++) {
+                        $entries[] = $zip->getNameIndex($i);
+                    }
                     $zip->close();
                     Yii::$app->response->statusCode = 404;
-                    echo 'File not found in EPUB archive';
+                    header('Content-Type: application/json');
+                    echo json_encode(['error' => 'File not found in EPUB', 'requested' => $subPath, 'sample_entries' => $entries]);
                     return;
                 }
                 $content = $zip->getFromName($subPath);
