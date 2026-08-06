@@ -83,13 +83,27 @@ export default function LibraryReader() {
         });
 
         // 2026-08-06: Generate locations for accurate page count + jump-to-page
-        await bookInstance.locations.generate(1024);
-        setLocation({ current: 1, total: bookInstance.locations.length() });
+        try {
+          await bookInstance.locations.generate(1024);
+          const total = bookInstance.locations.length();
+          console.log("[EPUB] Locations generated:", total, "pages");
+          setLocation({ current: 1, total });
+        } catch (locErr) {
+          console.warn("[EPUB] locations.generate failed, using fallback:", locErr);
+          // Fallback: estimate from spine length
+          const fallbackTotal = bookInstance.spine?.items?.length || 0;
+          setLocation({ current: 1, total: fallbackTotal });
+        }
 
         // 2026-08-06: Track location for page indicator
         rendition.on("relocated", (loc) => {
-          const pageNum = bookInstance.locations.pageFromCfi(loc.start?.cfi) || 1;
-          setLocation({ current: pageNum, total: bookInstance.locations.length() });
+          const pageNum = bookInstance.locations.length() > 0
+            ? (bookInstance.locations.pageFromCfi(loc.start?.cfi) || 1)
+            : 1;
+          const total = bookInstance.locations.length() > 0
+            ? bookInstance.locations.length()
+            : (bookInstance.spine?.items?.length || 0);
+          setLocation({ current: pageNum, total });
         });
 
         // 2026-08-06: Keyboard navigation
