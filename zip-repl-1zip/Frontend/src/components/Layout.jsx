@@ -254,9 +254,21 @@ export default function Layout() {
           ))}
         </div>
 
-        <p className="text-xs text-[var(--bii-text-soft)]">
-          © {new Date().getFullYear()} {t("appName")}
-        </p>
+        {/* 2026-08-07: Copyright left, developer credit right */}
+        <div className="flex flex-wrap items-center justify-between text-xs text-[var(--bii-text-soft)]">
+          <span>© {new Date().getFullYear()} {t("appName")}</span>
+          <span>
+            {lang === "bn" ? "তৈরি করেছে" : "Developed by"}{" "}
+            <a
+              href="https://nextstagesoftware.com/"
+              target="_blank"
+              rel="noreferrer"
+              className="underline underline-offset-2 hover:text-[var(--bii-emerald)] transition-colors"
+            >
+              NextStageSoftware
+            </a>
+          </span>
+        </div>
       </footer>
     </div>
   );
