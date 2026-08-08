@@ -2,7 +2,7 @@ package com.bengaliislamic.institute;
 
 import android.os.Bundle;
 import com.getcapacitor.BridgeActivity;
-import com.getcapacitor.plugins.PushNotifications;
+import com.capacitorjs.plugins.pushnotifications.PushNotifications;
 
 /**
  * Main Capacitor activity.
