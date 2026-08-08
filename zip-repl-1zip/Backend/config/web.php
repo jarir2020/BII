@@ -73,7 +73,7 @@ $config = [
             'charset' => 'UTF-8',
             'on beforeSend' => function ($event) {
                 $response = $event->sender;
-                if ($response->isSuccessful || $response->data !== null) {
+                if ($response->isSuccessful || $response->data !== null || $response->content !== null) {
                     return;
                 }
                 $status = $response->statusCode;
