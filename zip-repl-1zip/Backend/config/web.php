@@ -125,8 +125,13 @@ $config = [
                 'api/notifications/register-device' => 'api/notifications/register-device',
                 'api/notifications/unregister-device' => 'api/notifications/unregister-device',
                 'api/notifications/<id>' => 'api/notifications/delete',
+                'api/push-notifications/process-scheduled' => 'api/notifications/process-scheduled',
+                'api/push-notifications/<id>/resend' => 'api/notifications/push-resend',
                 'api/push-notifications/<id>' => 'api/notifications/push-delete',
                 'api/push-notifications' => 'api/notifications/push',
+                'api/web-push/vapid-key' => 'api/web-push/vapid-key',
+                'api/web-push/subscribe' => 'api/web-push/subscribe',
+                'api/web-push/unsubscribe' => 'api/web-push/unsubscribe',
                 'api/contact' => 'api/notifications/contact',
 
                 // ── Configs / settings / complaints ───────────────────────

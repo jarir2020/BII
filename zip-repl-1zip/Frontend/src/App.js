@@ -11,6 +11,7 @@ import { ProtectedRoute, AdminRoute } from "@/components/Routes";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import NotificationPrompt from "@/components/NotificationPrompt";
 import { onForegroundMessage } from "@/lib/firebase";
+import { registerNativePushListeners } from "@/lib/capacitor-push-listener";
 import { setToken as __setQuickAccessToken } from "@/lib/api";
 
 /** Shows an FCM notification immediately when the app is in the foreground. */
@@ -160,6 +161,11 @@ import NotFound from "@/pages/NotFound";
 import Legal from "@/pages/Legal";
 
 export default function App() {
+  // Register native push listeners once on app mount
+  React.useEffect(() => {
+    registerNativePushListeners();
+  }, []);
+
   return (
     <div className="App">
       <ErrorBoundary>

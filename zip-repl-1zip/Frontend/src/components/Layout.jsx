@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
 import { useLang } from "../contexts/LangContext";
 import { api } from "../lib/api";
+import { toast } from "sonner";
 import BrandLogo from "./BrandLogo";
 
 const SOCIAL_ICONS = {
@@ -53,6 +54,7 @@ export default function Layout() {
 
   const handleLogout = async () => {
     await logout();
+    toast.success(lang === "bn" ? "লগআউট সফল" : "Logged out");
     closeSidebar();
     navigate("/");
   };

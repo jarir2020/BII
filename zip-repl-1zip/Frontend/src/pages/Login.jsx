@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useLang } from "../contexts/LangContext";
 import { formatApiError } from "../lib/api";
 import BrandLogo from "../components/BrandLogo";
+import { toast } from "sonner";
 
 export default function Login() {
   const { login } = useAuth();
@@ -19,6 +20,7 @@ export default function Login() {
     setErr(""); setLoading(true);
     try {
       const loggedInUser = await login(email, password);
+      toast.success(pick("সফলভাবে লগইন হয়েছে!", "Welcome back!"));
       if (loggedInUser?.role === "admin" || loggedInUser?.role === "super_admin") {
         navigate("/admin");
       } else {

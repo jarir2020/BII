@@ -1,0 +1,269 @@
+<?php
+
+declare(strict_types=1);
+
+namespace app\components;
+
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+use GuzzleHttp\Client;
+use Yii;
+
+/**
+ * FCM v1 service — OAuth2 token + send via HTTP v1 API.
+ *
+ * Replaces the deprecated legacy FCM API. Uses the service_account_json
+ * stored in the `firebase` config by the admin Settings panel.
+ *
+ * 2026-08-08: Created for notification system overhaul.
+ */
+class FcmService
+{
+    private static ?string $cachedAccessToken = null;
+    private static int $tokenExpiresAt = 0;
+
+    /**
+     * Generate a Google OAuth2 access token from the service account.
+     * Cached for 55 minutes (token valid for 60 min).
+     */
+    public static function getAccessToken(): ?string
+    {
+        if (self::$cachedAccessToken && time() < self::$tokenExpiresAt) {
+            return self::$cachedAccessToken;
+        }
+
+        $cfg = Yii::$app->controller?->configValue('firebase')
+            ?? self::loadFirebaseConfig();
+        $saJson = (string) ($cfg['service_account_json'] ?? '');
+        if ($saJson === '') {
+            Yii::warning('FCM: service_account_json not configured.', __METHOD__);
+            return null;
+        }
+
+        $sa = json_decode($saJson, true);
+        if (!$sa || empty($sa['client_email']) || empty($sa['private_key'])) {
+            Yii::warning('FCM: Invalid service_account_json structure.', __METHOD__);
+            return null;
+        }
+
+        $now = time();
+        $payload = [
+            'iss' => $sa['client_email'],
+            'scope' => 'https://www.googleapis.com/auth/firebase.messaging',
+            'aud' => 'https://oauth2.googleapis.com/token',
+            'iat' => $now,
+            'exp' => $now + 3600,
+        ];
+
+        $jwt = JWT::encode($payload, $sa['private_key'], 'RS256');
+
+        try {
+            $client = new Client(['timeout' => 15]);
+            $resp = $client->post('https://oauth2.googleapis.com/token', [
+                'form_params' => [
+                    'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                    'assertion' => $jwt,
+                ],
+            ]);
+            $data = json_decode($resp->getBody()->getContents(), true);
+            $token = $data['access_token'] ?? null;
+            if ($token) {
+                self::$cachedAccessToken = $token;
+                self::$tokenExpiresAt = $now + 3300; // 55 min cache
+            }
+            return $token;
+        } catch (\Throwable $e) {
+            Yii::error("FCM OAuth token failed: {$e->getMessage()}", __METHOD__);
+            return null;
+        }
+    }
+
+    /**
+     * Send a push notification to a list of device tokens via FCM v1.
+     *
+     * @param array $notif  The notification record from push_notifications.
+     * @param array $tokens List of ['id' => ..., 'token' => ..., 'user_id' => ..., 'platform' => ...].
+     * @return array{sent: int, failed: int, errors: string}
+     */
+    public static function send(array $notif, array $tokens): array
+    {
+        $accessToken = self::getAccessToken();
+        if (!$accessToken) {
+            return ['sent' => 0, 'failed' => count($tokens), 'errors' => 'OAuth token generation failed'];
+        }
+
+        $cfg = self::loadFirebaseConfig();
+        $projectId = (string) ($cfg['project_id'] ?? '');
+        if ($projectId === '') {
+            return ['sent' => 0, 'failed' => count($tokens), 'errors' => 'Firebase project_id not configured'];
+        }
+
+        $title = $notif['title_bn'] ?: ($notif['title_en'] ?: 'BII');
+        $body = $notif['body_bn'] ?: ($notif['body_en'] ?: '');
+        $imageUrl = (string) ($notif['image_url'] ?? '');
+        $clickAction = (string) ($notif['click_action'] ?? '/');
+
+        $sent = 0;
+        $failed = 0;
+        $errors = [];
+
+        $client = new Client(['timeout' => 15]);
+
+        foreach ($tokens as $t) {
+            $token = $t['token'] ?? '';
+            $platform = $t['platform'] ?? 'web';
+            if ($token === '') {
+                $failed++;
+                continue;
+            }
+
+            // Build message per FCM v1 spec
+            $message = [
+                'token' => $token,
+                'notification' => [
+                    'title' => $title,
+                    'body' => $body,
+                ],
+            ];
+
+            // Image
+            if ($imageUrl !== '') {
+                $fullUrl = $imageUrl;
+                if (str_starts_with($imageUrl, '/')) {
+                    $host = Yii::$app->request->hostInfo ?? 'https://bengaliislamicinstitute.com';
+                    $fullUrl = $host . $imageUrl;
+                }
+                $message['notification']['image'] = $fullUrl;
+            }
+
+            // Data payload (always sent — web + android read from this)
+            $message['data'] = [
+                'click_action' => $clickAction,
+                'title_bn' => $notif['title_bn'] ?? '',
+                'title_en' => $notif['title_en'] ?? '',
+                'body_bn' => $notif['body_bn'] ?? '',
+                'body_en' => $notif['body_en'] ?? '',
+            ];
+
+            // Android config
+            if (in_array($platform, ['android', ''], true)) {
+                $message['android'] = [
+                    'priority' => 'high',
+                    'notification' => [
+                        'click_action' => 'OPEN_ACTIVITY',
+                        'sound' => 'default',
+                    ],
+                ];
+            }
+
+            // Webpush config
+            if ($platform === 'web') {
+                $message['webpush'] = [
+                    'headers' => ['TTL' => '86400'],
+                    'notification' => [
+                        'icon' => '/logo192.png',
+                        'badge' => '/logo192.png',
+                        'requireInteraction' => true,
+                        'tag' => 'bii-push',
+                    ],
+                ];
+            }
+
+            try {
+                $url = "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send";
+                $resp = $client->post($url, [
+                    'headers' => [
+                        'Authorization' => 'Bearer ' . $accessToken,
+                        'Content-Type' => 'application/json',
+                    ],
+                    'json' => ['message' => $message],
+                ]);
+                $result = json_decode($resp->getBody()->getContents(), true);
+                if (!empty($result['name'])) {
+                    $sent++;
+                } else {
+                    $failed++;
+                    $errors[] = "Empty response for token {$t['id']}";
+                }
+            } catch (\Throwable $e) {
+                $failed++;
+                $errMsg = $e->getMessage();
+
+                // Delete stale tokens (UNREGISTERED or not-found)
+                if (str_contains($errMsg, 'UNREGISTERED') || str_contains($errMsg, 'NotRegistered')) {
+                    self::deleteStaleToken($token);
+                }
+                $errors[] = "Token {$t['id']}: {$errMsg}";
+            }
+        }
+
+        return [
+            'sent' => $sent,
+            'failed' => $failed,
+            'errors' => implode('; ', array_slice($errors, 0, 5)),
+        ];
+    }
+
+    /**
+     * Query device_tokens based on targeting.
+     *
+     * @param string $target  "all", "user:{uid}", or "course:{cid}"
+     * @return array Tokens to send to.
+     */
+    public static function resolveTargets(string $target): array
+    {
+        $db = Yii::$app->db;
+
+        if ($target === '' || $target === 'all') {
+            return $db->createCommand('SELECT id, token, user_id, platform FROM device_tokens')->queryAll();
+        }
+
+        if (preg_match('/^user:(.+)$/', $target, $m)) {
+            $userId = $m[1];
+            return $db->createCommand(
+                'SELECT id, token, user_id, platform FROM device_tokens WHERE user_id = :uid',
+                [':uid' => $userId]
+            )->queryAll();
+        }
+
+        if (preg_match('/^course:(.+)$/', $target, $m)) {
+            $courseId = $m[1];
+            return $db->createCommand(
+                'SELECT dt.id, dt.token, dt.user_id, dt.platform
+                 FROM device_tokens dt
+                 INNER JOIN enrollments e ON e.user_id = dt.user_id
+                 WHERE e.course_id = :cid AND e.payment_status IN ("paid","completed","free")',
+                [':cid' => $courseId]
+            )->queryAll();
+        }
+
+        // Fallback: all
+        return $db->createCommand('SELECT id, token, user_id, platform FROM device_tokens')->queryAll();
+    }
+
+    /**
+     * Delete a stale device token (UNREGISTERED from FCM).
+     */
+    private static function deleteStaleToken(string $token): void
+    {
+        try {
+            Yii::$app->db->createCommand()->delete('device_tokens', ['token' => $token])->execute();
+        } catch (\Throwable $e) {
+            Yii::warning("Failed to delete stale token: {$e->getMessage()}", __METHOD__);
+        }
+    }
+
+    /**
+     * Load firebase config directly from DB (used outside controller context).
+     */
+    private static function loadFirebaseConfig(): array
+    {
+        $row = Yii::$app->db->createCommand(
+            "SELECT data FROM configs WHERE name = 'firebase'"
+        )->queryOne();
+        if ($row && is_string($row['data'])) {
+            return json_decode($row['data'], true) ?? [];
+        }
+        return [];
+    }
+}

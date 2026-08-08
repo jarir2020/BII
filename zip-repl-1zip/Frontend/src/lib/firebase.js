@@ -2,10 +2,13 @@
  * BII — Firebase / FCM helpers
  * Lazy-initialised: config is fetched from the backend so the admin
  * can update it through Settings → Firebase without a code deploy.
+ *
+ * 2026-08-08: Branches between native (Capacitor), Firebase Web, and VAPID-only modes.
  */
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 import { api } from './api';
+import { isNativePlatform, requestNativePushToken } from './capacitor-push';
 
 let _app       = null;
 let _messaging = null;
@@ -38,19 +41,94 @@ async function getFirebaseApp() {
 }
 
 /**
+ * VAPID-only push: use the browser's native PushManager without Firebase.
+ * Falls back when Firebase config is missing (no api_key/vapid_key from Firebase).
+ */
+async function requestVapidOnlyToken() {
+  try {
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+      console.warn('[BII VAPID] Notification or ServiceWorker API not supported');
+      return null;
+    }
+
+    const permission = Notification.permission === 'granted'
+      ? 'granted'
+      : await Notification.requestPermission();
+    if (permission !== 'granted') {
+      console.warn('[BII VAPID] Permission not granted:', permission);
+      return null;
+    }
+
+    // Fetch our own VAPID public key from the backend
+    const { data } = await api.get('/web-push/vapid-key');
+    const vapidPublicKey = data?.public_key;
+    if (!vapidPublicKey) {
+      console.warn('[BII VAPID] No VAPID public key from backend');
+      return null;
+    }
+
+    // Convert VAPID key to Uint8Array for PushManager
+    const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey);
+
+    const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    await navigator.serviceWorker.ready;
+
+    const subscription = await swReg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey,
+    });
+
+    const sub = subscription.toJSON();
+    // Send subscription to our backend for storage
+    await api.post('/web-push/subscribe', {
+      endpoint: sub.endpoint,
+      p256dh:   sub.keys?.p256dh || '',
+      auth:     sub.keys?.auth   || '',
+    });
+
+    console.log('[BII VAPID] Subscription registered');
+    return sub.endpoint; // Return endpoint as the "token" identifier
+  } catch (err) {
+    console.error('[BII VAPID] subscribe error:', err?.message || err, err);
+    return null;
+  }
+}
+
+/**
+ * Convert a base64url string to Uint8Array (for VAPID applicationServerKey).
+ */
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; i++) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+/**
  * Request notification permission, register the SW, and return the FCM token.
  * Returns null if Firebase is not configured or permission is denied.
+ *
+ * On native (Capacitor) platforms, delegates to the native push plugin.
+ * On web: tries Firebase first, falls back to VAPID-only if Firebase is not configured.
  */
 export async function requestFCMToken() {
   try {
+    // Native platform: use Capacitor push plugin
+    if (isNativePlatform()) {
+      return await requestNativePushToken();
+    }
+
+    // Web platform
     if (!('Notification' in window) || !('serviceWorker' in navigator)) {
       console.warn('[BII FCM] Notification or ServiceWorker API not supported');
       return null;
     }
 
     // Ask immediately while the call still has the user's click activation.
-    // Waiting for the network/config before this can be ignored by mobile
-    // browsers as an unsolicited permission request.
     const permission = Notification.permission === 'granted'
       ? 'granted'
       : await Notification.requestPermission();
@@ -60,30 +138,32 @@ export async function requestFCMToken() {
     }
 
     const cfg = await fetchConfig();
-    if (!cfg.api_key || !cfg.vapid_key) {
-      console.warn('[BII FCM] Missing config — api_key:', !!cfg.api_key, 'vapid_key:', !!cfg.vapid_key);
-      return null;
+
+    // If Firebase has a vapid_key, use Firebase Web Push
+    if (cfg.api_key && cfg.vapid_key) {
+      const app = await getFirebaseApp();
+      if (!app) {
+        console.warn('[BII FCM] Firebase app init failed');
+        return null;
+      }
+
+      if (!_messaging) _messaging = getMessaging(app);
+
+      const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      const token = await getToken(_messaging, {
+        vapidKey:                    cfg.vapid_key,
+        serviceWorkerRegistration:   swReg,
+      });
+      if (!token) {
+        console.warn('[BII FCM] getToken returned empty');
+      }
+      return token || null;
     }
 
-    const app = await getFirebaseApp();
-    if (!app) {
-      console.warn('[BII FCM] Firebase app init failed');
-      return null;
-    }
-
-    if (!_messaging) _messaging = getMessaging(app);
-
-    const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-    const token = await getToken(_messaging, {
-      vapidKey:                    cfg.vapid_key,
-      serviceWorkerRegistration:   swReg,
-    });
-    if (!token) {
-      console.warn('[BII FCM] getToken returned empty');
-    }
-    return token || null;
+    // No Firebase config — use VAPID-only mode (our own Web Push)
+    console.log('[BII] Firebase not configured, using VAPID-only push');
+    return await requestVapidOnlyToken();
   } catch (err) {
-    // Surface the actual Firebase error so we can diagnose
     console.error('[BII FCM] token error:', err?.message || err, err);
     return null;
   }

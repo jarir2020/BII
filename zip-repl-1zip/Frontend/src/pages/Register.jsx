@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useLang } from "../contexts/LangContext";
 import { formatApiError } from "../lib/api";
 import BrandLogo from "../components/BrandLogo";
+import { toast } from "sonner";
 
 export default function Register() {
   const { register } = useAuth();
@@ -19,6 +20,7 @@ export default function Register() {
     setErr(""); setLoading(true);
     try {
       await register(form);
+      toast.success(pick("সফলভাবে নিবন্ধন হয়েছে!", "Account created!"));
       navigate("/home");
     } catch (e2) {
       setErr(formatApiError(e2));

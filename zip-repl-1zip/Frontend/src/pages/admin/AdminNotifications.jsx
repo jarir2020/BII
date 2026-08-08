@@ -2,14 +2,16 @@ import React, { useEffect, useState, useCallback } from "react";
 import {
   Bell, Trash, PaperPlaneTilt, Clock, Users, BookOpen, User,
   CheckCircle, XCircle, Spinner, Warning, CalendarBlank, Image as ImageIcon,
-  Link as LinkIcon, Plus, ArrowClockwise,
+  Link as LinkIcon, Plus, ArrowClockwise, ArrowUUpLeft,
 } from "@phosphor-icons/react";
 import { api, imgUrl, formatApiError } from "../../lib/api";
 import { useLang } from "../../contexts/LangContext";
+import { toast } from "sonner";
 import ImageUpload from "../../components/ImageUpload";
 
 /* ─── helpers ───────────────────────────────────────────────── */
 const STATUS_MAP = {
+  pending:   { label: "অপেক্ষমান",       cls: "bg-gray-50 text-gray-700 border-gray-200",     Icon: Clock },
   sending:   { label: "পাঠানো হচ্ছে…",  cls: "bg-blue-50 text-blue-700 border-blue-200",   Icon: Spinner },
   sent:      { label: "পাঠানো হয়েছে",   cls: "bg-green-50 text-green-700 border-green-200", Icon: CheckCircle },
   scheduled: { label: "নির্ধারিত",       cls: "bg-yellow-50 text-yellow-700 border-yellow-200", Icon: Clock },
@@ -79,7 +81,7 @@ export default function AdminNotifications() {
     setLoading(true);
     api.get("/push-notifications")
       .then((r) => setHistory(r.data))
-      .catch(() => {})
+      .catch(() => toast.error("ইতিহাস লোড করা যায়নি"))
       .finally(() => setLoading(false));
   }, []);
 
@@ -114,12 +116,22 @@ export default function AdminNotifications() {
         target:        targetValue,
         scheduled_for: form.schedule_type === "later" ? form.scheduled_for || null : null,
       };
-      await api.post("/push-notifications", payload);
+      const { data } = await api.post("/push-notifications", payload);
       setForm(EMPTY_FORM);
       setTab("history");
       loadHistory();
+
+      if (data.status === "scheduled") {
+        toast.success("নোটিফিকেশন নির্ধারিত হয়েছে!");
+      } else if (data.sent_count > 0) {
+        toast.success(`${data.sent_count}টি ডিভাইসে পাঠানো হয়েছে`);
+      } else {
+        toast.warning("কোনো ডিভাইসে পাঠানো যায়নি। ডিভাইস টোকেন চেক করুন।");
+      }
     } catch (e2) {
-      setErr(formatApiError(e2));
+      const msg = formatApiError(e2);
+      setErr(msg);
+      toast.error(msg || "পাঠানো যায়নি");
     } finally {
       setSending(false);
     }
@@ -128,8 +140,29 @@ export default function AdminNotifications() {
   /* ── delete ── */
   const del = async (id) => {
     if (!window.confirm("এই নোটিফিকেশন ইতিহাস থেকে ডিলিট করবেন?")) return;
-    await api.delete(`/push-notifications/${id}`);
-    loadHistory();
+    try {
+      await api.delete(`/push-notifications/${id}`);
+      toast.success("ডিলিট হয়েছে");
+      loadHistory();
+    } catch {
+      toast.error("ডিলিট করা যায়নি");
+    }
+  };
+
+  /* ── resend ── */
+  const resend = async (id) => {
+    try {
+      toast.info("পুনরায় পাঠানো হচ্ছে...");
+      const { data } = await api.post(`/push-notifications/${id}/resend`);
+      if (data.sent > 0) {
+        toast.success(`পুনরায় ${data.sent}টি ডিভাইসে পাঠানো হয়েছে`);
+      } else {
+        toast.warning("পুনরায় পাঠানো যায়নি");
+      }
+      loadHistory();
+    } catch (e2) {
+      toast.error(formatApiError(e2) || "পুনরায় পাঠানো যায়নি");
+    }
   };
 
   /* ── UI ── */
@@ -486,7 +519,7 @@ export default function AdminNotifications() {
                   )}
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-[var(--bii-text-soft)]">
                     <TargetLabel target={n.target} />
-                    {n.sent_count != null && (
+                    {n.sent_count != null && n.sent_count > 0 && (
                       <span><CheckCircle size={11} className="inline text-green-600 mr-0.5" />{n.sent_count} পৌঁছেছে</span>
                     )}
                     {n.failed_count > 0 && (
@@ -509,13 +542,24 @@ export default function AdminNotifications() {
                   )}
                 </div>
 
-                <button
-                  onClick={() => del(n.id)}
-                  title="ডিলিট করুন"
-                  className="text-red-500 p-1.5 hover:bg-red-50 rounded-lg transition flex-shrink-0"
-                >
-                  <Trash size={16} />
-                </button>
+                <div className="flex flex-col gap-1 flex-shrink-0">
+                  {n.status === "failed" && (
+                    <button
+                      onClick={() => resend(n.id)}
+                      title="পুনরায় পাঠান"
+                      className="text-[var(--bii-emerald)] p-1.5 hover:bg-[var(--bii-cream)] rounded-lg transition"
+                    >
+                      <ArrowUUpLeft size={16} weight="bold" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => del(n.id)}
+                    title="ডিলিট করুন"
+                    className="text-red-500 p-1.5 hover:bg-red-50 rounded-lg transition"
+                  >
+                    <Trash size={16} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
