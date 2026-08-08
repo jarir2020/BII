@@ -3,7 +3,7 @@ import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import AdBanner from "./AdBanner";
 import {
   List, Bell, Translate, SignOut, House, User, Gear, Lock,
-  UserPlus, SignIn, HandsPraying, Books,
+  UserPlus, SignIn, HandsPraying, Books, ArrowDownToLine,
   FacebookLogo, YoutubeLogo, InstagramLogo, TwitterLogo,
   LinkedinLogo, TelegramLogo, TiktokLogo, WhatsappLogo
 } from "@phosphor-icons/react";
@@ -96,6 +96,15 @@ export default function Layout() {
             <span className="hidden sm:inline">{lang === "bn" ? "EN" : "বাং"}</span>
           </button>
 
+          <a
+            href="/api/download/app"
+            className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition flex items-center gap-1.5 text-sm"
+            title={lang === "bn" ? "অ্যাপ ডাউনলোড" : "Download APP"}
+          >
+            <ArrowDownToLine size={18} weight="bold" />
+            <span className="hidden sm:inline">{lang === "bn" ? "অ্যাপ" : "APP"}</span>
+          </a>
+
           {user && (
             <Link
               to="/notifications"
@@ -166,17 +175,27 @@ export default function Layout() {
                   <>
                     <SbLink to="/register" icon={<UserPlus size={20} weight="duotone" />} label={t("register")} onClick={closeSidebar} testid="sb-register" />
                     <SbLink to="/login" icon={<SignIn size={20} weight="duotone" />} label={t("login")} onClick={closeSidebar} testid="sb-login" />
+                    <a href="/api/download/app" onClick={closeSidebar} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[var(--bii-text)] hover:bg-[var(--bii-cream)] transition">
+                      <ArrowDownToLine size={20} weight="duotone" />
+                      <span>{lang === "bn" ? "অ্যাপ ডাউনলোড" : "Download APP"}</span>
+                    </a>
                   </>
                 )}
                 {user && (
-                  <button
-                    onClick={handleLogout}
-                    data-testid="sb-logout-btn"
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[var(--bii-text)] hover:bg-[var(--bii-cream)] transition"
-                  >
-                    <SignOut size={20} weight="duotone" />
-                    <span>{t("logout")}</span>
-                  </button>
+                  <>
+                    <button
+                      onClick={handleLogout}
+                      data-testid="sb-logout-btn"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[var(--bii-text)] hover:bg-[var(--bii-cream)] transition"
+                    >
+                      <SignOut size={20} weight="duotone" />
+                      <span>{t("logout")}</span>
+                    </button>
+                    <a href="/api/download/app" onClick={closeSidebar} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[var(--bii-text)] hover:bg-[var(--bii-cream)] transition">
+                      <ArrowDownToLine size={20} weight="duotone" />
+                      <span>{lang === "bn" ? "অ্যাপ ডাউনলোড" : "Download APP"}</span>
+                    </a>
+                  </>
                 )}
               </nav>
 
