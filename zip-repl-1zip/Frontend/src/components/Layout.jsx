@@ -245,14 +245,25 @@ export default function Layout() {
             { to: "/legal/terms",   bn: "শর্তাবলী",        en: "Terms" },
             { to: "/legal/privacy", bn: "গোপনীয়তা নীতি",  en: "Privacy Policy" },
             { to: "/legal/refund",  bn: "রিফান্ড নীতি",    en: "Refund Policy" },
-          ].map(({ to, bn, en }) => (
-            <Link
-              key={to}
-              to={to}
-              className="text-xs text-[var(--bii-text-soft)] hover:text-[var(--bii-emerald)] underline underline-offset-2 transition-colors"
-            >
-              {lang === "bn" ? bn : en}
-            </Link>
+            { to: "/api/download/app", bn: "অ্যাপ ডাউনলোড", en: "Download APP", isExternal: true },
+          ].map(({ to, bn, en, isExternal }) => (
+            isExternal ? (
+              <a
+                key={to}
+                href={to}
+                className="text-xs text-[var(--bii-text-soft)] hover:text-[var(--bii-emerald)] underline underline-offset-2 transition-colors"
+              >
+                {lang === "bn" ? bn : en}
+              </a>
+            ) : (
+              <Link
+                key={to}
+                to={to}
+                className="text-xs text-[var(--bii-text-soft)] hover:text-[var(--bii-emerald)] underline underline-offset-2 transition-colors"
+              >
+                {lang === "bn" ? bn : en}
+              </Link>
+            )
           ))}
         </div>
 

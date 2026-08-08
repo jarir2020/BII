@@ -157,6 +157,7 @@ $config = [
                 'api/library/upload' => 'api/library/upload',
                 'api/library/serve/<id:path>' => 'api/library/serve',
                 'api/library/download/<id>' => 'api/library/download',
+                'api/download/app' => 'api/download/app',
 
                 // ── Generic schema-less CRUD resources ────────────────────
                 'api/<resource:(course_categories|chapters|lessons|pdfs|assignments|exams|results|certificates|recorded_classes|hadiths|islamic_content|blogs|banners|sliders|gallery|downloads|winner_reviews)>/<id>' => 'api/generic/item',
