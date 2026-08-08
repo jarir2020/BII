@@ -41,7 +41,7 @@ class MonthlyQuizzesController extends ApiController
         }
         // Requires login.
         $this->user();
-        $rows = Yii::$app->db->createCommand('SELECT * FROM monthly_quizzes ORDER BY exam_date DESC')->queryAll();
+        $rows = Yii::$app->db->createCommand('SELECT * FROM monthly_quizzes ORDER BY exam_date DESC LIMIT 100')->queryAll();
         return $this->json(array_map(fn ($r) => $this->toDoc($r), $rows));
     }
 

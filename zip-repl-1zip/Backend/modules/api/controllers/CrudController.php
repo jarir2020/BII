@@ -55,7 +55,7 @@ abstract class CrudController extends ApiController
             $this->requireAdmin();
         }
         $rows = Yii::$app->db->createCommand(
-            "SELECT * FROM {$this->table} ORDER BY created_at DESC"
+            "SELECT * FROM {$this->table} ORDER BY created_at DESC LIMIT 500"
         )->queryAll();
         return $this->json(array_map(fn ($r) => $this->toDoc($r), $rows));
     }

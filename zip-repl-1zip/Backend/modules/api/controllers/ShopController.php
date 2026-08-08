@@ -24,13 +24,28 @@ class ShopController extends ApiController
             $this->badRequest('অর্ডারে কোনো প্রোডাক্ট নেই।');
         }
 
+        // 2026-08-09: Batch-fetch all products instead of N+1 per-item query
+        $pids = array_values(array_unique(array_map(fn ($i) => (string) ($i['product_id'] ?? ''), $items)));
+        $params = [];
+        foreach ($pids as $i => $pid) {
+            $params[':p' . $i] = $pid;
+        }
+        $prods = Yii::$app->db->createCommand(
+            'SELECT * FROM products WHERE id IN (' . implode(',', array_keys($params)) . ')',
+            $params
+        )->queryAll();
+        $prodMap = [];
+        foreach ($prods as $p) {
+            $prodMap[$p['id']] = $p;
+        }
+
         // Verify products & stock.
         $total = 0.0;
         $orderLines = [];
         foreach ($items as $item) {
             $pid = (string) ($item['product_id'] ?? '');
-            $prod = Yii::$app->db->createCommand('SELECT * FROM products WHERE id = :id', [':id' => $pid])->queryOne();
-            if ($prod === false) {
+            $prod = $prodMap[$pid] ?? null;
+            if ($prod === null) {
                 $this->notFound('প্রোডাক্ট পাওয়া যায়নি: ' . (string) ($item['product_name'] ?? ''));
             }
             $stock = (int) ($prod['stock'] ?? 0);

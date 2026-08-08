@@ -232,7 +232,7 @@ class RewardsController extends ApiController
     {
         $user = $this->user();
         $rows = Yii::$app->db->createCommand(
-            'SELECT * FROM cashout_requests WHERE user_id = :u ORDER BY created_at DESC', [':u' => $user['id']]
+            'SELECT * FROM cashout_requests WHERE user_id = :u ORDER BY created_at DESC LIMIT 100', [':u' => $user['id']]
         )->queryAll();
         return $this->json(array_map(fn ($r) => $this->cashoutDoc($r), $rows));
     }
@@ -242,7 +242,7 @@ class RewardsController extends ApiController
     {
         $user = $this->user();
         $rows = Yii::$app->db->createCommand(
-            'SELECT * FROM reward_transactions WHERE user_id = :u ORDER BY created_at DESC', [':u' => $user['id']]
+            'SELECT * FROM reward_transactions WHERE user_id = :u ORDER BY created_at DESC LIMIT 100', [':u' => $user['id']]
         )->queryAll();
         return $this->json($rows);
     }

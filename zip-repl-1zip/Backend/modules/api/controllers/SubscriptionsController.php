@@ -30,7 +30,7 @@ class SubscriptionsController extends ApiController
     public function actionAdmin(): \yii\web\Response
     {
         $this->requireAdmin();
-        $rows = Yii::$app->db->createCommand('SELECT * FROM subscriptions ORDER BY started_at DESC')->queryAll();
+        $rows = Yii::$app->db->createCommand('SELECT * FROM subscriptions ORDER BY started_at DESC LIMIT 200')->queryAll();
         return $this->json(array_map(fn ($r) => $this->subDoc($r), $rows));
     }
 
@@ -56,22 +56,51 @@ class SubscriptionsController extends ApiController
         $activeSubs = (int) Yii::$app->db->createCommand('SELECT COUNT(*) FROM subscriptions WHERE status = "active"')->queryScalar();
         $enrolled = (int) Yii::$app->db->createCommand('SELECT COUNT(*) FROM enrollments')->queryScalar();
 
+        // 2026-08-09: Batch monthly revenue — 3 GROUP BY queries instead of 18 per-month queries
+        $sixMonthsAgo = (new \DateTimeImmutable('-5 months first day of midnight'))->format('Y-m-d\T00:00:00');
+
+        $monthlyCourses = Yii::$app->db->createCommand(
+            'SELECT YEAR(submitted_at) y, MONTH(submitted_at) m, COALESCE(SUM(amount),0) t
+             FROM payment_requests WHERE status = "approved" AND submitted_at >= :s
+             GROUP BY YEAR(submitted_at), MONTH(submitted_at)',
+            [':s' => $sixMonthsAgo]
+        )->queryAll();
+        $mcMap = [];
+        foreach ($monthlyCourses as $r) {
+            $mcMap[$r['y'] . '-' . $r['m']] = (float) $r['t'];
+        }
+
+        $monthlyShop = Yii::$app->db->createCommand(
+            'SELECT YEAR(created_at) y, MONTH(created_at) m, COALESCE(SUM(total),0) t
+             FROM orders WHERE status <> "unpaid" AND created_at >= :s
+             GROUP BY YEAR(created_at), MONTH(created_at)',
+            [':s' => $sixMonthsAgo]
+        )->queryAll();
+        $msMap = [];
+        foreach ($monthlyShop as $r) {
+            $msMap[$r['y'] . '-' . $r['m']] = (float) $r['t'];
+        }
+
+        $monthlyGateway = Yii::$app->db->createCommand(
+            'SELECT YEAR(created_at) y, MONTH(created_at) m, COALESCE(SUM(amount),0) t
+             FROM payment_intents WHERE status = "fulfilled" AND created_at >= :s
+             GROUP BY YEAR(created_at), MONTH(created_at)',
+            [':s' => $sixMonthsAgo]
+        )->queryAll();
+        $mgMap = [];
+        foreach ($monthlyGateway as $r) {
+            $mgMap[$r['y'] . '-' . $r['m']] = (float) $r['t'];
+        }
+
         $monthly = [];
         for ($i = 5; $i >= 0; $i--) {
             $start = new \DateTimeImmutable('first day of ' . $i . ' months ago 00:00:00 UTC');
-            $end = $start->modify('+1 month');
-            $s = $start->format('Y-m-d\TH:i:s');
-            $e = $end->format('Y-m-d\TH:i:s');
-
-            $mc = $this->sumWhere('payment_requests', 'submitted_at', 'amount', 'status = "approved"', $s, $e);
-            $ms = $this->sumWhere('orders', 'created_at', 'total', 'status <> "unpaid"', $s, $e);
-            $mg = $this->sumWhere('payment_intents', 'created_at', 'amount', 'status = "fulfilled"', $s, $e);
-
+            $key = $start->format('Y-n');
             $monthly[] = [
                 'month' => $start->format('M Y'),
-                'courses' => $mc,
-                'shop' => $ms,
-                'gateway' => $mg,
+                'courses' => $mcMap[$key] ?? 0,
+                'shop' => $msMap[$key] ?? 0,
+                'gateway' => $mgMap[$key] ?? 0,
             ];
         }
 

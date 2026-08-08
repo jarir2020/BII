@@ -48,7 +48,7 @@ class GenericController extends ApiController
         }
 
         $rows = Yii::$app->db->createCommand(
-            'SELECT * FROM generic_items WHERE resource = :r ORDER BY created_at DESC', [':r' => $resource]
+            'SELECT * FROM generic_items WHERE resource = :r ORDER BY created_at DESC LIMIT 200', [':r' => $resource]
         )->queryAll();
         return $this->json(array_map(fn ($r) => $this->mergeDoc($r), $rows));
     }

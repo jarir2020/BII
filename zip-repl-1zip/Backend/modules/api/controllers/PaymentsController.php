@@ -80,7 +80,7 @@ class PaymentsController extends ApiController
     public function actionRequests(): \yii\web\Response
     {
         $this->requireAdmin();
-        $rows = Yii::$app->db->createCommand('SELECT * FROM payment_requests ORDER BY submitted_at DESC')->queryAll();
+        $rows = Yii::$app->db->createCommand('SELECT * FROM payment_requests ORDER BY submitted_at DESC LIMIT 200')->queryAll();
         return $this->json(array_map(fn ($r) => $this->reqDoc($r), $rows));
     }
 
