@@ -80,8 +80,8 @@ export default function NotificationPrompt({ user }) {
       if (Notification.permission === "granted") {
         if (!token) {
           setError(pick(
-            "নোটিফিকেশন চালু হয়েছে, কিন্তু ডিভাইসটি নিবন্ধন করা যায়নি। আবার চেষ্টা করুন।",
-            "Permission was granted, but this device could not be registered. Please try again."
+            "নোটিফিকেশন চালু হয়েছে, কিন্তু ডিভাইসটি নিবন্ধন করা যায়নি। ব্রাউজার রিফ্রেশ করে আবার চেষ্টা করুন।",
+            "Permission was granted, but this device could not be registered. Please refresh the page and try again."
           ));
           return;
         }
@@ -92,10 +92,11 @@ export default function NotificationPrompt({ user }) {
         // user denied the browser popup
         dismiss();
       }
-    } catch {
+    } catch (err) {
+      console.error('[BII] Notification registration failed:', err);
       setError(pick(
-        "নোটিফিকেশন চালু করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।",
-        "Notifications could not be enabled. Please try again."
+        "নোটিফিকেশন চালু করা যায়নি। ব্রাউজার রিফ্রেশ করে আবার চেষ্টা করুন।",
+        "Notifications could not be enabled. Please refresh the page and try again."
       ));
     } finally {
       setLoading(false);

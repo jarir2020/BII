@@ -43,7 +43,10 @@ async function getFirebaseApp() {
  */
 export async function requestFCMToken() {
   try {
-    if (!('Notification' in window) || !('serviceWorker' in navigator)) return null;
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+      console.warn('[BII FCM] Notification or ServiceWorker API not supported');
+      return null;
+    }
 
     // Ask immediately while the call still has the user's click activation.
     // Waiting for the network/config before this can be ignored by mobile
@@ -51,13 +54,22 @@ export async function requestFCMToken() {
     const permission = Notification.permission === 'granted'
       ? 'granted'
       : await Notification.requestPermission();
-    if (permission !== 'granted') return null;
+    if (permission !== 'granted') {
+      console.warn('[BII FCM] Permission not granted:', permission);
+      return null;
+    }
 
     const cfg = await fetchConfig();
-    if (!cfg.api_key || !cfg.vapid_key) return null;
+    if (!cfg.api_key || !cfg.vapid_key) {
+      console.warn('[BII FCM] Missing config — api_key:', !!cfg.api_key, 'vapid_key:', !!cfg.vapid_key);
+      return null;
+    }
 
     const app = await getFirebaseApp();
-    if (!app) return null;
+    if (!app) {
+      console.warn('[BII FCM] Firebase app init failed');
+      return null;
+    }
 
     if (!_messaging) _messaging = getMessaging(app);
 
@@ -66,9 +78,13 @@ export async function requestFCMToken() {
       vapidKey:                    cfg.vapid_key,
       serviceWorkerRegistration:   swReg,
     });
+    if (!token) {
+      console.warn('[BII FCM] getToken returned empty');
+    }
     return token || null;
   } catch (err) {
-    console.warn('[BII FCM] token error:', err);
+    // Surface the actual Firebase error so we can diagnose
+    console.error('[BII FCM] token error:', err?.message || err, err);
     return null;
   }
 }
