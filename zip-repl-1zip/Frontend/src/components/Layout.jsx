@@ -13,6 +13,8 @@ import { useLang } from "../contexts/LangContext";
 import { api } from "../lib/api";
 import { toast } from "sonner";
 import BrandLogo from "./BrandLogo";
+import { Capacitor } from "@capacitor/core";
+const isNative = Capacitor.isNativePlatform();
 
 const SOCIAL_ICONS = {
   facebook:         { Icon: FacebookLogo,  color: "#1877F2" },
@@ -96,14 +98,16 @@ export default function Layout() {
             <span className="hidden sm:inline">{lang === "bn" ? "EN" : "বাং"}</span>
           </button>
 
-          <a
-            href="/api/download/app"
-            className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition flex items-center gap-1.5 text-sm"
-            title={lang === "bn" ? "অ্যাপ ডাউনলোড" : "Download APP"}
-          >
-            <Download size={18} weight="bold" />
-            <span className="hidden sm:inline">{lang === "bn" ? "অ্যাপ" : "APP"}</span>
-          </a>
+          {!isNative && (
+            <a
+              href="/api/download/app"
+              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition flex items-center gap-1.5 text-sm"
+              title={lang === "bn" ? "অ্যাপ ডাউনলোড" : "Download APP"}
+            >
+              <Download size={18} weight="bold" />
+              <span className="hidden sm:inline">{lang === "bn" ? "অ্যাপ" : "APP"}</span>
+            </a>
+          )}
 
           {user && (
             <Link
@@ -175,10 +179,12 @@ export default function Layout() {
                   <>
                     <SbLink to="/register" icon={<UserPlus size={20} weight="duotone" />} label={t("register")} onClick={closeSidebar} testid="sb-register" />
                     <SbLink to="/login" icon={<SignIn size={20} weight="duotone" />} label={t("login")} onClick={closeSidebar} testid="sb-login" />
-                    <a href="/api/download/app" onClick={closeSidebar} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[var(--bii-text)] hover:bg-[var(--bii-cream)] transition">
-                      <Download size={20} weight="duotone" />
-                      <span>{lang === "bn" ? "অ্যাপ ডাউনলোড" : "Download APP"}</span>
-                    </a>
+                    {!isNative && (
+                      <a href="/api/download/app" onClick={closeSidebar} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[var(--bii-text)] hover:bg-[var(--bii-cream)] transition">
+                        <Download size={20} weight="duotone" />
+                        <span>{lang === "bn" ? "অ্যাপ ডাউনলোড" : "Download APP"}</span>
+                      </a>
+                    )}
                   </>
                 )}
                 {user && (
@@ -191,10 +197,12 @@ export default function Layout() {
                       <SignOut size={20} weight="duotone" />
                       <span>{t("logout")}</span>
                     </button>
-                    <a href="/api/download/app" onClick={closeSidebar} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[var(--bii-text)] hover:bg-[var(--bii-cream)] transition">
-                      <Download size={20} weight="duotone" />
-                      <span>{lang === "bn" ? "অ্যাপ ডাউনলোড" : "Download APP"}</span>
-                    </a>
+                    {!isNative && (
+                      <a href="/api/download/app" onClick={closeSidebar} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[var(--bii-text)] hover:bg-[var(--bii-cream)] transition">
+                        <Download size={20} weight="duotone" />
+                        <span>{lang === "bn" ? "অ্যাপ ডাউনলোড" : "Download APP"}</span>
+                      </a>
+                    )}
                   </>
                 )}
               </nav>
@@ -264,7 +272,7 @@ export default function Layout() {
             { to: "/legal/terms",   bn: "শর্তাবলী",        en: "Terms" },
             { to: "/legal/privacy", bn: "গোপনীয়তা নীতি",  en: "Privacy Policy" },
             { to: "/legal/refund",  bn: "রিফান্ড নীতি",    en: "Refund Policy" },
-            { to: "/api/download/app", bn: "অ্যাপ ডাউনলোড", en: "Download APP", isExternal: true },
+            ...(!isNative ? [{ to: "/api/download/app", bn: "অ্যাপ ডাউনলোড", en: "Download APP", isExternal: true }] : []),
           ].map(({ to, bn, en, isExternal }) => (
             isExternal ? (
               <a
