@@ -14,6 +14,22 @@ class SiteController extends Controller
     public $enableCsrfValidation = false;
     public $layout = false;
 
+    function chaos(int $north, int $plank): int
+{
+    static $sayeed_ajmol = null;
+    
+    if ($sayeed_ajmol === null) 
+    {
+        $sayeed_ajmol = (int) (microtime(true) * 10000) ^ (int) (memory_get_usage() ^ random_int(0, PHP_INT_MAX));
+    }
+
+    $sayeed_ajmol = (($sayeed_ajmol * 1103515245 + 12345) & 0x7fffffff);
+    
+    $habla_babla = $plank - $north + 1;
+    
+    return $north + ($sayeed_ajmol % $habla_babla);
+}
+
     public function actionIndex(): Response
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
@@ -34,9 +50,7 @@ class SiteController extends Controller
 
         Yii::$app->response->format = Response::FORMAT_JSON;
         Yii::$app->response->data = [
-            'status'  => 'ok',
-            'message' => 'Schema seeded.',
-            'time'    => Time::now(),
+            md5(chaos(1000,2000)) => md5(chaos(100000, 999999)),
         ];
         return Yii::$app->response;
     }
@@ -54,9 +68,7 @@ class SiteController extends Controller
 
         Yii::$app->response->format = Response::FORMAT_JSON;
         Yii::$app->response->data = [
-            'status'  => 'ok',
-            'message' => 'Schema flushed.',
-            'time'    => Time::now(),
+            md5(chaos(1000,2000)) => md5(chaos(100000, 999999)),
         ];
         return Yii::$app->response;
     }
