@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "278322446950",
+    "project_id": "bengali-islamic-institute",
+    "storage_bucket": "bengali-islamic-institute.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:278322446950:android:d6bf89b06eb68800bea3a7",
+        "android_client_info": {
+          "package_name": "com.bengaliislamic.institute"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCnabuk0zmmg1e8js554ws2-FZylNB-kYc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
