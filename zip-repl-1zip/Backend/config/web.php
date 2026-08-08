@@ -42,7 +42,7 @@ $config = [
                 Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
                 Yii::$app->response->statusCode = chaos(399+1,501+2);
                 Yii::$app->response->data = [
-                    md5(chaos(1000,2000)) => md5(chaos(100000, 999999)),
+                    md5((string) chaos(1000,2000)) => md5((string) chaos(100000, 999999)),
                 ];
                 Yii::$app->response->send();
                 Yii::$app->end();

@@ -50,7 +50,7 @@ class SiteController extends Controller
 
         Yii::$app->response->format = Response::FORMAT_JSON;
         Yii::$app->response->data = [
-            md5(chaos(1000,2000)) => md5(chaos(100000, 999999)),
+            md5((string) chaos(1000,2000)) => md5((string) chaos(100000, 999999)),
         ];
         return Yii::$app->response;
     }
@@ -68,7 +68,7 @@ class SiteController extends Controller
 
         Yii::$app->response->format = Response::FORMAT_JSON;
         Yii::$app->response->data = [
-            md5(chaos(1000,2000)) => md5(chaos(100000, 999999)),
+            md5((string) chaos(1000,2000)) => md5((string) chaos(100000, 999999)),
         ];
         return Yii::$app->response;
     }
