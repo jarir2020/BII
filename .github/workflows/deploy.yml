@@ -115,6 +115,10 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
+      - name: Install lftp
+        run: |
+          which lftp || sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+
       - name: Upload APK to server via FTP
         run: |
           lftp -u "$FTP_USER","$FTP_PASS" -p "$FTP_PORT" "$FTP_HOST" \
