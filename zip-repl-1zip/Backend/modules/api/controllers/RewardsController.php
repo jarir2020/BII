@@ -255,32 +255,63 @@ class RewardsController extends ApiController
             'SELECT * FROM reward_balances ORDER BY coins DESC LIMIT 50'
         )->queryAll();
 
+        if ($rows === []) {
+            return $this->json([]);
+        }
+
+        // 2026-08-09: Batch queries instead of N+1 per-user queries
+        $uids = array_values(array_unique(array_map(fn ($r) => $r['user_id'], $rows)));
+        $placeholders = implode(',', array_fill(0, count($uids), ':' . 'u' . '%d'));
+
+        // Batch fetch user info
+        $userParams = [];
+        foreach ($uids as $i => $uid) {
+            $userParams[':u' . $i] = $uid;
+        }
+        $userRows = Yii::$app->db->createCommand(
+            'SELECT id, name, profile_photo FROM users WHERE id IN (' . implode(',', array_keys($userParams)) . ')',
+            $userParams
+        )->queryAll();
+        $userMap = [];
+        foreach ($userRows as $ur) {
+            $userMap[$ur['id']] = $ur;
+        }
+
+        // Batch fetch ad watch counts
+        $adRows = Yii::$app->db->createCommand(
+            'SELECT user_id, COUNT(*) AS cnt FROM reward_transactions WHERE user_id IN (' . implode(',', array_keys($userParams)) . ') AND type = "ad_watch" GROUP BY user_id',
+            $userParams
+        )->queryAll();
+        $adMap = [];
+        foreach ($adRows as $ar) {
+            $adMap[$ar['user_id']] = (int) $ar['cnt'];
+        }
+
+        // Batch fetch order counts
+        $orderRows = Yii::$app->db->createCommand(
+            'SELECT user_id, COUNT(*) AS cnt FROM orders WHERE user_id IN (' . implode(',', array_keys($userParams)) . ') GROUP BY user_id',
+            $userParams
+        )->queryAll();
+        $orderMap = [];
+        foreach ($orderRows as $or) {
+            $orderMap[$or['user_id']] = (int) $or['cnt'];
+        }
+
         $result = [];
         foreach ($rows as $i => $bal) {
             $uid = $bal['user_id'];
-            if ($uid === '') {
+            if ($uid === '' || !isset($userMap[$uid])) {
                 continue;
             }
-            $u = Yii::$app->db->createCommand(
-                'SELECT name, email, profile_photo FROM users WHERE id = :id', [':id' => $uid]
-            )->queryOne();
-            if ($u === false) {
-                continue;
-            }
-            $adCount = (int) Yii::$app->db->createCommand(
-                'SELECT COUNT(*) FROM reward_transactions WHERE user_id = :u AND type = "ad_watch"', [':u' => $uid]
-            )->queryScalar();
-            $orderCount = (int) Yii::$app->db->createCommand(
-                'SELECT COUNT(*) FROM orders WHERE user_id = :u', [':u' => $uid]
-            )->queryScalar();
+            $u = $userMap[$uid];
             $result[] = [
                 'rank' => $i + 1,
                 'user_id' => $uid,
                 'name' => $u['name'] ?: 'অজানা',
                 'avatar' => $u['profile_photo'] ?? '',
                 'coins' => (int) $bal['coins'],
-                'ad_watches' => $adCount,
-                'orders' => $orderCount,
+                'ad_watches' => $adMap[$uid] ?? 0,
+                'orders' => $orderMap[$uid] ?? 0,
                 'is_me' => $uid === $user['id'],
             ];
         }

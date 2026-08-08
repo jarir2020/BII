@@ -99,11 +99,22 @@ class ShopController extends ApiController
             'created_at' => $now,
         ])->execute();
 
-        foreach ($orderLines as $line) {
-            Yii::$app->db->createCommand()->insert('order_items', array_merge(
-                ['id' => Uuid::v4(), 'order_id' => $orderId],
-                $line
-            ))->execute();
+        // 2026-08-09: Batch insert order items instead of one-by-one
+        if ($orderLines !== []) {
+            $columns = ['id', 'order_id', 'product_id', 'product_name', 'qty', 'unit_price', 'subtotal'];
+            $rows = [];
+            foreach ($orderLines as $line) {
+                $rows[] = [
+                    Uuid::v4(),
+                    $orderId,
+                    $line['product_id'] ?? '',
+                    $line['product_name'] ?? '',
+                    $line['qty'] ?? 1,
+                    $line['unit_price'] ?? 0,
+                    $line['subtotal'] ?? 0,
+                ];
+            }
+            Yii::$app->db->createCommand()->batchInsert('order_items', $columns, $rows)->execute();
         }
 
         // Notify admins on Telegram when TELEGRAM_BOT_TOKEN + CHAT_ID are set.
@@ -158,13 +169,31 @@ class ShopController extends ApiController
             'SELECT * FROM orders WHERE user_id = :u ORDER BY created_at DESC', [':u' => $user['id']]
         )->queryAll();
 
+        if ($orders === []) {
+            return $this->json([]);
+        }
+
+        // 2026-08-09: Batch fetch all order items instead of N+1 per-order query
+        $orderIds = array_map(fn ($o) => $o['id'], $orders);
+        $placeholders = implode(',', array_fill(0, count($orderIds), ':oid' . '%d'));
+        $params = [];
+        foreach ($orderIds as $i => $id) {
+            $params[':oid' . $i] = $id;
+        }
+        $allItems = Yii::$app->db->createCommand(
+            'SELECT order_id, product_id, product_name, qty, unit_price, subtotal FROM order_items WHERE order_id IN (' . $placeholders . ')',
+            $params
+        )->queryAll();
+
+        // Group items by order_id
+        $itemsByOrder = [];
+        foreach ($allItems as $item) {
+            $itemsByOrder[$item['order_id']][] = $item;
+        }
+
         $out = [];
         foreach ($orders as $o) {
-            $items = Yii::$app->db->createCommand(
-                'SELECT product_id, product_name, qty, unit_price, subtotal FROM order_items WHERE order_id = :id',
-                [':id' => $o['id']]
-            )->queryAll();
-            $o['items'] = $items;
+            $o['items'] = $itemsByOrder[$o['id']] ?? [];
             $o['discount'] = (float) $o['discount'];
             $o['subtotal'] = (float) $o['subtotal'];
             $o['total'] = (float) $o['total'];
