@@ -13,6 +13,33 @@ import NotificationPrompt from "@/components/NotificationPrompt";
 import { onForegroundMessage } from "@/lib/firebase";
 import { registerNativePushListeners } from "@/lib/capacitor-push-listener";
 import { setToken as __setQuickAccessToken } from "@/lib/api";
+import { Capacitor } from "@capacitor/core";
+
+/**
+ * On native platforms (Capacitor), the WebView may restore the last visited
+ * URL when the app is reopened. If the user was on /home and then logged out
+ * or the session expired, the app would reload at /home instead of /.
+ * This component forces a redirect to / on initial mount when the URL is not
+ * the root path, ensuring unauthenticated users see the Welcome page.
+ */
+function CapacitorAuthGate() {
+  const { user, loading } = useAuth();
+  const navigated = React.useRef(false);
+
+  React.useEffect(() => {
+    if (loading || navigated.current) return;
+    if (!Capacitor.isNativePlatform()) return;
+    if (user) return; // logged in — let the app route normally
+
+    // Not logged in on a non-root path → force to / (Welcome page)
+    if (window.location.pathname !== "/") {
+      navigated.current = true;
+      window.location.replace("/");
+    }
+  }, [loading, user]);
+
+  return null;
+}
 
 /** Shows an FCM notification immediately when the app is in the foreground. */
 function ForegroundPushBridge() {
@@ -173,6 +200,7 @@ export default function App() {
         <AdsProvider>
         <AuthProvider>
           <BrowserRouter>
+            <CapacitorAuthGate />
             <ForegroundPushBridge />
             <NotifPromptBridge />
             <Routes>
