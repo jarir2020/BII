@@ -122,6 +122,9 @@ export default function Layout() {
         <div className="h-[1px] bg-gradient-to-r from-transparent via-[var(--bii-gold)] to-transparent" />
       </header>
 
+      {/* Header ad banner */}
+      <AdBanner slot="header-banner" format="horizontal" className="max-w-5xl mx-auto" />
+
       {/* SIDEBAR */}
       <AnimatePresence>
         {openSidebar && (
@@ -307,6 +310,9 @@ export default function Layout() {
             </a>
           </span>
         </div>
+
+        {/* Footer ad banner */}
+        <AdBanner slot="footer-banner" format="horizontal" className="mt-4" />
       </footer>
     </div>
   );

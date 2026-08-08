@@ -60,6 +60,7 @@ export function AdsProvider({ children }) {
           "lesson-between":     d.ad_slot_lesson_between_enabled     !== false,
           "quiz-interstitial":  d.ad_slot_quiz_interstitial_enabled  !== false,
           "reward-zone":        d.ad_slot_reward_zone_enabled        !== false,
+          "library-top":       d.ad_slot_library_enabled            !== false,
         };
 
         setCfg({
@@ -81,6 +82,7 @@ export function AdsProvider({ children }) {
             "lesson-between":    d.ad_unit_lesson_between    || "",
             "quiz-interstitial": d.ad_unit_quiz_interstitial || "",
             "reward-zone":       d.ad_unit_reward_zone       || "",
+            "library-top":      d.ad_unit_library           || "",
           },
           slotEnabled,
           isLoaded: true,

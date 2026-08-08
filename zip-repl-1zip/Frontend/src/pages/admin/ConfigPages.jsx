@@ -169,6 +169,7 @@ function getAdSlots(pick) {
     { key: "quiz_interstitial", label: pick("কুইজ ইন্টারস্টিশিয়াল","Quiz Interstitial"), desc: "কুইজ উত্তর দেওয়ার পরে overlay বিজ্ঞাপন",  icon: "📋", unitKey: "ad_unit_quiz_interstitial" },
     { key: "post_bottom",       label: pick("ব্লগ/পোস্টের নিচে","Below Blog/Post"),     desc: "পোস্ট পড়া শেষ হলে নিচে",                  icon: "📝", unitKey: "ad_unit_post_bottom"       },
     { key: "reward_zone",       label: pick("রিওয়ার্ড জোন","Reward Zone"),               desc: "ভিডিও দেখে জিতে নিন পেজে",                 icon: "🎁", unitKey: "ad_unit_reward_zone"        },
+    { key: "library",          label: pick("লাইব্রেরি পেজ","Library Page"),              desc: "বই ও রিসোর্স তালিকার উপরে",               icon: "📖", unitKey: "ad_unit_library"            },
   ];
 }
 
