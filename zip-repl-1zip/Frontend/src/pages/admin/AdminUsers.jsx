@@ -47,6 +47,7 @@ export default function AdminUsers() {
         <table className="w-full text-sm min-w-[760px]">
           <thead className="bg-[var(--bii-cream)] text-left">
             <tr>
+              <th className="p-3">{pick("স্টুডেন্ট আইডি", "Student ID")}</th>
               <th className="p-3">{pick("নাম", "Name")}</th>
               <th className="p-3">{pick("ইমেইল", "Email")}</th>
               <th className="p-3">{pick("ফোন", "Phone")}</th>
@@ -63,6 +64,9 @@ export default function AdminUsers() {
                 onClick={() => openDetails(u.id)}
                 className="border-t border-[var(--bii-border)] cursor-pointer hover:bg-[var(--bii-cream)] transition"
               >
+                <td className="p-3 font-mono text-xs text-[var(--bii-text-soft)]" title={u.id}>
+                  {u.id?.slice(0, 8).toUpperCase()}
+                </td>
                 <td className="p-3">{u.name}</td>
                 <td className="p-3">{u.email}</td>
                 <td className="p-3">{u.phone || "—"}</td>
@@ -102,6 +106,7 @@ export default function AdminUsers() {
               <div>
                 <div className="text-[10px] tracking-widest uppercase text-[var(--bii-gold)]">Student Details</div>
                 {details && <div className="font-heading text-xl mt-0.5">{details.user.name}</div>}
+                {details && <div className="font-mono text-xs text-white/70 mt-0.5">ID: {details.user.id?.slice(0, 8).toUpperCase()}</div>}
               </div>
               <button data-testid="close-user-details" onClick={() => setOpen(null)} className="p-1 hover:bg-white/10 rounded-lg">
                 <X size={22} weight="bold" />

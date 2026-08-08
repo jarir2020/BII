@@ -92,6 +92,7 @@ $config = [
                 'api/my-live-classes' => 'api/live-classes/my',
                 'api/my-quiz-results' => 'api/monthly-quizzes/my-results',
                 'api/my-payment-requests' => 'api/payments/my-requests',
+                'api/users/<id>/details' => 'api/users/details',  // (2026-08-08)
 
                 'api/courses/<cid>/content' => 'api/courses/content',
                 'api/courses/<cid>/enroll' => 'api/courses/enroll',
