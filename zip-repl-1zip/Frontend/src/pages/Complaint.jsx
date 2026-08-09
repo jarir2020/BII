@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Question } from "@phosphor-icons/react";
 import { useLang } from "../contexts/LangContext";
 import { api, formatApiError } from "../lib/api";
+import BottomBanner from "../components/BottomBanner";
 
 export default function Complaint() {
   const { t, pick } = useLang();
@@ -18,7 +19,7 @@ export default function Complaint() {
   };
 
   return (
-    <div className="max-w-xl mx-auto" data-testid="complaint-page">
+    <div className="max-w-xl mx-auto pb-16 sm:pb-24" data-testid="complaint-page">
       <div className="bii-card p-6">
         <h1 className="font-heading text-2xl text-[var(--bii-emerald)] mb-2 flex items-center gap-2"><Question size={24} weight="duotone" /> {t("menuComplaint")}</h1>
         <p className="text-sm text-[var(--bii-text-soft)] mb-4">{pick("আপনার অভিযোগ বা প্রশ্ন জানান", "Submit your complaint or question")}</p>
@@ -30,6 +31,7 @@ export default function Complaint() {
           <button data-testid="complaint-submit-btn" disabled={loading} className="bii-btn-primary w-full">{loading ? t("loading") : t("submit")}</button>
         </form>
       </div>
+      <BottomBanner slot="complaints-bottom" />
     </div>
   );
 }

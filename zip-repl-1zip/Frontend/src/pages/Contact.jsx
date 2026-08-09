@@ -7,6 +7,7 @@ import {
 import { useAuth } from "../contexts/AuthContext";
 import { useLang } from "../contexts/LangContext";
 import { api, formatApiError } from "../lib/api";
+import BottomBanner from "../components/BottomBanner";
 
 const SOCIAL_CONFIG = [
   { key: "facebook",         label: "Facebook",          Icon: FacebookLogo,   color: "bg-blue-600",    href: (v) => v },
@@ -69,7 +70,7 @@ export default function Contact() {
   };
 
   return (
-    <div className="max-w-lg mx-auto py-6 px-4 space-y-4" data-testid="contact-page">
+    <div className="max-w-lg mx-auto py-6 px-4 space-y-4 pb-16 sm:pb-24" data-testid="contact-page">
 
       {/* Header */}
       <div className="rounded-2xl p-6 text-center" style={{ background: "var(--bii-emerald)", color: "#fff" }}>
@@ -202,6 +203,7 @@ export default function Contact() {
           <p className="text-sm">এডমিন প্যানেল → সেটিংস ও সোশ্যাল মিডিয়া লিংক থেকে তথ্য যোগ করুন।</p>
         </div>
       )}
+      <BottomBanner slot="contact-bottom" />
     </div>
   );
 }

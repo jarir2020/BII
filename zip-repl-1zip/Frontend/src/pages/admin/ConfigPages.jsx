@@ -47,7 +47,7 @@ export const AdminTheme = () => (
 
 export const AdminSeo = () => (
   <ConfigEditor configKey="seo" title="SEO সেটিংস"
-    description="সার্চ ইঞ্জিনের জন্য মেটা তথ্য।"
+    description="সার্চ ইঞ্জনরে জন্য মেটা তথ্য।"
     fields={[
       { name: "site_title", label: "Site Title (Browser Tab)" },
       { name: "meta_description", label: "Meta Description", type: "textarea" },
@@ -62,7 +62,7 @@ export const AdminSeo = () => (
 
 export const AdminFirebase = () => (
   <ConfigEditor configKey="firebase" title="Firebase কনফিগারেশন"
-    description="Push Notification / Firebase Cloud Messaging কনফিগ। (প্রয়োগ পরবর্তী আপডেটে)"
+    description="Push Notification / Firebase Cloud Messaging কনফিগ। (প্রযোগ পরবর্তী আপডেটে)"
     fields={[
       { name: "api_key", label: "Firebase API Key" },
       { name: "auth_domain", label: "Auth Domain" },
@@ -90,10 +90,10 @@ export const AdminSecurity = () => (
 );
 
 export const AdminMaintenance = () => (
-  <ConfigEditor configKey="maintenance" title="মেইন্টেন্যান্স মোড"
-    description="চালু করলে শুধু এডমিন সাইট ব্যবহার করতে পারবে।"
+  <ConfigEditor configKey="maintenance" title="মেন্টেন্যান্স মোড"
+    description="চালু করলে শুধুমাত্র এডমিন সাইট ব্যবহার করতে পারবে।"
     fields={[
-      { name: "enabled", label: "মেইন্টেন্যান্স মোড সক্রিয়", type: "checkbox" },
+      { name: "enabled", label: "মেন্টেন্যান্স মোড সক্রিয়", type: "checkbox" },
       { name: "message", label: "ভিজিটরদের জন্য মেসেজ", type: "textarea", placeholder: "সাইট আপডেট হচ্ছে, কিছুক্ষণ পরে চেষ্টা করুন।" },
       { name: "estimated_back_time", label: "আনুমানিক সময়" },
     ]} />
@@ -120,7 +120,6 @@ export const AdminPaymentGateways = () => (
       { name: "sslcommerz_store_id", label: "SSLCommerz Store ID" },
       { name: "sslcommerz_store_password", label: "SSLCommerz Store Password", type: "password" },
       { name: "sslcommerz_mode", label: "SSLCommerz Mode", type: "select", options: ["sandbox", "live"] },
-      { name: "rocket_enabled", label: "Rocket সক্রিয়?", type: "checkbox" },
     ]} />
 );
 
@@ -143,40 +142,62 @@ function Toggle({ on, onChange }) {
   );
 }
 
-// ── Ad slot card ─────────────────────────────────────────────
+// ── Platform toggles (Web + App side-by-side) ────────────────
+function PlatformToggles({ webOn, appOn, onWebChange, onAppChange }) {
+  return (
+    <div className="flex items-center gap-4">
+      <div className="flex items-center gap-1.5">
+        <span className="text-xs text-gray-500 font-medium">ওয়েব</span>
+        <Toggle on={!!webOn} onChange={onWebChange} />
+      </div>
+      <div className="flex items-center gap-1.5">
+        <span className="text-xs text-gray-500 font-medium">অ্যাপ</span>
+        <Toggle on={!!appOn} onChange={onAppChange} />
+      </div>
+    </div>
+  );
+}
+
+// ── Ad slot card (platform-aware) ────────────────────────────
 function getAdSlots(pick) {
   return [
     // ── প্রধান পেজ ──────────────────────────────────────────────
-    { group: pick("প্রধান পেজ","Main Pages") },
-    { key: "header",          label: pick("হেডার ব্যানার","Header Banner"),             desc: "সব পেজের একদম উপরে",                      icon: "⬆️", unitKey: "ad_unit_header"          },
-    { key: "footer",          label: pick("ফুটার ব্যানার","Footer Banner"),             desc: "সব পেজের একদম নিচে",                      icon: "⬇️", unitKey: "ad_unit_footer"          },
-    { key: "home",            label: pick("হোম পেজ","Home Page"),                       desc: "হোম পেজের মাঝখানে",                       icon: "🏠", unitKey: "ad_unit_home"            },
-    { key: "sidebar",         label: pick("সাইডবার","Sidebar"),                         desc: "পেজের পাশে সাইডবারে",                    icon: "↔️", unitKey: "ad_unit_sidebar"         },
+    { group: pick("প্রধান প্েজ","Main Pages") },
+    { key: "header",          label: pick("হেডার ব্যানার","Header Banner"),             desc: "সব প্েজের একদম উপরে",                      icon: "⬆️", unitKey: "ad_unit_header"          },
+    { key: "footer",          label: pick("ফুটার ব্যানার","Footer Banner"),             desc: "সব প্েজের একদম নিচে",                      icon: "⬇️", unitKey: "ad_unit_footer"          },
+    { key: "home",            label: pick("হোম প্েজ","Home Page"),                       desc: "হোম প্েজের মাঝখানে",                       icon: "🏠", unitKey: "ad_unit_home"            },
+    { key: "sidebar",         label: pick("সাইডবার","Sidebar"),                         desc: "প্েজের পাশে সাইডবারে",                    icon: "↔️", unitKey: "ad_unit_sidebar"         },
     // ── কোর্স ও কন্টেন্ট ────────────────────────────────────────
     { group: pick("কোর্স ও কন্টেন্ট","Course & Content") },
-    { key: "courses",         label: pick("কোর্স তালিকা পেজ","Course List Page"),       desc: "কোর্স তালিকার উপরে",                      icon: "📚", unitKey: "ad_unit_courses"         },
+    { key: "courses",         label: pick("কোর্স তালিকা প্েজ","Course List Page"),       desc: "কোর্স তালিকার উপরে",                      icon: "📚", unitKey: "ad_unit_courses"         },
     { key: "in_content",      label: pick("কোর্স বিবরণ","Course Description"),          desc: "কোর্স কেনার আগে বিবরণের নিচে",           icon: "📄", unitKey: "ad_unit_in_content"      },
     { key: "lesson_between",  label: pick("কোর্সের ভেতরে (সেকশনের মাঝে)","Inside Course (Between Sections)"), desc: "লাইভ ক্লাস ও ভিডিও সেকশনের মাঝখানে", icon: "🎓", unitKey: "ad_unit_lesson_between"  },
-    { key: "videos",          label: pick("ভিডিও পেজ","Video Page"),                    desc: "ভিডিও তালিকার উপরে",                      icon: "🎬", unitKey: "ad_unit_videos"          },
+    { key: "videos",          label: pick("ভিডিও প্েজ","Video Page"),                    desc: "ভিডিও তালিকার উপরে",                      icon: "🎬", unitKey: "ad_unit_videos"          },
     // ── পেমেন্ট ও কেনাকাটা ──────────────────────────────────────
     { group: pick("পেমেন্ট ও কেনাকাটা","Payment & Shop") },
     { key: "payment_form",    label: pick("পেমেন্ট ফর্ম","Payment Form"),               desc: "কোর্স কেনার সময় সাবমিট বাটনের উপরে",    icon: "💳", unitKey: "ad_unit_payment_form"    },
-    { key: "payment_success", label: pick("পেমেন্ট সফল পেজ","Payment Success Page"),    desc: "পেমেন্ট হওয়ার পরে ধন্যবাদ পেজে",         icon: "✅", unitKey: "ad_unit_payment_success" },
-    { key: "shop",            label: pick("শপ পেজ","Shop Page"),                        desc: "শপের পণ্য তালিকার উপরে",                  icon: "🛒", unitKey: "ad_unit_shop"            },
+    { key: "payment_success", label: pick("পেমেন্ট সফল প্েজ","Payment Success Page"),    desc: "পেমেন্ট হওয়ার পরে ধন্যবাদ প্েজে",         icon: "✅", unitKey: "ad_unit_payment_success" },
+    { key: "shop",            label: pick("শপ প্েজ","Shop Page"),                        desc: "শপের পণ্য তালিকার উপরে",                  icon: "🛒", unitKey: "ad_unit_shop"            },
     // ── অন্যান্য ────────────────────────────────────────────────
     { group: pick("অন্যান্য","Other") },
     { key: "quiz_result",       label: pick("কুইজ ফলাফল","Quiz Result"),                desc: "কুইজের পরে ফলাফল দেখানোর নিচে",            icon: "🏆", unitKey: "ad_unit_quiz_result"       },
     { key: "quiz_interstitial", label: pick("কুইজ ইন্টারস্টিশিয়াল","Quiz Interstitial"), desc: "কুইজ উত্তর দেওয়ার পরে overlay বিজ্ঞাপন",  icon: "📋", unitKey: "ad_unit_quiz_interstitial" },
     { key: "post_bottom",       label: pick("ব্লগ/পোস্টের নিচে","Below Blog/Post"),     desc: "পোস্ট পড়া শেষ হলে নিচে",                  icon: "📝", unitKey: "ad_unit_post_bottom"       },
-    { key: "reward_zone",       label: pick("রিওয়ার্ড জোন","Reward Zone"),               desc: "ভিডিও দেখে জিতে নিন পেজে",                 icon: "🎁", unitKey: "ad_unit_reward_zone"        },
-    { key: "library",          label: pick("লাইব্রেরি পেজ","Library Page"),              desc: "বই ও রিসোর্স তালিকার উপরে",               icon: "📖", unitKey: "ad_unit_library"            },
+    { key: "reward_zone",       label: pick("রিওয়ার্ড জোন","Reward Zone"),               desc: "ভিডিও দেখে জিতুন প্েজে",                 icon: "🎁", unitKey: "ad_unit_reward_zone"        },
+    { key: "library",          label: pick("লাইব্রেরি প্েজ","Library Page"),              desc: "বই ও রিসোর্স তালিকার উপরে",               icon: "📖", unitKey: "ad_unit_library"            },
+    { key: "home_bottom",      label: pick("হোম প্েজ নিচ","Home Page Bottom"),            desc: "হোম প্েজের একদম নিচেকো",                  icon: "🏠", unitKey: "ad_unit_home_bottom"        },
+    { key: "course_details_bottom", label: pick("কোর্স বিবরণ নিচ","Course Details Bottom"), desc: "কোর্স বিবরণ প্েজের একদম নিচেকো",       icon: "📄", unitKey: "ad_unit_in_content"         },
+    { key: "my_course_detail_bottom", label: pick("আমার কোর্স নিচ","My Course Detail Bottom"), desc: "আমার কোর্স প্েজের একদম নিচেকো",       icon: "🎓", unitKey: "ad_unit_lesson_between"     },
+    { key: "payment_bottom",   label: pick("পেমেন্ট ফর্ম নিচ","Payment Form Bottom"),     desc: "পেমেন্ট ফরম প্েজের একদম নিচেকো",          icon: "💳", unitKey: "ad_unit_payment_form"       },
+    { key: "payment_success_bottom", label: pick("পেমেন্ট সফল নিচ","Payment Success Bottom"), desc: "পেমেন্ট সফল প্েজের একদম নিচেকো",    icon: "✅", unitKey: "ad_unit_payment_success"    },
   ];
 }
 
-function AdSlotCard({ slot, enabled, unitId, onToggle, onUnitChange }) {
+function AdSlotCard({ slot, webEnabled, appEnabled, unitId, onWebToggle, onAppToggle, onUnitChange }) {
+  const anyEnabled = !!webEnabled || !!appEnabled;
   return (
     <div className={`rounded-xl border transition-all ${
-      enabled
+      anyEnabled
         ? "border-[var(--bii-emerald)] bg-emerald-50/50"
         : "border-[var(--bii-border)] bg-gray-50 opacity-70"
     }`}>
@@ -184,24 +205,24 @@ function AdSlotCard({ slot, enabled, unitId, onToggle, onUnitChange }) {
         <div className="flex items-center gap-3">
           <span className="text-2xl leading-none">{slot.icon}</span>
           <div>
-            <div className={`font-semibold text-sm ${enabled ? "text-[var(--bii-emerald)]" : "text-[var(--bii-text-soft)]"}`}>
+            <div className={`font-semibold text-sm ${anyEnabled ? "text-[var(--bii-emerald)]" : "text-[var(--bii-text-soft)]"}`}>
               {slot.label}
             </div>
             <div className="text-xs text-[var(--bii-text-soft)]">{slot.desc}</div>
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <span className={`text-xs font-medium ${enabled ? "text-emerald-700" : "text-gray-400"}`}>
-            {enabled ? "চালু" : "বন্ধ"}
-          </span>
-          <Toggle on={enabled} onChange={onToggle} />
-        </div>
+        <PlatformToggles
+          webOn={webEnabled}
+          appOn={appEnabled}
+          onWebChange={onWebToggle}
+          onAppChange={onAppToggle}
+        />
       </div>
-      {enabled && (
+      {anyEnabled && (
         <div className="px-4 pb-3 pt-0">
           <input
             className="bii-input text-xs font-mono"
-            placeholder={`Ad Unit ID — যেমন: 1234567890`}
+            placeholder={`Ad Unit ID — যেনম: 1234567890`}
             value={unitId}
             onChange={(e) => onUnitChange(e.target.value)}
           />
@@ -232,15 +253,39 @@ export function AdminAds() {
 
   const set = (k, v) => setCfg((prev) => ({ ...prev, [k]: v }));
 
-  const slotEnabled = (key) => cfg[`ad_slot_${key}_enabled`] !== false;
-  const toggleSlot  = (key, val) => set(`ad_slot_${key}_enabled`, val);
-  const unitVal     = (unitKey) => cfg[unitKey] || "";
+  // ── Slot helpers: read from nested `slots` object with backwards-compat fallback
+  const rawSlots = cfg.slots || {};
+  const slotWebEnabled  = (key) => {
+    const s = rawSlots[key];
+    if (s && typeof s === "object") return !!s.web;
+    return cfg[`ad_slot_${key}_enabled`] !== false;
+  };
+  const slotAppEnabled  = (key) => {
+    const s = rawSlots[key];
+    if (s && typeof s === "object") return !!s.app;
+    return cfg[`ad_slot_${key}_enabled`] !== false;
+  };
+  const toggleSlotWeb  = (key, val) => {
+    const prev = rawSlots[key];
+    const next = (prev && typeof prev === "object")
+      ? { ...prev, web: val }
+      : { web: val, app: slotAppEnabled(key) };
+    set("slots", { ...rawSlots, [key]: next });
+  };
+  const toggleSlotApp  = (key, val) => {
+    const prev = rawSlots[key];
+    const next = (prev && typeof prev === "object")
+      ? { ...prev, app: val }
+      : { web: slotWebEnabled(key), app: val };
+    set("slots", { ...rawSlots, [key]: next });
+  };
+  const unitVal = (unitKey) => cfg[unitKey] || "";
 
   const save = async () => {
     setErr(""); setOk(""); setSaving(true);
     try {
       await api.put("/configs/ads", cfg);
-      setOk("✓ সফলভাবে সংরক্ষিত হয়েছে");
+      setOk("✓ সফলভািবে সংরক্ষিত হয়েছে");
       setTimeout(() => setOk(""), 3000);
     } catch (e) {
       setErr(formatApiError(e));
@@ -249,54 +294,92 @@ export function AdminAds() {
     }
   };
 
-  const globalOn = !!cfg.ads_enabled;
+  // Global toggles: enabled_web / enabled_app (with fallback to legacy ads_enabled)
+  const webOn  = !!cfg.enabled_web  || !!cfg.ads_enabled;
+  const appOn  = !!cfg.enabled_app;
 
   return (
     <div className="max-w-2xl space-y-6">
 
-      {/* ── Global switch ── */}
-      <div className="bii-card p-5">
-        <h2 className="font-heading text-2xl text-[var(--bii-emerald)] mb-1">বিজ্ঞাপন সেটিংস</h2>
-        <p className="text-sm text-[var(--bii-text-soft)] mb-4">
-          Google AdSense বিজ্ঞাপন সম্পূর্ণ চালু বা বন্ধ করুন এবং কোন কোন জায়গায় দেখাবে নির্বাচন করুন।
-        </p>
+      {/* ── Global switches: web & app ── */}
+      <div className="bii-card p-5 space-y-4">
+        <div>
+          <h2 className="font-heading text-2xl text-[var(--bii-emerald)] mb-1">বিস্তৃপ্ত স্ত্রিংশ</h2>
+          <p className="text-sm text-[var(--bii-text-soft)]">
+            প্ল্যাটফরম অনুযায়ী আলাদা চালু/বন্ধ করুন এবং Publisher ID স্েট করুন।
+          </p>
+        </div>
+
+        {/* Web global toggle */}
         <div className="flex items-center justify-between rounded-xl border border-[var(--bii-border)] bg-[var(--bii-cream)] px-4 py-3">
           <div>
-            <div className="font-semibold text-[var(--bii-text)]">সব বিজ্ঞাপন</div>
-            <div className="text-xs text-[var(--bii-text-soft)]">বন্ধ করলে সব জায়গা থেকে বিজ্ঞাপন উঠে যাবে</div>
+            <div className="font-semibold text-[var(--bii-text)] flex items-center gap-2">
+              <span className="text-lg">🌐</span> ওয়েব (Web)
+            </div>
+            <div className="text-xs text-[var(--bii-text-soft)]">ওয়েবসাইটে সব বিস্তৃপ্ত চালু/বন্ধ</div>
           </div>
           <div className="flex items-center gap-2">
-            <span className={`text-sm font-semibold ${globalOn ? "text-emerald-700" : "text-red-500"}`}>
-              {globalOn ? "চালু" : "বন্ধ"}
+            <span className={`text-sm font-semibold ${webOn ? "text-emerald-700" : "text-gray-400"}`}>
+              {webOn ? "চালু" : "বন্ধ"}
             </span>
-            <Toggle on={globalOn} onChange={(v) => set("ads_enabled", v)} />
+            <Toggle on={webOn} onChange={(v) => set("enabled_web", v)} />
+          </div>
+        </div>
+
+        {/* App global toggle */}
+        <div className="flex items-center justify-between rounded-xl border border-[var(--bii-border)] bg-[var(--bii-cream)] px-4 py-3">
+          <div>
+            <div className="font-semibold text-[var(--bii-text)] flex items-center gap-2">
+              <span className="text-lg">📱</span> অ্যাপ (App)
+            </div>
+            <div className="text-xs text-[var(--bii-text-soft)]">Android অ্যাপে সব বিস্তৃপ্ত চালু/বন্ধ</div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`text-sm font-semibold ${appOn ? "text-emerald-700" : "text-gray-400"}`}>
+              {appOn ? "চালু" : "বন্ধ"}
+            </span>
+            <Toggle on={appOn} onChange={(v) => set("enabled_app", v)} />
           </div>
         </div>
       </div>
 
-      {/* ── Publisher ID ── */}
-      <div className="bii-card p-5 space-y-2">
-        <div className="font-semibold text-[var(--bii-text)]">AdSense Publisher ID</div>
+      {/* ── Publisher IDs ── */}
+      <div className="bii-card p-5 space-y-3">
+        <div className="font-semibold text-[var(--bii-text)]">Publisher ID (AdSense)</div>
         <div className="text-xs text-[var(--bii-text-soft)]">
-          Google AdSense অ্যাকাউন্ট থেকে পাবেন। যেমন: <code className="bg-gray-100 rounded px-1">ca-pub-1234567890123456</code>
+          Google AdSense অ্যাকাউন্ট থেকে পাবেন। যেনম: <code className="bg-gray-100 rounded px-1">ca-pub-1234567890123456</code>
         </div>
-        <input
-          className="bii-input font-mono text-sm"
-          placeholder="ca-pub-XXXXXXXXXXXXXXXX"
-          value={cfg.adsense_publisher_id || ""}
-          onChange={(e) => set("adsense_publisher_id", e.target.value)}
-        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <div className="text-xs uppercase tracking-widest text-[var(--bii-text-soft)] mb-1">🌐 Web Publisher ID</div>
+            <input
+              className="bii-input font-mono text-sm"
+              placeholder="ca-pub-XXXXXXXXXXXXXXXX"
+              value={cfg.publisher_web || cfg.adsense_publisher_web || cfg.adsense_publisher_id || ""}
+              onChange={(e) => set("publisher_web", e.target.value)}
+            />
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-widest text-[var(--bii-text-soft)] mb-1">📱 App Publisher ID</div>
+            <input
+              className="bii-input font-mono text-sm"
+              placeholder="ca-pub-XXXXXXXXXXXXXXXX (অপশনাল)"
+              value={cfg.publisher_app || cfg.adsense_publisher_app || ""}
+              onChange={(e) => set("publisher_app", e.target.value)}
+            />
+          </div>
+        </div>
       </div>
 
       {/* ── Per-slot selection ── */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <div className="font-semibold text-[var(--bii-text)]">কোন জায়গায় বিজ্ঞাপন দেখাবে?</div>
-          <div className="text-xs text-[var(--bii-text-soft)]">— নির্বাচন করুন</div>
+          <div className="font-semibold text-[var(--bii-text)]">কোন জায়গায় বিস্তৃপ্ত দেখাবে?</div>
+          <div className="text-xs text-[var(--bii-text-soft)]">— প্ল্যাটফরম অনুযায়ী নির্বাচন করুন</div>
         </div>
-        {!globalOn && (
+        {!webOn && !appOn && (
           <div className="text-xs bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-lg px-3 py-2">
-            ⚠️ সব বিজ্ঞাপন এখন বন্ধ আছে। উপরের টগল চালু করলে নিচের নির্বাচন কার্যকর হবে।
+            ⚠️ ওয়েব বা অ্যাপ কোনোটতাই বিস্তৃপ্ত চালু নেই। উপরের টগল চালু করুন।
           </div>
         )}
         {AD_SLOTS.map((slot, i) =>
@@ -310,9 +393,11 @@ export function AdminAds() {
             <AdSlotCard
               key={slot.key}
               slot={slot}
-              enabled={slotEnabled(slot.key)}
+              webEnabled={slotWebEnabled(slot.key)}
+              appEnabled={slotAppEnabled(slot.key)}
               unitId={unitVal(slot.unitKey)}
-              onToggle={(v) => toggleSlot(slot.key, v)}
+              onWebToggle={(v) => toggleSlotWeb(slot.key, v)}
+              onAppToggle={(v) => toggleSlotApp(slot.key, v)}
               onUnitChange={(v) => set(slot.unitKey, v)}
             />
           )
@@ -352,7 +437,7 @@ export const AdminLegal = () => (
   <div className="space-y-6">
     {[
       { doc: "terms",   label: "ব্যবহারের শর্তাবলী (Terms of Service)" },
-      { doc: "privacy", label: "গোপনীয়তা নীতি (Privacy Policy)" },
+      { doc: "privacy", label: "গোপনীয়ত্া নীতি (Privacy Policy)" },
       { doc: "refund",  label: "রিফান্ড নীতি (Refund Policy)" },
     ].map(({ doc, label }) => (
       <ConfigEditor
@@ -373,7 +458,7 @@ export const AdminLegal = () => (
 
 export const AdminSocial = () => (
   <ConfigEditor configKey="social_links" title="সোশ্যাল মিডিয়া লিংক"
-    description="ফুটার ও যোগাযোগ পেজে দেখাবে।"
+    description="ফুটার ও যোগাযোগ প্েজে দেখাবে।"
     fields={[
       { name: "facebook", label: "Facebook URL" },
       { name: "youtube", label: "YouTube URL" },
@@ -389,12 +474,12 @@ export const AdminSocial = () => (
 // "Contact Info" is just the existing /api/settings page link — covered by AdminSettings already
 export const AdminContactInfo = () => (
   <ConfigEditor configKey="contact_extra" title="যোগাযোগ তথ্য (এক্সট্রা)"
-    description="সাধারণ সেটিংস পেজেও মূল যোগাযোগ আছে। এখানে অতিরিক্ত যোগাযোগ লোকেশন/অফিস ইত্যাদি।"
+    description="সাধারণ স্ত্রিংশ প্েজেও মূল যোগাযোগ আছে। এখানে অতিরিক্ত যোগাযোগ লোকেশন/অফিস ইত্যাদি।"
     fields={[
       { name: "office_hours", label: "অফিস সময়", placeholder: "শনি-বৃহঃ ৯:০০-১৭:০০" },
       { name: "support_phone", label: "সাপোর্ট ফোন" },
-      { name: "support_email", label: "সাপোর্ট ইমেইল" },
-      { name: "billing_email", label: "বিলিং ইমেইল" },
+      { name: "support_email", label: "সাপোর্ট ইমেল" },
+      { name: "billing_email", label: "বিলিং ইমেল" },
       { name: "alternate_address", label: "অতিরিক্ত শাখা ঠিকানা", type: "textarea" },
       { name: "google_map_embed", label: "Google Map Embed URL", type: "textarea" },
     ]} />

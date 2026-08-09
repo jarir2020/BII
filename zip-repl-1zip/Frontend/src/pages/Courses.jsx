@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useLang } from "../contexts/LangContext";
 import { api, imgUrl } from "../lib/api";
 import AdBanner from "../components/AdBanner";
+import BottomBanner from "../components/BottomBanner";
 
 export default function Courses() {
   const { t, pick } = useLang();
@@ -14,7 +15,7 @@ export default function Courses() {
   }, []);
 
   return (
-    <div data-testid="courses-page">
+    <div data-testid="courses-page" className="pb-16 sm:pb-24">
       <h1 className="font-heading text-3xl text-[var(--bii-emerald)] mb-1">{t("menuOurCourses")}</h1>
       <p className="text-sm text-[var(--bii-text-soft)] mb-4">{pick("আমাদের সকল ইসলামিক কোর্স", "All our Islamic courses")}</p>
       <AdBanner slot="courses-top" format="responsive" className="mb-4" />
@@ -63,6 +64,7 @@ export default function Courses() {
           </Link>
         ))}
       </div>
+      <BottomBanner slot="courses-bottom" />
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { api, formatApiError } from "../lib/api";
 import { useAds } from "../contexts/AdsContext";
 import { useLang } from "../contexts/LangContext";
 import AdBanner from "../components/AdBanner";
+import BottomBanner from "../components/BottomBanner";
 import { toast } from "sonner";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -399,7 +400,7 @@ export default function RewardZone() {
   const takaPreview = coinsNum >= coinsPerTaka ? Math.floor(coinsNum / coinsPerTaka) : 0;
 
   return (
-    <div className="max-w-lg mx-auto space-y-4 pb-12">
+    <div className="max-w-lg mx-auto space-y-4 pb-16 sm:pb-24">
 
       {/* ── Hero ── */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[var(--bii-emerald)] via-emerald-600 to-teal-700 text-white px-6 pt-8 pb-6 text-center">
@@ -748,6 +749,7 @@ export default function RewardZone() {
 
       {/* ══ Tab: Cashout History ══ */}
       {tab === "history" && <CashoutHistoryTab />}
+      <BottomBanner slot="reward-zone-bottom" />
     </div>
   );
 }

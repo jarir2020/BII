@@ -203,6 +203,7 @@ $config = [
                 'api/admin/reward-ads/<id>' => 'api/admin-rewards/reward-ad',
                 'api/admin/reward-ads' => 'api/admin-rewards/reward-ads',
                 'api/admin/reward-settings' => 'api/admin-rewards/reward-settings',
+                'api/admin/ads-settings' => 'api/configs/view',
                 'api/payments/requests/<pid>/quick-approve' => 'api/payments/quick-approve',
                 'api/payments/requests/<pid>/quick-reject' => 'api/payments/quick-reject',
                 'api/payments/requests/<pid>/approve' => 'api/payments/approve',

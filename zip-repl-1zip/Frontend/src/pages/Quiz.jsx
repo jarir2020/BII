@@ -11,6 +11,7 @@ import { useLang } from "../contexts/LangContext";
 import { api, imgUrl } from "../lib/api";
 import { toast } from "sonner";
 import AdBanner from "../components/AdBanner";
+import BottomBanner from "../components/BottomBanner";
 
 // ── Quiz Ad countdown timer ──────────────────────────────────────
 function QuizAdTimer({ onTick, onDone, seconds = 5 }) {
@@ -227,7 +228,7 @@ function QuizLanding({ quiz, myResult, leaderboard, user, onStart, allQuizzes, a
   const pastQuizzes = allQuizzes.filter((q) => quizStatus(q) === "closed" && q.id !== quiz.id);
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="space-y-6 max-w-2xl mx-auto pb-16 sm:pb-24">
 
       {/* ── Hero Banner ── */}
       <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[var(--bii-emerald)] via-emerald-700 to-emerald-900 text-white">
@@ -445,6 +446,7 @@ function QuizLanding({ quiz, myResult, leaderboard, user, onStart, allQuizzes, a
         </div>
         <FAQSection />
       </div>
+      <BottomBanner slot="quiz-bottom" />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { useLang } from "../contexts/LangContext";
 import { useAuth } from "../contexts/AuthContext";
 import { api, imgUrl } from "../lib/api";
 import AdBanner from "../components/AdBanner";
+import BottomBanner from "../components/BottomBanner";
 
 export default function CourseDetails() {
   const { id } = useParams();
@@ -36,7 +37,7 @@ export default function CourseDetails() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto" data-testid="course-details-page">
+    <div className="max-w-3xl mx-auto pb-16 sm:pb-24" data-testid="course-details-page">
       <div className="bii-card overflow-hidden">
         {course.cover_image && (
           <div className="aspect-[21/9] overflow-hidden">
@@ -61,7 +62,7 @@ export default function CourseDetails() {
           <div className="gold-divider my-4" />
           <h2 className="font-heading text-lg mb-2">{t("description")}</h2>
           <p className="text-[var(--bii-text-soft)] leading-relaxed whitespace-pre-line">{pick(course.description_bn, course.description_en)}</p>
-          <AdBanner slot="in-content" format="responsive" className="mt-4" />
+          <BottomBanner slot="course-details-bottom" />
           <div className="mt-6">
             {enrolled ? (
               <div className="flex items-center gap-2 text-green-700 font-medium">

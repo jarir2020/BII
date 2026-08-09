@@ -3,7 +3,11 @@ import { Link } from "react-router-dom";
 import { MagnifyingGlass, Books, Star, BookOpen, ArrowRight, Funnel, SquaresFour, List, FilePdf, FileHtml, File } from "@phosphor-icons/react";
 import { api, imgUrl } from "../lib/api";
 import { useLang } from "../contexts/LangContext";
+import { useAds } from "../contexts/AdsContext";
 import AdBanner from "../components/AdBanner";
+import BottomBanner from "../components/BottomBanner";
+import FullScreenAdOverlay from "../components/FullScreenAdOverlay";
+import { useNavigate } from "react-router-dom";
 
 const CAT_ICON = { islamic:"☪️", science:"🔬", history:"🏛️", literature:"📖",
   self_help:"🌟", philosophy:"🧠", business:"💼", children:"🧒",
@@ -18,7 +22,7 @@ const BG_COLORS = [
 
 const FILE_ICONS = { pdf: FilePdf, epub: BookOpen, html: FileHtml, htm: FileHtml };
 
-function BookCard({ book, idx, viewMode }) {
+function BookCard({ book, idx, viewMode, onClick }) {
   const { pick } = useLang();
   const title = pick(book.title_bn, book.title_en) || book.title_en || book.title_bn;
   const author = pick(book.author_bn, book.author_en) || book.author_en || book.author_bn;
@@ -28,8 +32,8 @@ function BookCard({ book, idx, viewMode }) {
 
   if (viewMode === "list") {
     return (
-      <Link to={`/library/${book.id}`}
-        className="bii-card flex items-center gap-3 p-3 hover:shadow-md transition-shadow duration-200">
+      <button type="button" onClick={onClick}
+        className="bii-card flex items-center gap-3 p-3 hover:shadow-md transition-shadow duration-200 w-full text-left">
         <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${bg} flex items-center justify-center flex-shrink-0`}>
           {cover ? (
             <img src={cover} alt="" className="w-full h-full object-cover rounded-lg" />
@@ -50,13 +54,13 @@ function BookCard({ book, idx, viewMode }) {
           {book.is_featured && <Star size={12} weight="fill" className="text-[var(--bii-gold)]" />}
           <ArrowRight size={14} className="text-[var(--bii-text-soft)]" />
         </div>
-      </Link>
+      </button>
     );
   }
 
   return (
-    <Link to={`/library/${book.id}`}
-      className="bii-card overflow-hidden flex flex-col group hover:shadow-lg transition-shadow duration-200">
+    <button type="button" onClick={onClick}
+      className="bii-card overflow-hidden flex flex-col group hover:shadow-lg transition-shadow duration-200 w-full text-left">
       {/* Cover */}
       <div className={`relative h-52 bg-gradient-to-br ${bg} overflow-hidden flex-shrink-0`}>
         {cover ? (
@@ -90,12 +94,16 @@ function BookCard({ book, idx, viewMode }) {
           </span>
         </div>
       </div>
-    </Link>
+    </button>
   );
 }
 
+const LIBRARY_FIRST_AD_KEY = "bii_library_first_ad_shown";
+
 export default function Library() {
   const { pick } = useLang();
+  const navigate = useNavigate();
+  const { platform, loadRewardAds, rewardAds } = useAds();
   const [books, setBooks]         = useState([]);
   const [cats, setCats]           = useState([]);
   const [cat, setCat]             = useState("all");
@@ -105,10 +113,19 @@ export default function Library() {
   const [total, setTotal]         = useState(0);
   const [page, setPage]           = useState(0);
   const [viewMode, setViewMode]   = useState("grid");
+  const [showAd, setShowAd]       = useState(false);
+  const [pendingBookId, setPendingBookId] = useState(null);
   const PER = 40;
 
   useEffect(() => {
     api.get("/library/categories").then(r => setCats(Array.isArray(r.data) ? r.data : [])).catch(()=>{});
+
+    // Pre-load reward ads for first-click interstitial (native platform only)
+    const isNative = typeof window !== "undefined" && window.Capacitor?.isNativePlatform
+      ? window.Capacitor.isNativePlatform() : false;
+    if (isNative && platform === "app") {
+      loadRewardAds("app");
+    }
   }, []);
 
   const load = useCallback((catVal, searchVal, pageVal) => {
@@ -130,8 +147,25 @@ export default function Library() {
 
   const handleSearch = e => { e.preventDefault(); setQ(search); setPage(0); };
 
+  // First-click interstitial: show ad before navigating to book (native only, once)
+  const handleBookClick = (bookId) => {
+    const alreadyShown = localStorage.getItem(LIBRARY_FIRST_AD_KEY);
+    if (alreadyShown) {
+      navigate(`/library/${bookId}`);
+      return;
+    }
+    const isNative = typeof window !== "undefined" && window.Capacitor?.isNativePlatform
+      ? window.Capacitor.isNativePlatform() : false;
+    if (!isNative || platform !== "app" || rewardAds.length === 0) {
+      navigate(`/library/${bookId}`);
+      return;
+    }
+    setPendingBookId(bookId);
+    setShowAd(true);
+  };
+
   return (
-    <div data-testid="library-page" className="space-y-5">
+    <div data-testid="library-page" className="space-y-5 pb-16 sm:pb-24">
       {/* Hero */}
       <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[var(--bii-emerald)] to-teal-900 p-6 text-white">
         <div className="islamic-pattern absolute inset-0 opacity-10 pointer-events-none" />
@@ -158,7 +192,7 @@ export default function Library() {
         </div>
       </div>
 
-      <AdBanner slot="library-top" format="responsive" />
+      <BottomBanner slot="library-bottom" />
 
       {/* Category tabs */}
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
@@ -226,12 +260,35 @@ export default function Library() {
         </div>
       ) : viewMode === "grid" ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {books.map((b, i) => <BookCard key={b.id} book={b} idx={i} viewMode="grid" />)}
+          {books.map((b, i) => (
+            <BookCard key={b.id} book={b} idx={i} viewMode="grid"
+              onClick={() => handleBookClick(b.id)} />
+          ))}
         </div>
       ) : (
         <div className="space-y-2">
-          {books.map((b, i) => <BookCard key={b.id} book={b} idx={i} viewMode="list" />)}
+          {books.map((b, i) => (
+            <BookCard key={b.id} book={b} idx={i} viewMode="list"
+              onClick={() => handleBookClick(b.id)} />
+          ))}
         </div>
+      )}
+
+      {/* First-click interstitial ad overlay */}
+      {showAd && (
+        <FullScreenAdOverlay
+          ad={rewardAds.length > 0 ? rewardAds[Math.floor(Math.random() * rewardAds.length)] : null}
+          onComplete={() => {
+            setShowAd(false);
+            if (pendingBookId) {
+              localStorage.setItem(LIBRARY_FIRST_AD_KEY, "1");
+              navigate(`/library/${pendingBookId}`);
+            }
+          }}
+          title="বিজ্ঞাপন"
+          skipLabel="বাদ দিও"
+          minDuration={3}
+        />
       )}
     </div>
   );

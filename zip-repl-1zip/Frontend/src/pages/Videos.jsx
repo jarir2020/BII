@@ -3,6 +3,7 @@ import { X, YoutubeLogo, ArrowSquareOut, Play } from "@phosphor-icons/react";
 import { useLang } from "../contexts/LangContext";
 import { api, imgUrl } from "../lib/api";
 import AdBanner from "../components/AdBanner";
+import BottomBanner from "../components/BottomBanner";
 
 /* ── YouTube helpers ── */
 function getYtId(url) {
@@ -36,7 +37,7 @@ export default function Videos() {
   const close = () => setOpen(null);
 
   return (
-    <div data-testid="videos-page">
+    <div data-testid="videos-page" className="pb-16 sm:pb-24">
       <h1 className="font-heading text-3xl text-[var(--bii-emerald)] mb-4">{t("menuVideos")}</h1>
       <AdBanner slot="videos-top" format="responsive" className="mb-4" />
 
@@ -168,6 +169,7 @@ export default function Videos() {
           </div>
         </div>
       )}
+      <BottomBanner slot="videos-bottom" />
     </div>
   );
 }

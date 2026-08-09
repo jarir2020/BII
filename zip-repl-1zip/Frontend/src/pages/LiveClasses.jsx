@@ -8,6 +8,7 @@ import {
 import { useLang } from "../contexts/LangContext";
 import { useAuth } from "../contexts/AuthContext";
 import { api } from "../lib/api";
+import BottomBanner from "../components/BottomBanner";
 
 // re-export pick helper from hook — sub-components call useLang() directly
 
@@ -342,7 +343,7 @@ export default function LiveClasses() {
   }
 
   return (
-    <div data-testid="live-classes-page" className="space-y-6 max-w-3xl mx-auto">
+    <div data-testid="live-classes-page" className="space-y-6 max-w-3xl mx-auto pb-16 sm:pb-24">
 
       {/* Hero */}
       <HeroBanner liveCount={totalLiveNow} hasFree={freeClasses.length > 0} />
@@ -470,6 +471,7 @@ export default function LiveClasses() {
           )}
         </section>
       )}
+      <BottomBanner slot="live-classes-bottom" />
     </div>
   );
 }

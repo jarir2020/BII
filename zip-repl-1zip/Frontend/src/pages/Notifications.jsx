@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Bell } from "@phosphor-icons/react";
 import { useLang } from "../contexts/LangContext";
 import { api } from "../lib/api";
+import BottomBanner from "../components/BottomBanner";
 
 export default function Notifications() {
   const { t, pick } = useLang();
@@ -9,7 +10,7 @@ export default function Notifications() {
   useEffect(() => { api.get("/notifications").then((r) => setItems(r.data)); }, []);
 
   return (
-    <div data-testid="notifications-page">
+    <div data-testid="notifications-page" className="pb-16 sm:pb-24">
       <h1 className="font-heading text-3xl text-[var(--bii-emerald)] mb-6 flex items-center gap-2">
         <Bell size={32} weight="duotone" /> {t("menuNotifications")}
       </h1>
@@ -23,6 +24,7 @@ export default function Notifications() {
           </div>
         ))}
       </div>
+      <BottomBanner slot="notifications-bottom" />
     </div>
   );
 }

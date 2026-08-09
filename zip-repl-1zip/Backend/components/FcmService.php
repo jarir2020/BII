@@ -32,8 +32,7 @@ class FcmService
             return self::$cachedAccessToken;
         }
 
-        $cfg = Yii::$app->controller?->configValue('firebase')
-            ?? self::loadFirebaseConfig();
+        $cfg = self::loadFirebaseConfig();
         $saJson = (string) ($cfg['service_account_json'] ?? '');
         if ($saJson === '') {
             Yii::warning('FCM: service_account_json not configured.', __METHOD__);
@@ -259,7 +258,7 @@ class FcmService
     private static function loadFirebaseConfig(): array
     {
         $row = Yii::$app->db->createCommand(
-            "SELECT data FROM configs WHERE name = 'firebase'"
+            "SELECT data FROM configs WHERE `key` = 'firebase-web'"
         )->queryOne();
         if ($row && is_string($row['data'])) {
             return json_decode($row['data'], true) ?? [];

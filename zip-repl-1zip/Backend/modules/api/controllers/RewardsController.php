@@ -332,8 +332,20 @@ class RewardsController extends ApiController
     public function actionAds(): \yii\web\Response
     {
         $this->user();
+        // Accept ?platform=app|web to filter interstitial ads
+        $platform = Yii::$app->request->get('platform', 'all');
+        if (!in_array($platform, ['all', 'web', 'app'], true)) {
+            $platform = 'all';
+        }
+        $where = 'is_active = 1';
+        $params = [];
+        if ($platform !== 'all') {
+            $where .= ' AND (`platform` = :plat OR `platform` = \'all\')';
+            $params[':plat'] = $platform;
+        }
         $rows = Yii::$app->db->createCommand(
-            'SELECT * FROM reward_ads WHERE is_active = 1 ORDER BY `order` ASC'
+            'SELECT * FROM reward_ads WHERE ' . $where . ' ORDER BY `order` ASC',
+            $params
         )->queryAll();
         return $this->json(array_map(fn ($r) => $this->adDoc($r), $rows));
     }

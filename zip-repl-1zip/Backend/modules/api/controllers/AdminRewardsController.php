@@ -30,6 +30,9 @@ class AdminRewardsController extends ApiController
         $this->requireAdmin();
         if (Yii::$app->request->isPost) {
             $b = Yii::$app->request->post();
+            $platform = in_array($b['platform'] ?? '', ['all', 'web', 'app'], true)
+                ? $b['platform']
+                : 'all';
             $doc = [
                 'id' => Uuid::v4(),
                 'title' => (string) ($b['title'] ?? ''),
@@ -40,6 +43,7 @@ class AdminRewardsController extends ApiController
                 'is_active' => ($b['is_active'] ?? true) ? 1 : 0,
                 'order' => (int) ($b['order'] ?? 0),
                 'description' => (string) ($b['description'] ?? ''),
+                'platform' => $platform,
                 'created_at' => $this->now(),
             ];
             Yii::$app->db->createCommand()->insert('reward_ads', $doc)->execute();
@@ -73,6 +77,9 @@ class AdminRewardsController extends ApiController
             'order' => (int) ($b['order'] ?? $row['order']),
             'description' => (string) ($b['description'] ?? $row['description']),
         ];
+        if (isset($b['platform']) && in_array($b['platform'], ['all', 'web', 'app'], true)) {
+            $updates['platform'] = $b['platform'];
+        }
         Yii::$app->db->createCommand()->update('reward_ads', $updates, ['id' => $id])->execute();
         $row = Yii::$app->db->createCommand('SELECT * FROM reward_ads WHERE id = :id', [':id' => $id])->queryOne();
         return $this->json($this->adDoc($row));

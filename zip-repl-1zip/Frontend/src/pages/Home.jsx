@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import AdBanner from "../components/AdBanner";
+import BottomBanner from "../components/BottomBanner";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -284,7 +285,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="space-y-5" data-testid="home-page">
+    <div className="space-y-5 pb-16 sm:pb-24" data-testid="home-page">
       {/* PROFILE BANNER */}
       <section className="relative overflow-hidden rounded-3xl bg-[var(--bii-emerald)] text-white">
         <div className="islamic-pattern absolute inset-0 opacity-25" />
@@ -349,7 +350,7 @@ export default function Home() {
       </section>
 
       {/* Ad banner between menu grid and winner reviews */}
-      <AdBanner slot="home-mid" format="responsive" />
+      <BottomBanner slot="home-bottom" />
 
       {/* WINNER REVIEWS */}
       <WinnerReviews reviews={reviews} />

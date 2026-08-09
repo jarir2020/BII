@@ -2,9 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { CheckCircle, Wallet, Copy, Checks, ArrowRight, Info, ClockCountdown, SealCheck, BookOpen, WhatsappLogo, Envelope } from "@phosphor-icons/react";
 import { useLang } from "../contexts/LangContext";
+import { useAds } from "../contexts/AdsContext";
 import { api } from "../lib/api";
 import { toast } from "sonner";
 import AdBanner from "../components/AdBanner";
+import BottomBanner from "../components/BottomBanner";
+import FullScreenAdOverlay from "../components/FullScreenAdOverlay";
 
 // ─── Payment Submit Page ────────────────────────────────────────────────────
 export function Payment() {
@@ -60,7 +63,7 @@ export function Payment() {
   if (!course) return <div className="text-center py-8 text-[var(--bii-text-soft)]">লোড হচ্ছে...</div>;
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-6" data-testid="payment-page">
+    <div className="max-w-xl mx-auto px-4 py-6 pb-16 sm:pb-24" data-testid="payment-page">
 
       {/* Course summary */}
       <div className="bii-card p-5 mb-4">
@@ -164,7 +167,7 @@ export function Payment() {
         </p>
       </div>
 
-      <AdBanner slot="payment-form" format="responsive" className="mb-4" />
+      <BottomBanner slot="payment-bottom" />
 
       {/* Submit */}
       <button
@@ -196,13 +199,27 @@ export function PaymentSuccess() {
   const txnId = sp.get("txn") || "";
   const method = sp.get("method") || "bkash";
 
+  const { platform, loadRewardAds, rewardAds } = useAds();
+  const [showAd, setShowAd] = useState(false);
   const [course, setCourse] = useState(null);
   const [settings, setSettings] = useState({});
 
   useEffect(() => {
     if (courseId) api.get(`/courses/${courseId}`).then((r) => setCourse(r.data)).catch(() => {});
     api.get("/settings").then((r) => setSettings(r.data)).catch(() => {});
-  }, [courseId]);
+
+    // Show full-screen interstitial ad on native platform (app only)
+    const isNative = typeof window !== "undefined" && window.Capacitor?.isNativePlatform
+      ? window.Capacitor.isNativePlatform() : false;
+    if (isNative && platform === "app") {
+      loadRewardAds("app").then((ads) => {
+        if (ads.length > 0) {
+          const ad = ads[Math.floor(Math.random() * ads.length)];
+          setShowAd(!!ad);
+        }
+      });
+    }
+  }, [courseId, platform, loadRewardAds]);
 
   const steps = [
     {
@@ -219,8 +236,22 @@ export function PaymentSuccess() {
     },
   ];
 
+  // Show full-screen ad overlay before success content on native platform
+  if (showAd) {
+    const ad = rewardAds.length > 0 ? rewardAds[Math.floor(Math.random() * rewardAds.length)] : null;
+    return (
+      <FullScreenAdOverlay
+        ad={ad}
+        onComplete={() => setShowAd(false)}
+        title="বিজ্ঞাপন"
+        skipLabel="বাদ দিও"
+        minDuration={3}
+      />
+    );
+  }
+
   return (
-    <div className="max-w-lg mx-auto px-4 py-8" data-testid="payment-success-page">
+    <div className="max-w-lg mx-auto px-4 py-8 pb-16 sm:pb-24" data-testid="payment-success-page">
 
       {/* Hero success card */}
       <div className="bii-card overflow-hidden mb-4">
@@ -316,7 +347,7 @@ export function PaymentSuccess() {
         </div>
       )}
 
-      <AdBanner slot="payment-success" format="responsive" className="mb-4" />
+      <BottomBanner slot="payment-success-bottom" />
 
       {/* Action buttons */}
       <div className="flex gap-3 flex-wrap">

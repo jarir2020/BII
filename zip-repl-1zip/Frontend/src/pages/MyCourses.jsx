@@ -10,6 +10,8 @@ const PAYMENT_STATUS_CFG = {
   rejected: { key: "rejected",        cls: "bg-red-100    text-red-800    border-red-300",    Icon: XCircle },
 };
 
+import BottomBanner from "../components/BottomBanner";
+
 export default function MyCourses() {
   const { t, pick } = useLang();
   const [courses,  setCourses]  = useState([]);
@@ -33,7 +35,7 @@ export default function MyCourses() {
   );
 
   return (
-    <div data-testid="my-courses-page" className="space-y-5">
+    <div data-testid="my-courses-page" className="space-y-5 pb-16 sm:pb-24">
       <h1 className="font-heading text-3xl text-[var(--bii-emerald)]">{t("menuMyCourses")}</h1>
 
       {loading && <div className="text-center text-[var(--bii-text-soft)] py-8">{t("loading")}</div>}
@@ -116,6 +118,7 @@ export default function MyCourses() {
           </div>
         </section>
       )}
+      <BottomBanner slot="my-courses-bottom" />
     </div>
   );
 }

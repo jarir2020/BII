@@ -11,6 +11,7 @@ import { api, formatApiError } from "../lib/api";
 import { useAuth } from "../contexts/AuthContext";
 import { useLang } from "../contexts/LangContext";
 import AdBanner from "../components/AdBanner";
+import BottomBanner from "../components/BottomBanner";
 
 /* ─── Helpers ─────────────────────────────────────────────────────────────── */
 const BACKEND = process.env.REACT_APP_BACKEND_URL || "";
@@ -1184,6 +1185,7 @@ export default function Shop() {
           {toast}
         </div>
       )}
+      <BottomBanner slot="shop-bottom" />
     </div>
   );
 }

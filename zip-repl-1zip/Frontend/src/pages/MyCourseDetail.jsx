@@ -8,6 +8,7 @@ import {
 import { useLang } from "../contexts/LangContext";
 import { api, imgUrl } from "../lib/api";
 import AdBanner from "../components/AdBanner";
+import BottomBanner from "../components/BottomBanner";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 function formatDate(iso) {
@@ -275,7 +276,7 @@ export default function MyCourseDetail() {
   const pastLive = liveClasses.filter((l) => !isUpcoming(l.scheduled_at));
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-10">
+    <div className="max-w-3xl mx-auto space-y-6 pb-16 sm:pb-24">
 
       {/* Back link */}
       <Link
@@ -361,7 +362,7 @@ export default function MyCourseDetail() {
         </div>
       )}
 
-      <AdBanner slot="lesson-between" format="responsive" className="my-2" />
+      <BottomBanner slot="my-course-detail-bottom" />
 
       {/* ── Videos ────────────────────────────────────────────── */}
       {videos.length > 0 && (
