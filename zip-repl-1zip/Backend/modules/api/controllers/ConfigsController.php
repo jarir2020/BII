@@ -117,18 +117,52 @@ class ConfigsController extends ApiController
         $admin = $this->configValue('ads') ?? [];
         $web   = $this->configValue('ads-web') ?? [];
 
+        // Resolve publisher ID: web platform uses publisher_web, fallback to legacy flat key
+        $publisherWeb = $web['publisher_web'] ?? $admin['publisher_web'] ?? $admin['adsense_publisher_id'] ?? '';
+        $enabledWeb   = $web['enabled_web']   ?? $admin['enabled_web']   ?? $admin['ads_enabled'] ?? false;
+
         return [
             // New nested structure
-            'publisher_web' => $web['publisher_web'] ?? $admin['publisher_web'] ?? '',
+            'publisher_web' => $publisherWeb,
             'publisher_app' => $web['publisher_app'] ?? $admin['publisher_app'] ?? '',
-            'enabled_web'   => $web['enabled_web']   ?? $admin['enabled_web']   ?? false,
+            'enabled_web'   => $enabledWeb,
             'enabled_app'   => $web['enabled_app']   ?? $admin['enabled_app']   ?? false,
             'slots'         => $web['slots']         ?? $admin['slots']         ?? [],
-            // Backwards compat: flat keys for existing frontend
-            'adsense_publisher_web' => $web['publisher_web'] ?? $admin['publisher_web'] ?? '',
-            'adsense_publisher_app' => $web['publisher_app'] ?? $admin['publisher_app'] ?? '',
-            'ads_enabled_web'       => $web['enabled_web']   ?? $admin['enabled_web']   ?? false,
-            'ads_enabled_app'       => $web['enabled_app']   ?? $admin['enabled_app']   ?? false,
+            // Flat keys that frontend AdsContext reads
+            'adsense_publisher_id' => $publisherWeb,
+            'ads_enabled'          => $enabledWeb,
+            // Per-slot enabled flags (flat keys)
+            'ad_slot_header_enabled'          => $admin['ad_slot_header_enabled']          ?? true,
+            'ad_slot_in_content_enabled'      => $admin['ad_slot_in_content_enabled']      ?? true,
+            'ad_slot_footer_enabled'          => $admin['ad_slot_footer_enabled']          ?? true,
+            'ad_slot_sidebar_enabled'         => $admin['ad_slot_sidebar_enabled']         ?? true,
+            'ad_slot_shop_enabled'            => $admin['ad_slot_shop_enabled']            ?? true,
+            'ad_slot_courses_enabled'         => $admin['ad_slot_courses_enabled']         ?? true,
+            'ad_slot_videos_enabled'          => $admin['ad_slot_videos_enabled']          ?? true,
+            'ad_slot_home_enabled'            => $admin['ad_slot_home_enabled']            ?? true,
+            'ad_slot_payment_form_enabled'    => $admin['ad_slot_payment_form_enabled']    ?? true,
+            'ad_slot_payment_success_enabled' => $admin['ad_slot_payment_success_enabled'] ?? true,
+            'ad_slot_quiz_result_enabled'     => $admin['ad_slot_quiz_result_enabled']     ?? true,
+            'ad_slot_post_bottom_enabled'     => $admin['ad_slot_post_bottom_enabled']     ?? true,
+            'ad_slot_lesson_between_enabled'  => $admin['ad_slot_lesson_between_enabled']  ?? true,
+            'ad_slot_quiz_interstitial_enabled' => $admin['ad_slot_quiz_interstitial_enabled'] ?? true,
+            'ad_slot_reward_zone_enabled'     => $admin['ad_slot_reward_zone_enabled']     ?? true,
+            // Per-slot ad unit IDs (flat keys)
+            'ad_unit_header'          => $admin['ad_unit_header']          ?? '',
+            'ad_unit_in_content'      => $admin['ad_unit_in_content']      ?? '',
+            'ad_unit_footer'          => $admin['ad_unit_footer']          ?? '',
+            'ad_unit_sidebar'         => $admin['ad_unit_sidebar']         ?? '',
+            'ad_unit_shop'            => $admin['ad_unit_shop']            ?? '',
+            'ad_unit_courses'         => $admin['ad_unit_courses']         ?? '',
+            'ad_unit_videos'          => $admin['ad_unit_videos']          ?? '',
+            'ad_unit_home'            => $admin['ad_unit_home']            ?? '',
+            'ad_unit_payment_form'    => $admin['ad_unit_payment_form']    ?? '',
+            'ad_unit_payment_success' => $admin['ad_unit_payment_success'] ?? '',
+            'ad_unit_quiz_result'     => $admin['ad_unit_quiz_result']     ?? '',
+            'ad_unit_post_bottom'     => $admin['ad_unit_post_bottom']     ?? '',
+            'ad_unit_lesson_between'  => $admin['ad_unit_lesson_between']  ?? '',
+            'ad_unit_quiz_interstitial' => $admin['ad_unit_quiz_interstitial'] ?? '',
+            'ad_unit_reward_zone'     => $admin['ad_unit_reward_zone']     ?? '',
         ];
     }
 }
