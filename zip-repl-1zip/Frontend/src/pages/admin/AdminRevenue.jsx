@@ -31,7 +31,7 @@ export default function AdminRevenue() {
 
   useEffect(() => {
     api.get("/admin/revenue-stats")
-      .then((r) => setStats(r.data))
+      .then((r) => setStats(r.data || {}))
       .catch(() => setErr("রেভিনিউ ডেটা লোড করা যায়নি।"));
   }, []);
 

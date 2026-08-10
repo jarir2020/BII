@@ -14,9 +14,9 @@ export default function Notifications() {
   const [items, setItems] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [sending, setSending] = useState(false);
-  const [form, setForm] = useState({ title_bn: "", title_en: "", body_bn: "", body_en: "", image_url: "" });
+  const [form, setForm] = useState({ title_bn: "", title_en: "", body_bn: "", body_en: "", image_url: "", display_order: "" });
 
-  const load = () => api.get("/notifications").then((r) => setItems(r.data));
+  const load = () => api.get("/notifications").then((r) => setItems(r.data || []));
   useEffect(() => { load(); }, []);
 
   const send = async (e) => {
@@ -29,9 +29,10 @@ export default function Notifications() {
         title_bn: form.title_bn, title_en: form.title_en,
         body_bn: form.body_bn, body_en: form.body_en,
         image_url: form.image_url, click_action: "/", target: "all",
+        display_order: parseInt(form.display_order) || 0,
       });
       toast.success("নোটিফিকেশন পাঠানো হয়েছে!");
-      setForm({ title_bn: "", title_en: "", body_bn: "", body_en: "", image_url: "" });
+      setForm({ title_bn: "", title_en: "", body_bn: "", body_en: "", image_url: "", display_order: "" });
       setShowForm(false);
       load();
     } catch (err) {
@@ -66,6 +67,19 @@ export default function Notifications() {
           <input className="bii-input" placeholder="English title (optional)" value={form.title_en} onChange={(e) => setForm({ ...form, title_en: e.target.value })} />
           <textarea className="bii-input min-h-[80px]" placeholder="বাংলা বার্তা" value={form.body_bn} onChange={(e) => setForm({ ...form, body_bn: e.target.value })} />
           <textarea className="bii-input min-h-[60px]" placeholder="English message (optional)" value={form.body_en} onChange={(e) => setForm({ ...form, body_en: e.target.value })} />
+
+          <div>
+            <label className="block text-sm font-medium mb-1.5">📌 প্রদর্শন ক্রম (Display Order)</label>
+            <input
+              type="number"
+              min="0"
+              className="bii-input"
+              placeholder="০ = শেষে দেখাবে, ১ = প্রথমে"
+              value={form.display_order}
+              onChange={(e) => setForm({ ...form, display_order: e.target.value })}
+            />
+            <p className="text-xs text-[var(--bii-text-soft)] mt-1">০ রাখুন অথবা মান দিন — ছোট সংখ্যা উপরে দেখাবে। পূর্বের নোটifs স্বয়ংক্রিয়ভাবে নিচে সরে যাবে।</p>
+          </div>
 
           <div>
             <label className="block text-sm font-medium mb-1.5"><ImageIcon size={14} className="inline mr-1" /> ব্যানার ছবি</label>

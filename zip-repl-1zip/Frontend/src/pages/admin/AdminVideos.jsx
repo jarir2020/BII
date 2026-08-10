@@ -25,10 +25,10 @@ export default function AdminVideos() {
   const [editing, setEditing] = useState(null);
   const [err, setErr]       = useState("");
 
-  const reload = () => api.get("/videos").then((r) => setItems(r.data));
+  const reload = () => api.get("/videos").then((r) => setItems(r.data || []));
   useEffect(() => {
     reload();
-    api.get("/courses").then((r) => setCourses(r.data));
+    api.get("/courses").then((r) => setCourses(r.data || []));
   }, []);
 
   const upd = (k) => (e) => setForm({ ...form, [k]: e.target.value });

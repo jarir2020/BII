@@ -13,7 +13,7 @@ export default function AdminTeachers() {
   const [editing, setEditing] = useState(null);
   const [err, setErr] = useState("");
 
-  const reload = () => api.get("/teachers").then((r) => setItems(r.data));
+  const reload = () => api.get("/teachers").then((r) => setItems(r.data || []));
   useEffect(() => { reload(); }, []);
 
   const submit = async (e) => {

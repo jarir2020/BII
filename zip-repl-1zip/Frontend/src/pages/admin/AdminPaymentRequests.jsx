@@ -34,7 +34,7 @@ export default function AdminPaymentRequests() {
   const load = useCallback((silent = false) => {
     if (!silent) setLoading(true);
     return api.get("/payments/requests")
-      .then((r) => setItems(r.data))
+      .then((r) => setItems(r.data || []))
       .catch(() => {})
       .finally(() => { if (!silent) setLoading(false); });
   }, []);

@@ -11,7 +11,7 @@ export default function AdminEnrollments() {
   const [view, setView] = useState("flat"); // flat | byCourse
 
   useEffect(() => {
-    api.get("/enrollments").then((r) => setItems(r.data)).finally(() => setLoading(false));
+    api.get("/enrollments").then((r) => setItems(r.data || [])).finally(() => setLoading(false));
   }, []);
 
   const filtered = items.filter((e) => {

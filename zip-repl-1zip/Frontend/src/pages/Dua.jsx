@@ -75,7 +75,7 @@ export default function Dua() {
 
   // ── বুটআপ ──
   useEffect(() => {
-    api.get("/dua-categories").then(r => setCategories(r.data)).catch(() => {});
+    api.get("/dua-categories").then(r => setCategories(r.data || [])).catch(() => {});
     api.get("/duas/today").then(r => setTodayDua(r.data?.id ? r.data : null)).catch(() => {});
     api.get("/duas/popular").then(r => setPopularDuas(r.data || [])).catch(() => {});
     api.get("/duas").then(r => setAllDuas(r.data || [])).catch(() => {});
