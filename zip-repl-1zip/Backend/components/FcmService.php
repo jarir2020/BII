@@ -195,8 +195,8 @@ class FcmService
                 $failed++;
                 $errMsg = $e->getMessage();
 
-                // Delete stale tokens (UNREGISTERED or not-found)
-                if (str_contains($errMsg, 'UNREGISTERED') || str_contains($errMsg, 'NotRegistered')) {
+                // Delete stale tokens (UNREGISTERED, NotRegistered, or NOT_FOUND)
+                if (str_contains($errMsg, 'UNREGISTERED') || str_contains($errMsg, 'NotRegistered') || str_contains($errMsg, 'NOT_FOUND')) {
                     self::deleteStaleToken($token);
                 }
                 $errors[] = "Token {$t['id']}: {$errMsg}";
