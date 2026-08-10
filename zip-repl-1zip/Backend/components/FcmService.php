@@ -35,13 +35,20 @@ class FcmService
         $cfg = self::loadFirebaseConfig();
         $saJson = (string) ($cfg['service_account_json'] ?? '');
         if ($saJson === '') {
-            Yii::warning('FCM: service_account_json not configured.', __METHOD__);
+            Yii::error('FCM: service_account_json is empty — paste your Firebase Service Account JSON in Settings → Firebase.', __METHOD__);
             return null;
         }
 
         $sa = json_decode($saJson, true);
-        if (!$sa || empty($sa['client_email']) || empty($sa['private_key'])) {
-            Yii::warning('FCM: Invalid service_account_json structure.', __METHOD__);
+        if (!$sa || !is_array($sa)) {
+            Yii::error('FCM: service_account_json is not valid JSON. Check for trailing commas or missing quotes.', __METHOD__);
+            return null;
+        }
+        if (empty($sa['client_email']) || empty($sa['private_key'])) {
+            $missing = [];
+            if (empty($sa['client_email'])) $missing[] = 'client_email';
+            if (empty($sa['private_key'])) $missing[] = 'private_key';
+            Yii::error('FCM: service_account_json missing fields: ' . implode(', ', $missing) . '. Download a new key from Firebase Console → Project Settings → Service Accounts.', __METHOD__);
             return null;
         }
 
@@ -258,7 +265,7 @@ class FcmService
     private static function loadFirebaseConfig(): array
     {
         $row = Yii::$app->db->createCommand(
-            "SELECT data FROM configs WHERE `key` = 'firebase-web'"
+            "SELECT data FROM configs WHERE `key` = 'firebase'"
         )->queryOne();
         if ($row && is_string($row['data'])) {
             return json_decode($row['data'], true) ?? [];
