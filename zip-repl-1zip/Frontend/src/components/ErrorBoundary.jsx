@@ -60,10 +60,10 @@ export default class ErrorBoundary extends React.Component {
           >
             Something went wrong / কিছু একটা ভুল হয়েছে
           </h1>
-          <p style={{ color: "#666", fontSize: "0.95rem", marginBottom: "1.5rem" }}>
+          <p style={{ color: "#666", fontSize: "0.95rem", marginBottom: "1rem" }}>
             Something went wrong. Please reload the page.
           </p>
-          {process.env.NODE_ENV === "development" && this.state.error && (
+          {this.state.error && (
             <pre
               style={{
                 textAlign: "left",
@@ -75,6 +75,9 @@ export default class ErrorBoundary extends React.Component {
                 overflowX: "auto",
                 marginBottom: "1.5rem",
                 color: "#c00",
+                maxHeight: "200px",
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-all",
               }}
             >
               {this.state.error.toString()}
