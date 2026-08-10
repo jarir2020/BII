@@ -44,7 +44,6 @@ const EMPTY_FORM = {
   scheduled_for: "",
   click_preset: "/",
   custom_url: "",
-  display_order: "",
 };
 
 /* ─── subcomponents ─────────────────────────────────────────── */
@@ -81,13 +80,13 @@ export default function AdminNotifications() {
   const loadHistory = useCallback(() => {
     setLoading(true);
     api.get("/push-notifications")
-      .then((r) => setHistory(r.data || []))
+      .then((r) => setHistory(r.data))
       .catch(() => toast.error("ইতিহাস লোড করা যায়নি"))
       .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
-    api.get("/courses").then((r) => setCourses(r.data || [])).catch(() => {});
+    api.get("/courses").then((r) => setCourses(r.data)).catch(() => {});
     loadHistory();
   }, [loadHistory]);
 
@@ -116,7 +115,6 @@ export default function AdminNotifications() {
         click_action:  clickAction,
         target:        targetValue,
         scheduled_for: form.schedule_type === "later" ? form.scheduled_for || null : null,
-        display_order: parseInt(form.display_order) || 0,
       };
       const { data } = await api.post("/push-notifications", payload);
       setForm(EMPTY_FORM);
@@ -334,20 +332,6 @@ export default function AdminNotifications() {
                   required={form.target_type === "user"}
                 />
               )}
-            </div>
-
-            {/* Display order */}
-            <div>
-              <label className="block text-sm font-medium mb-1.5">📌 প্রদর্শন ক্রম (Display Order)</label>
-              <input
-                type="number"
-                min="0"
-                className="bii-input"
-                placeholder="০ = শেষে, ১ = প্রথমে"
-                value={form.display_order}
-                onChange={(e) => setForm({ ...form, display_order: e.target.value })}
-              />
-              <p className="text-xs text-[var(--bii-text-soft)] mt-1">০ রাখুন অথবা মান দিন — ছোট সংখ্যা উপরে। পূর্বের নোটিফিকেশন স্বয়ংক্রিয়ভাবে নিচে সরবে।</p>
             </div>
 
             {/* Schedule */}

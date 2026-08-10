@@ -311,7 +311,7 @@ export default function LiveClasses() {
     if (!user) return;
     setLoading(true);
     api.get("/my-live-classes")
-      .then((r) => setItems(r.data || []))
+      .then((r) => setItems(r.data))
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
   }, [user]);

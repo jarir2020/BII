@@ -48,7 +48,7 @@ export default function Profile() {
         address: user.address || "",
         profile_photo: user.profile_photo || "",
       });
-      api.get("/my-courses").then((r) => setMyCourses(r.data || [])).catch(() => {});
+      api.get("/my-courses").then((r) => setMyCourses(r.data)).catch(() => {});
     }
   }, [user]);
 

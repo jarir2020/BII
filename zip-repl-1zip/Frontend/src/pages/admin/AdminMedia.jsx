@@ -6,7 +6,7 @@ import { useLang } from "../../contexts/LangContext";
 export default function AdminMediaLibrary() {
   const { pick } = useLang();
   const [files, setFiles] = useState([]);
-  const reload = () => api.get("/media").then((r) => setFiles(r.data || [])).catch(() => setFiles([]));
+  const reload = () => api.get("/media").then((r) => setFiles(r.data));
   useEffect(() => { reload(); }, []);
   const del = async (id) => { if (!window.confirm(pick("ডিলিট?","Delete?"))) return; await api.delete(`/media/${id}`); reload(); };
 

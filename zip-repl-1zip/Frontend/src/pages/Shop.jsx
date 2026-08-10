@@ -864,7 +864,7 @@ function MyOrdersModal({ onClose }) {
 
   useEffect(() => {
     api.get("/shop/my-orders")
-       .then((r) => setOrders(r.data || []))
+       .then((r) => setOrders(r.data))
        .catch(() => {})
        .finally(() => setLoading(false));
   }, []);

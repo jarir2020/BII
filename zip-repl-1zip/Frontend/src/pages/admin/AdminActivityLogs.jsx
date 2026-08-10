@@ -5,7 +5,7 @@ import { useLang } from "../../contexts/LangContext";
 export default function AdminActivityLogs() {
   const { pick } = useLang();
   const [logs, setLogs] = useState([]);
-  useEffect(() => { api.get("/activity-logs?limit=300").then((r) => setLogs(r.data || [])).catch(() => setLogs([])); }, []);
+  useEffect(() => { api.get("/activity-logs?limit=300").then((r) => setLogs(r.data)); }, []);
   return (
     <div data-testid="admin-activity-logs-page" className="space-y-4">
       <h1 className="font-heading text-2xl text-[var(--bii-emerald)]">{pick("অ্যাক্টিভিটি লগ","Activity Log")}</h1>

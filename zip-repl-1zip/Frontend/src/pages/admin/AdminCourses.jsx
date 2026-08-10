@@ -41,7 +41,7 @@ export default function AdminCourses() {
   const reload = useCallback(() => {
     setLoading(true);
     api.get("/courses")
-      .then((r) => setItems(r.data || []))
+      .then((r) => setItems(r.data))
       .catch((e) => setErr(formatApiError(e)))
       .finally(() => setLoading(false));
   }, []);

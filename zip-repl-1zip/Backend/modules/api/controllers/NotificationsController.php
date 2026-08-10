@@ -24,19 +24,6 @@ class NotificationsController extends ApiController
         if (Yii::$app->request->isPost) {
             $this->requireAdmin();
             $b = Yii::$app->request->post();
-            $displayOrder = (int) ($b['display_order'] ?? 0);
-
-            // Insert-at-position: if display_order is set and > 0, shift
-            // existing notifications at that position (and below) downward.
-            if ($displayOrder > 0) {
-                Yii::$app->db->createCommand()
-                    ->update('notifications',
-                        ['display_order' => new \yii\db\Expression('display_order + 1')],
-                        'display_order >= :order',
-                        [':order' => $displayOrder]
-                    )->execute();
-            }
-
             $doc = [
                 'id' => Uuid::v4(),
                 'user_id' => (string) ($b['user_id'] ?? ''),
@@ -45,13 +32,12 @@ class NotificationsController extends ApiController
                 'body_bn' => (string) ($b['body_bn'] ?? ''),
                 'body_en' => (string) ($b['body_en'] ?? ''),
                 'read' => 0,
-                'display_order' => $displayOrder,
                 'created_at' => $this->now(),
             ];
             Yii::$app->db->createCommand()->insert('notifications', $doc)->execute();
             return $this->json($doc);
         }
-        $rows = Yii::$app->db->createCommand('SELECT * FROM notifications ORDER BY display_order ASC, created_at DESC LIMIT 200')->queryAll();
+        $rows = Yii::$app->db->createCommand('SELECT * FROM notifications ORDER BY created_at DESC LIMIT 200')->queryAll();
         return $this->json($rows);
     }
 
@@ -147,18 +133,6 @@ class NotificationsController extends ApiController
             $scheduledFor = $b['scheduled_for'] ?? null;
             $isScheduled = !empty($scheduledFor) && strtotime((string) $scheduledFor) > time();
 
-            $displayOrder = (int) ($b['display_order'] ?? 0);
-
-            // Insert-at-position: shift existing push_notifications downward
-            if ($displayOrder > 0) {
-                Yii::$app->db->createCommand()
-                    ->update('push_notifications',
-                        ['display_order' => new \yii\db\Expression('display_order + 1')],
-                        'display_order >= :order',
-                        [':order' => $displayOrder]
-                    )->execute();
-            }
-
             $doc = [
                 'id' => Uuid::v4(),
                 'title_bn' => (string) ($b['title_bn'] ?? ''),
@@ -176,7 +150,6 @@ class NotificationsController extends ApiController
                 'failed_count' => 0,
                 'error' => null,
                 'sent_at' => null,
-                'display_order' => $displayOrder,
                 'created_at' => $this->now(),
             ];
             Yii::$app->db->createCommand()->insert('push_notifications', $doc)->execute();
@@ -202,7 +175,7 @@ class NotificationsController extends ApiController
         }
 
         $this->requireAdmin();
-        $rows = Yii::$app->db->createCommand('SELECT * FROM push_notifications ORDER BY display_order ASC, created_at DESC')->queryAll();
+        $rows = Yii::$app->db->createCommand('SELECT * FROM push_notifications ORDER BY created_at DESC')->queryAll();
         return $this->json($rows);
     }
 

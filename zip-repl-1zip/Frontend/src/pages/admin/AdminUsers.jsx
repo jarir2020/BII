@@ -14,7 +14,7 @@ export default function AdminUsers() {
 
   useEffect(() => {
     api.get("/users")
-      .then((r) => setUsers(Array.isArray(r.data) ? r.data : []))
+      .then((r) => setUsers(r.data))
       .catch((e) => setListError(formatApiError(e)));
   }, []);
 

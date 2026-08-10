@@ -17,7 +17,7 @@ export default function AdminAdmins() {
   const [err, setErr] = useState("");
   const [editing, setEditing] = useState(null);
 
-  const reload = () => api.get("/admins").then((r) => setItems(Array.isArray(r.data) ? r.data : [])).catch(() => setItems([]));
+  const reload = () => api.get("/admins").then((r) => setItems(r.data)).catch(() => setItems([]));
   useEffect(() => { reload(); }, []);
 
   const togglePerm = (p) => setForm({ ...form, permissions: form.permissions.includes(p) ? form.permissions.filter(x => x !== p) : [...form.permissions, p] });
