@@ -5,7 +5,7 @@ import {
   List, Bell, Translate, SignOut, House, User, Gear, Lock,
   UserPlus, SignIn, HandsPraying, Books, Download,
   FacebookLogo, YoutubeLogo, InstagramLogo, TwitterLogo,
-  LinkedinLogo, TelegramLogo, TiktokLogo, WhatsappLogo
+  LinkedinLogo, TelegramLogo, TiktokLogo, WhatsappLogo, ArrowLeft
 } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
@@ -243,6 +243,17 @@ export default function Layout() {
 
       {/* MAIN */}
       <main className="max-w-5xl mx-auto px-4 py-3">
+        {location.pathname !== "/" && location.pathname !== "/home" && (
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="mb-3 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-[var(--bii-emerald)] hover:bg-[var(--bii-emerald)]/10 transition"
+            aria-label={lang === "bn" ? "আগের পৃষ্ঠায় ফিরে যান" : "Go back"}
+          >
+            <ArrowLeft size={18} weight="bold" />
+            {lang === "bn" ? "ফিরে যান" : "Back"}
+          </button>
+        )}
         <Outlet />
       </main>
 

@@ -14,6 +14,7 @@ import { onForegroundMessage } from "@/lib/firebase";
 import { registerNativePushListeners } from "@/lib/capacitor-push-listener";
 import { setToken as __setQuickAccessToken } from "@/lib/api";
 import { Capacitor } from "@capacitor/core";
+import { App as CapacitorApp } from "@capacitor/app";
 
 /**
  * On native platforms (Capacitor), the WebView may restore the last visited
@@ -22,6 +23,28 @@ import { Capacitor } from "@capacitor/core";
  * This component forces a redirect to / on initial mount when the URL is not
  * the root path, ensuring unauthenticated users see the Welcome page.
  */
+function NativeBackButtonBridge() {
+  const navigate = useNavigate();
+  const location = window.location;
+
+  React.useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return undefined;
+    let active = true;
+    const listener = CapacitorApp.addListener("backButton", ({ canGoBack }) => {
+      if (!active) return;
+      if (window.history.length > 1 && canGoBack) navigate(-1);
+      else if (window.location.pathname !== "/") navigate("/");
+      // At the root route, leave the event unhandled so Android exits normally.
+    });
+    return () => {
+      active = false;
+      listener.then((handle) => handle.remove());
+    };
+  }, [navigate, location.pathname]);
+
+  return null;
+}
+
 function CapacitorAuthGate() {
   const { user, loading } = useAuth();
   const navigated = React.useRef(false);
@@ -201,6 +224,7 @@ export default function App() {
         <AuthProvider>
           <BrowserRouter>
             <CapacitorAuthGate />
+            <NativeBackButtonBridge />
             <ForegroundPushBridge />
             <NotifPromptBridge />
             <Routes>

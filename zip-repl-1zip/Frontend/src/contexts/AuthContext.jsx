@@ -30,8 +30,14 @@ export function AuthProvider({ children }) {
   const refresh = useCallback(async () => {
     try {
       const { data } = await api.get("/auth/me");
-      setUser(data);
-    } catch {
+      const authenticatedUser = data?.user || data;
+      if (!authenticatedUser || typeof authenticatedUser !== "object") {
+        throw new Error("Invalid authentication response");
+      }
+      setUser(authenticatedUser);
+    } catch (err) {
+      // A rejected persisted token must not leave protected pages in a blank state.
+      if ([401, 403].includes(err?.response?.status)) setToken(null);
       setUser(false);
     } finally {
       setLoading(false);
