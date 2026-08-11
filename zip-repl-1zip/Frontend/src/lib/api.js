@@ -2,7 +2,7 @@ import axios from "axios";
 
 // In dev, CRACO proxies /api → localhost:8000 so BACKEND_URL should be "".
 // Fall back to "" so relative /api paths work via the dev-server proxy.
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "";
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "https://www.bengaliislamicinstitute.com";
 export const API = `${BACKEND_URL}/api`;
 
 export function imgUrl(v) {
