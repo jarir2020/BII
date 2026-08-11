@@ -20,8 +20,8 @@ export default function MyCourses() {
 
   useEffect(() => {
     Promise.all([
-      api.get("/my-courses").then((r) => setCourses(r.data)),
-      api.get("/my-payment-requests").then((r) => setRequests(r.data)),
+      api.get("/my-courses").then((r) => setCourses(Array.isArray(r.data) ? r.data : [])),
+      api.get("/my-payment-requests").then((r) => setRequests(Array.isArray(r.data) ? r.data : [])),
     ]).finally(() => setLoading(false));
   }, []);
 

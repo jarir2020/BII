@@ -11,7 +11,7 @@ export default function Courses() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get("/courses").then((r) => setCourses(r.data)).finally(() => setLoading(false));
+    api.get("/courses").then((r) => setCourses(Array.isArray(r.data) ? r.data : [])).finally(() => setLoading(false));
   }, []);
 
   return (

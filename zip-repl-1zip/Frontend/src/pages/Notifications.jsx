@@ -16,7 +16,7 @@ export default function Notifications() {
   const [sending, setSending] = useState(false);
   const [form, setForm] = useState({ title_bn: "", title_en: "", body_bn: "", body_en: "", image_url: "" });
 
-  const load = () => api.get("/notifications").then((r) => setItems(r.data));
+  const load = () => api.get("/notifications").then((r) => setItems(Array.isArray(r.data) ? r.data : []));
   useEffect(() => { load(); }, []);
 
   const send = async (e) => {

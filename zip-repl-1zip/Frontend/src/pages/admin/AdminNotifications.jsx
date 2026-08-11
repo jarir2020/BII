@@ -80,13 +80,13 @@ export default function AdminNotifications() {
   const loadHistory = useCallback(() => {
     setLoading(true);
     api.get("/push-notifications")
-      .then((r) => setHistory(r.data))
+      .then((r) => setHistory(Array.isArray(r.data) ? r.data : []))
       .catch(() => toast.error("ইতিহাস লোড করা যায়নি"))
       .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
-    api.get("/courses").then((r) => setCourses(r.data)).catch(() => {});
+    api.get("/courses").then((r) => setCourses(Array.isArray(r.data) ? r.data : [])).catch(() => {});
     loadHistory();
   }, [loadHistory]);
 

@@ -45,8 +45,10 @@ export function AdsProvider({ children }) {
         : false;
     const platform = isNative ? "app" : "web";
 
+    // Fetch from ads-web (public, no auth) — falls back to ads if needed
     api
-      .get("/configs/ads")
+      .get("/configs/ads-web")
+      .catch(() => api.get("/configs/ads").catch(() => ({})))
       .then((r) => {
         const d = r.data || {};
 

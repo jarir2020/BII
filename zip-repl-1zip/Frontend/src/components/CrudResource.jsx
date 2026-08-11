@@ -20,7 +20,7 @@ export default function CrudResource({ resource, title, fields, listColumns, idF
   const [editing, setEditing] = useState(null);
   const [err, setErr] = useState("");
 
-  const reload = () => api.get(`/${resource}`).then((r) => setItems(r.data));
+  const reload = () => api.get(`/${resource}`).then((r) => setItems(Array.isArray(r.data) ? r.data : []));
   useEffect(() => { reload(); /* eslint-disable-next-line */ }, [resource]);
 
   const submit = async (e) => {

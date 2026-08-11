@@ -31,7 +31,7 @@ export default function Videos() {
   const [open, setOpen]   = useState(null);
 
   useEffect(() => {
-    api.get("/videos").then((r) => setVids(r.data)).catch(() => {});
+    api.get("/videos").then((r) => setVids(Array.isArray(r.data) ? r.data : [])).catch(() => {});
   }, []);
 
   const close = () => setOpen(null);

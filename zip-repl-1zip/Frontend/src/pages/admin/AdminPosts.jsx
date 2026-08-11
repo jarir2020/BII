@@ -14,8 +14,8 @@ export default function AdminPosts() {
   const [editing, setEditing] = useState(null);
   const [err, setErr] = useState("");
 
-  const reload = () => api.get("/posts").then((r) => setItems(r.data));
-  useEffect(() => { reload(); api.get("/courses").then((r) => setCourses(r.data)); }, []);
+  const reload = () => api.get("/posts").then((r) => setItems(Array.isArray(r.data) ? r.data : []));
+  useEffect(() => { reload(); api.get("/courses").then((r) => setCourses(Array.isArray(r.data) ? r.data : [])); }, []);
 
   const submit = async (e) => {
     e.preventDefault(); setErr("");

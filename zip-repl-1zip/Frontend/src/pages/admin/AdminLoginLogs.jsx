@@ -8,7 +8,7 @@ export default function AdminLoginLogs() {
   const [logs, setLogs] = useState([]);
   const [filter, setFilter] = useState("all"); // all | success | failed
 
-  useEffect(() => { api.get("/login-logs?limit=300").then((r) => setLogs(r.data)); }, []);
+  useEffect(() => { api.get("/login-logs?limit=300").then((r) => setLogs(Array.isArray(r.data) ? r.data : [])); }, []);
 
   const filtered = logs.filter((l) =>
     filter === "all" ? true : filter === "success" ? l.success : !l.success

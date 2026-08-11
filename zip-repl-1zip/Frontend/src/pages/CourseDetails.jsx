@@ -19,7 +19,8 @@ export default function CourseDetails() {
     api.get(`/courses/${id}`).then((r) => setCourse(r.data));
     if (user) {
       api.get("/my-courses").then((r) => {
-        setEnrolled(r.data.some((c) => c.id === id));
+        const data = Array.isArray(r.data) ? r.data : [];
+        setEnrolled(data.some((c) => c.id === id));
       });
     }
   }, [id, user]);

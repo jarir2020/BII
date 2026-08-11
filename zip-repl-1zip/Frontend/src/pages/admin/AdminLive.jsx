@@ -61,11 +61,11 @@ export default function AdminLive() {
   const [saving, setSaving] = useState(false);
 
   const reload = () =>
-    api.get("/live-classes").then((r) => setItems(r.data));
+    api.get("/live-classes").then((r) => setItems(Array.isArray(r.data) ? r.data : []));
 
   useEffect(() => {
     reload();
-    api.get("/courses").then((r) => setCourses(r.data));
+    api.get("/courses").then((r) => setCourses(Array.isArray(r.data) ? r.data : []));
   }, []);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
