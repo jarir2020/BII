@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Clock, CheckCircle, XCircle, ArrowRight } from "@phosphor-icons/react";
 import { useLang } from "../contexts/LangContext";
 import { api, imgUrl } from "../lib/api";
+import { useAuth } from "../contexts/AuthContext";
 
 const PAYMENT_STATUS_CFG = {
   pending:  { key: "pendingApproval", cls: "bg-yellow-100 text-yellow-800 border-yellow-300", Icon: Clock },
@@ -14,16 +15,35 @@ import BottomBanner from "../components/BottomBanner";
 
 export default function MyCourses() {
   const { t, pick } = useLang();
+  const { user, loading: authLoading } = useAuth();
   const [courses,  setCourses]  = useState([]);
   const [requests, setRequests] = useState([]);
   const [loading,  setLoading]  = useState(true);
 
   useEffect(() => {
+    if (authLoading || !user) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     Promise.all([
       api.get("/my-courses").then((r) => setCourses(Array.isArray(r.data) ? r.data : [])),
       api.get("/my-payment-requests").then((r) => setRequests(Array.isArray(r.data) ? r.data : [])),
-    ]).finally(() => setLoading(false));
-  }, []);
+    ]).catch(() => {
+      setCourses([]);
+      setRequests([]);
+    }).finally(() => setLoading(false));
+  }, [authLoading, user]);
+
+  if (!authLoading && !user) {
+    return (
+      <div data-testid="my-courses-page" className="bii-card p-8 text-center">
+        <h1 className="font-heading text-2xl text-[var(--bii-emerald)] mb-2">{t("menuMyCourses")}</h1>
+        <p className="text-[var(--bii-text-soft)]">{pick("আপনার কোর্স দেখতে লগইন করুন", "Please log in to view your courses")}</p>
+        <Link to="/login" className="bii-btn-primary inline-block mt-4">{pick("লগইন", "Log in")}</Link>
+      </div>
+    );
+  }
 
   // Pending/rejected requests whose course isn't already enrolled
   const enrolledIds = new Set(courses.map((c) => c.id));

@@ -971,8 +971,13 @@ export default function Shop() {
   /* Load products */
   useEffect(() => {
     api.get("/products")
-       .then((r) => setProducts(r.data.filter((p) => p.is_published !== false)))
-       .catch(() => {})
+       .then((r) => {
+         const rows = Array.isArray(r.data) ? r.data : (Array.isArray(r.data?.products) ? r.data.products : []);
+         // The API uses is_active for product visibility; keep compatibility
+         // with older records that used is_published.
+         setProducts(rows.filter((p) => p.is_active !== false && p.is_published !== false));
+       })
+       .catch(() => setProducts([]))
        .finally(() => setLoading(false));
   }, []);
 
