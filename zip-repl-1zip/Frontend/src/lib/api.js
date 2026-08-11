@@ -45,10 +45,11 @@ export function formatApiError(err) {
     return "Network Error — could not reach the server. Check your internet connection and try again.";
   }
 
-  const d = err?.response?.data?.detail;
+  const body = err?.response?.data;
+  const d = body?.detail ?? body?.message ?? body?.error ?? body?.errors;
   if (d == null) return err?.message || "কিছু একটা ভুল হয়েছে";
   if (typeof d === "string") return d;
   if (Array.isArray(d)) return d.map((e) => (e?.msg ? e.msg : JSON.stringify(e))).join(" ");
   if (typeof d?.msg === "string") return d.msg;
-  return String(d);
+  return JSON.stringify(d);
 }

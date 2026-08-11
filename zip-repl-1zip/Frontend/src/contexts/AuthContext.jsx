@@ -52,21 +52,31 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     const requestId = ++authRequestId.current;
     const { data } = await api.post("/auth/login", { email, password });
-    if (!data?.token || !data?.user) throw new Error("Invalid login response");
-    setToken(data.token);
-    setUser(data.user);
+    const payload = data?.data || data;
+    if (!payload?.token || !payload?.user) {
+      const error = new Error("Login response did not include a token and user");
+      error.response = { data };
+      throw error;
+    }
+    setToken(payload.token);
+    setUser(payload.user);
     // Register FCM token after login (best-effort, non-blocking)
     tryRegisterFCMToken();
-    return data.user;
+    return payload.user;
   };
 
   const register = async (payload) => {
     const { data } = await api.post("/auth/register", payload);
-    if (!data?.token || !data?.user) throw new Error("Invalid login response");
-    setToken(data.token);
-    setUser(data.user);
+    const response = data?.data || data;
+    if (!response?.token || !response?.user) {
+      const error = new Error("Registration response did not include a token and user");
+      error.response = { data };
+      throw error;
+    }
+    setToken(response.token);
+    setUser(response.user);
     tryRegisterFCMToken();
-    return data.user;
+    return response.user;
   };
 
   const logout = async () => {
