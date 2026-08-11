@@ -16,6 +16,7 @@ use Yii;
 class ConfigsController extends ApiController
 {
     private const SENSITIVE = ['firebase', 'security', 'payment_gateways', 'ads'];
+    // 'ads-web' is intentionally NOT in SENSITIVE — frontend fetches it publicly
 
     /** GET (view) / PUT (update) /api/configs/{name} */
     public function actionView(string $name): \yii\web\Response
@@ -42,6 +43,11 @@ class ConfigsController extends ApiController
 
         if (in_array($name, self::SENSITIVE, true)) {
             $this->requireAdmin();
+        }
+
+        // For `ads-web` config, return the public client-safe view (no admin auth)
+        if ($name === 'ads-web') {
+            return $this->json($this->adsClientView());
         }
 
         // For `ads` config, return a merged client-safe view
@@ -163,6 +169,21 @@ class ConfigsController extends ApiController
             'ad_unit_lesson_between'  => $admin['ad_unit_lesson_between']  ?? '',
             'ad_unit_quiz_interstitial' => $admin['ad_unit_quiz_interstitial'] ?? '',
             'ad_unit_reward_zone'     => $admin['ad_unit_reward_zone']     ?? '',
+            // Bottom banner ad units (Phase 1-3)
+            'ad_unit_shop_bottom'         => $admin['ad_unit_shop_bottom']         ?? '',
+            'ad_unit_courses_bottom'      => $admin['ad_unit_courses_bottom']      ?? '',
+            'ad_unit_my_courses_bottom'   => $admin['ad_unit_my_courses_bottom']   ?? '',
+            'ad_unit_live_classes_bottom' => $admin['ad_unit_live_classes_bottom'] ?? '',
+            'ad_unit_videos_bottom'       => $admin['ad_unit_videos_bottom']       ?? '',
+            'ad_unit_quiz_bottom'         => $admin['ad_unit_quiz_bottom']         ?? '',
+            'ad_unit_reward_zone_bottom'  => $admin['ad_unit_reward_zone_bottom']  ?? '',
+            'ad_unit_contact_bottom'      => $admin['ad_unit_contact_bottom']      ?? '',
+            'ad_unit_notifications_bottom'=> $admin['ad_unit_notifications_bottom']?? '',
+            'ad_unit_complaints_bottom'   => $admin['ad_unit_complaints_bottom']   ?? '',
+            'ad_unit_home_bottom'         => $admin['ad_unit_home_bottom']         ?? '',
+            'ad_unit_library'             => $admin['ad_unit_library']             ?? '',
+            // Library slot enabled flag
+            'ad_slot_library_enabled'     => $admin['ad_slot_library_enabled']     ?? true,
         ];
     }
 }
