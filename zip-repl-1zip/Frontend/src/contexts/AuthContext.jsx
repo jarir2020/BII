@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { api, setToken, formatApiError } from "../lib/api";
 import { requestFCMToken } from "../lib/firebase";
 
@@ -26,28 +26,33 @@ async function tryRegisterFCMToken() {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);   // null = checking, false = guest, {} = user
   const [loading, setLoading] = useState(true);
+  const authRequestId = useRef(0);
 
   const refresh = useCallback(async () => {
+    const requestId = ++authRequestId.current;
     try {
       const { data } = await api.get("/auth/me");
       const authenticatedUser = data?.user || data;
       if (!authenticatedUser || typeof authenticatedUser !== "object") {
         throw new Error("Invalid authentication response");
       }
-      setUser(authenticatedUser);
+      if (requestId === authRequestId.current) setUser(authenticatedUser);
     } catch (err) {
       // A rejected persisted token must not leave protected pages in a blank state.
+      if (requestId !== authRequestId.current) return;
       if ([401, 403].includes(err?.response?.status)) setToken(null);
       setUser(false);
     } finally {
-      setLoading(false);
+      if (requestId === authRequestId.current) setLoading(false);
     }
   }, []);
 
   useEffect(() => { refresh(); }, [refresh]);
 
   const login = async (email, password) => {
+    const requestId = ++authRequestId.current;
     const { data } = await api.post("/auth/login", { email, password });
+    if (!data?.token || !data?.user) throw new Error("Invalid login response");
     setToken(data.token);
     setUser(data.user);
     // Register FCM token after login (best-effort, non-blocking)
@@ -57,6 +62,7 @@ export function AuthProvider({ children }) {
 
   const register = async (payload) => {
     const { data } = await api.post("/auth/register", payload);
+    if (!data?.token || !data?.user) throw new Error("Invalid login response");
     setToken(data.token);
     setUser(data.user);
     tryRegisterFCMToken();
