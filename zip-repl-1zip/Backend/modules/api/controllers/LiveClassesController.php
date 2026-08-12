@@ -19,6 +19,23 @@ class LiveClassesController extends CrudController
     // GET /live-classes is admin-only in FastAPI (students use /my-live-classes).
     protected bool $publicRead = false;
 
+    /** Reject partial/Bengali values instead of allowing them to become browser-relative URLs. */
+    protected function postProcess(array &$data): void
+    {
+        $joinUrl = trim((string) ($data['join_url'] ?? ''));
+        if ($joinUrl === '') {
+            $data['join_url'] = '';
+            return;
+        }
+
+        $parts = parse_url($joinUrl);
+        if (!is_array($parts) || !in_array(strtolower((string) ($parts['scheme'] ?? '')), ['http', 'https'], true)) {
+            $data['join_url'] = '';
+        } else {
+            $data['join_url'] = $joinUrl;
+        }
+    }
+
     /** GET /api/my-live-classes (via url rule) — classes for the user's courses. */
     public function actionMy(): \yii\web\Response
     {

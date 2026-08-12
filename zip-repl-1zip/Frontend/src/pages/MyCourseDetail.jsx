@@ -7,6 +7,7 @@ import {
 } from "@phosphor-icons/react";
 import { useLang } from "../contexts/LangContext";
 import { api, imgUrl } from "../lib/api";
+import { getValidLiveClassUrl } from "../lib/liveClassLinks";
 import AdBanner from "../components/AdBanner";
 import BottomBanner from "../components/BottomBanner";
 
@@ -122,16 +123,22 @@ function LiveClassCard({ lc }) {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <a
-            href={lc.join_url}
-            target="_blank"
-            rel="noreferrer"
-            className="bii-btn-primary flex items-center gap-2 flex-1 justify-center"
-          >
-            <VideoCamera size={17} weight="fill" />
-            ক্লাসে যোগ দিন
-            <ArrowSquareOut size={15} weight="bold" />
-          </a>
+          {getValidLiveClassUrl(lc.join_url) ? (
+            <a
+              href={getValidLiveClassUrl(lc.join_url)}
+              target="_blank"
+              rel="noreferrer"
+              className="bii-btn-primary flex items-center gap-2 flex-1 justify-center"
+            >
+              <VideoCamera size={17} weight="fill" />
+              ক্লাসে যোগ দিন
+              <ArrowSquareOut size={15} weight="bold" />
+            </a>
+          ) : (
+            <span className="flex items-center gap-2 flex-1 justify-center rounded-xl bg-gray-200 text-gray-500 text-sm font-semibold">
+              যোগ দেওয়ার লিংক পাওয়া যায়নি
+            </span>
+          )}
           <button
             onClick={() => setShowSteps((v) => !v)}
             className="px-4 py-2 rounded-xl border border-[var(--bii-border)] text-sm text-[var(--bii-text-soft)] hover:bg-[var(--bii-cream)] transition"

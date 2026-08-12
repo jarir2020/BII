@@ -8,6 +8,7 @@ import {
 import { useLang } from "../contexts/LangContext";
 import { useAuth } from "../contexts/AuthContext";
 import { api } from "../lib/api";
+import { getValidLiveClassUrl } from "../lib/liveClassLinks";
 import BottomBanner from "../components/BottomBanner";
 
 // re-export pick helper from hook — sub-components call useLang() directly
@@ -69,6 +70,7 @@ function LiveClassCard({ lc }) {
   const upcoming = isUpcoming(lc.scheduled_at);
   const liveNow = isLiveNow(lc.scheduled_at);
   const isFree = !!lc.is_free;
+  const joinUrl = getValidLiveClassUrl(lc.join_url);
   const [showSteps, setShowSteps] = useState(false);
 
   const borderClass = isFree
@@ -177,20 +179,26 @@ function LiveClassCard({ lc }) {
 
         {/* Action buttons */}
         <div className="flex flex-wrap gap-2">
-          <a
-            href={lc.join_url}
-            target="_blank"
-            rel="noreferrer"
-            className={`flex items-center gap-2 flex-1 justify-center px-4 py-2.5 rounded-xl font-semibold text-sm transition ${
-              isFree
-                ? "bg-amber-500 hover:bg-amber-600 text-white"
-                : "bii-btn-primary"
-            }`}
-          >
-            <VideoCamera size={17} weight="fill" />
-            {t("joinClass")}
-            <ArrowSquareOut size={15} weight="bold" />
-          </a>
+          {joinUrl ? (
+            <a
+              href={joinUrl}
+              target="_blank"
+              rel="noreferrer"
+              className={`flex items-center gap-2 flex-1 justify-center px-4 py-2.5 rounded-xl font-semibold text-sm transition ${
+                isFree
+                  ? "bg-amber-500 hover:bg-amber-600 text-white"
+                  : "bii-btn-primary"
+              }`}
+            >
+              <VideoCamera size={17} weight="fill" />
+              {t("joinClass")}
+              <ArrowSquareOut size={15} weight="bold" />
+            </a>
+          ) : (
+            <span className="flex items-center gap-2 flex-1 justify-center px-4 py-2.5 rounded-xl bg-gray-200 text-gray-500 text-sm font-semibold">
+              {pick("যোগ দেওয়ার লিংক পাওয়া যায়নি", "Join link unavailable")}
+            </span>
+          )}
           <button
             onClick={() => setShowSteps((v) => !v)}
             className="px-4 py-2 rounded-xl border border-[var(--bii-border)] text-sm text-[var(--bii-text-soft)] hover:bg-[var(--bii-cream)] hover:text-[var(--bii-emerald)] transition"
