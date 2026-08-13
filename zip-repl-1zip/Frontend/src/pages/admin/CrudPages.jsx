@@ -154,12 +154,10 @@ export const AdminProducts = () => (
     { name: "price", label: "মূল্য (৳)", type: "number" },
     { name: "discount_price", label: "ডিসকাউন্ট মূল্য (৳) — ছাড়ের পর দাম", type: "number" },
     { name: "stock", label: "স্টক (০ = আনলিমিটেড)", type: "number" },
-    { name: "colors", label: "রঙের বিকল্প — কমা দিয়ে লিখুন (যেমন: লাল, সবুজ, নীল)", placeholder: "লাল, সবুজ, নীল" },
-    { name: "sizes", label: "সাইজের বিকল্প — কমা দিয়ে লিখুন (যেমন: S, M, L, XL)", placeholder: "S, M, L, XL" },
-    { name: "cover_image", label: "প্রাইমারি কভার ছবি (কার্ডে দেখাবে)", type: "image" },
-    { name: "images", label: "গ্যালারি ছবিসমূহ (বিস্তারিত পেজে দেখাবে)", type: "images", max: 4 },
-    { name: "description_bn", label: "বিবরণ", type: "textarea" },
-    { name: "is_published", label: "প্রকাশিত", type: "checkbox" },
+    { name: "description", label: "বিবরণ", type: "textarea" },
+    { name: "image", label: "প্রোডাক্ট ছবি", type: "image" },
+    { name: "is_active", label: "সক্রিয়", type: "checkbox" },
+    { name: "is_featured", label: "ফিচার্ড", type: "checkbox" },
   ]} listColumns={["name_bn", "category"]} />
 );
 

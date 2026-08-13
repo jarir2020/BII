@@ -26,7 +26,10 @@ const discountPct = (p) => {
 };
 const productImages = (p) => {
   const arr = Array.isArray(p.images) ? p.images.filter(Boolean) : [];
-  return arr.length ? arr : p.cover_image ? [p.cover_image] : [];
+  if (arr.length) return arr;
+  if (p.cover_image) return [p.cover_image];
+  if (p.image) return [p.image];
+  return [];
 };
 
 const parseVariants = (str) =>
@@ -282,6 +285,11 @@ export default function ShopOrder() {
               </h2>
               {stateProduct.name_en && (
                 <p className="text-xs text-[var(--bii-text-soft)]">{stateProduct.name_en}</p>
+              )}
+              {(stateProduct.description || stateProduct.description_bn) && (
+                <p className="mt-1 text-xs text-[var(--bii-text-soft)] leading-relaxed whitespace-pre-line">
+                  {stateProduct.description || stateProduct.description_bn}
+                </p>
               )}
               <div className="flex items-baseline gap-2 mt-2">
                 <span className="text-2xl font-bold text-[var(--bii-emerald)]">{fmt(price)}</span>

@@ -38,11 +38,13 @@ const effectivePrice = (p) => {
   return sale > 0 && sale < orig ? sale : orig;
 };
 
-/* All images for a product — gallery array, fall back to cover_image */
+/* All images for a product — gallery array, fall back to cover_image/image */
 const productImages = (p) => {
   const arr = Array.isArray(p.images) ? p.images.filter(Boolean) : [];
   if (arr.length) return arr;
-  return p.cover_image ? [p.cover_image] : [];
+  if (p.cover_image) return [p.cover_image];
+  if (p.image) return [p.image];
+  return [];
 };
 
 /* ─── Payment Methods ─────────────────────────────────────────────────────── */
@@ -155,7 +157,7 @@ function ProductCard({ product, onAddCart, onView, onQuickOrder, onImageClick })
   const price = effectivePrice(product);
   const stock = Number(product.stock ?? 99);
   const outOfStock = stock === 0;
-  const cover = product.cover_image || productImages(product)[0] || "";
+  const cover = product.cover_image || product.image || productImages(product)[0] || "";
 
   return (
     <div className="bii-card overflow-hidden flex flex-col group hover:shadow-xl transition-all duration-300">
@@ -662,11 +664,11 @@ function ProductModal({ product, onClose, onAddCart, user, onImageClick }) {
           <VariantPicker label={pick("সাইজ বাছাই করুন", "Choose Size")} options={sizeList} selected={selSize} onSelect={setSelSize} />
 
           {/* Description */}
-          {product.description_bn && (
+          {(product.description || product.description_bn) && (
             <div className="space-y-1.5">
               <h4 className="text-sm font-bold text-[var(--bii-text)]">{t("description")}</h4>
               <p className="text-sm text-[var(--bii-text-soft)] leading-relaxed whitespace-pre-line">
-                {product.description_bn}
+                {product.description || product.description_bn}
               </p>
             </div>
           )}
@@ -764,8 +766,8 @@ function CartDrawer({ cart, onClose, onQtyChange, onRemove, onClearAndClose, use
                   {cart.map((item) => (
                     <div key={item.product.id} className="flex gap-3 p-4 items-center">
                       <div className="w-16 h-16 rounded-xl overflow-hidden bg-[var(--bii-cream)] flex-shrink-0">
-                        {(item.product.cover_image || productImages(item.product)[0]) ? (
-                          <img src={absUrl(item.product.cover_image || productImages(item.product)[0])}
+                        {(item.product.cover_image || item.product.image || productImages(item.product)[0]) ? (
+                          <img src={absUrl(item.product.cover_image || item.product.image || productImages(item.product)[0])}
                                alt="" className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
@@ -973,8 +975,8 @@ export default function Shop() {
     api.get("/products")
        .then((r) => {
          const rows = Array.isArray(r.data) ? r.data : (Array.isArray(r.data?.products) ? r.data.products : []);
-         // The API uses is_active for product visibility; keep compatibility
-         // with older records that used is_published.
+         // The API uses `is_active` for product visibility; keep compatibility
+         // with older records that used `is_published`.
          setProducts(rows.filter((p) => p.is_active !== false && p.is_published !== false));
        })
        .catch(() => setProducts([]))
