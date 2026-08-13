@@ -47,7 +47,6 @@ async function getFirebaseApp() {
 async function requestVapidOnlyToken() {
   try {
     if (!('Notification' in window) || !('serviceWorker' in navigator)) {
-      console.warn('[BII VAPID] Notification or ServiceWorker API not supported');
       return null;
     }
 
@@ -55,7 +54,6 @@ async function requestVapidOnlyToken() {
       ? 'granted'
       : await Notification.requestPermission();
     if (permission !== 'granted') {
-      console.warn('[BII VAPID] Permission not granted:', permission);
       return null;
     }
 
@@ -63,7 +61,6 @@ async function requestVapidOnlyToken() {
     const { data } = await api.get('/web-push/vapid-key');
     const vapidPublicKey = data?.public_key;
     if (!vapidPublicKey) {
-      console.warn('[BII VAPID] No VAPID public key from backend');
       return null;
     }
 
@@ -86,10 +83,8 @@ async function requestVapidOnlyToken() {
       auth:     sub.keys?.auth   || '',
     });
 
-    console.log('[BII VAPID] Subscription registered');
     return sub.endpoint; // Return endpoint as the "token" identifier
   } catch (err) {
-    console.error('[BII VAPID] subscribe error:', err?.message || err, err);
     return null;
   }
 }
@@ -124,7 +119,6 @@ export async function requestFCMToken() {
 
     // Web platform
     if (!('Notification' in window) || !('serviceWorker' in navigator)) {
-      console.warn('[BII FCM] Notification or ServiceWorker API not supported');
       return null;
     }
 
@@ -133,7 +127,6 @@ export async function requestFCMToken() {
       ? 'granted'
       : await Notification.requestPermission();
     if (permission !== 'granted') {
-      console.warn('[BII FCM] Permission not granted:', permission);
       return null;
     }
 
@@ -143,7 +136,6 @@ export async function requestFCMToken() {
     if (cfg.api_key && cfg.vapid_key) {
       const app = await getFirebaseApp();
       if (!app) {
-        console.warn('[BII FCM] Firebase app init failed');
         return null;
       }
 
@@ -155,16 +147,13 @@ export async function requestFCMToken() {
         serviceWorkerRegistration:   swReg,
       });
       if (!token) {
-        console.warn('[BII FCM] getToken returned empty');
       }
       return token || null;
     }
 
     // No Firebase config — use VAPID-only mode (our own Web Push)
-    console.log('[BII] Firebase not configured, using VAPID-only push');
     return await requestVapidOnlyToken();
   } catch (err) {
-    console.error('[BII FCM] token error:', err?.message || err, err);
     return null;
   }
 }

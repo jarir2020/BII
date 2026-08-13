@@ -19,7 +19,6 @@ export function registerNativePushListeners() {
   import("@capacitor/push-notifications").then(({ PushNotifications }) => {
     // Foreground message received
     PushNotifications.addListener("pushNotificationReceived", (notification) => {
-      console.log("[BII] Foreground push received:", notification.title);
       // The web React Notification API doesn't work in WebView,
       // so we rely on the native notification tray for display.
     });
@@ -28,10 +27,8 @@ export function registerNativePushListeners() {
     PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
       const data = action.notification?.data || {};
       const url = data.click_action || "/home";
-      console.log("[BII] Push tapped, navigating to:", url);
       window.location.assign(url);
     });
   }).catch((err) => {
-    console.warn("[BII] Failed to load PushNotifications:", err);
   });
 }

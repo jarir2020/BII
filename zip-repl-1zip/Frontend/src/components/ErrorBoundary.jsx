@@ -16,7 +16,6 @@ export default class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, info) {
     // Log to console (PostHog / Sentry can be wired here later)
-    console.error("[ErrorBoundary]", error, info.componentStack);
     try {
       if (window.posthog) window.posthog.captureException(error, { extra: info });
     } catch (_) {}

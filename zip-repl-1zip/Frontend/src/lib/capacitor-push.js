@@ -32,7 +32,6 @@ export async function requestNativePushToken() {
     }
 
     if (permResult.receive !== "granted") {
-      console.warn("[BII] Native push permission not granted:", permResult.receive);
       return null;
     }
 
@@ -61,7 +60,6 @@ export async function requestNativePushToken() {
 
     return token || null;
   } catch (err) {
-    console.error("[BII] Native push registration failed:", err?.message || err);
     return null;
   }
 }

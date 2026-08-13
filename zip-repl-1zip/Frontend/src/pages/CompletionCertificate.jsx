@@ -55,7 +55,6 @@ export default function CompletionCertificate() {
       URL.revokeObjectURL(url);
       setDone(true);
     } catch (err) {
-      console.warn("cert pdf error:", err);
       setError("Could not generate the PDF. Please upload both signatures and try again.");
     } finally {
       setLoading(false);

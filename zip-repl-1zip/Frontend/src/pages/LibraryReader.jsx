@@ -86,10 +86,8 @@ export default function LibraryReader() {
         try {
           await bookInstance.locations.generate(1024);
           const total = bookInstance.locations.length();
-          console.log("[EPUB] Locations generated:", total, "pages");
           setLocation({ current: 1, total });
         } catch (locErr) {
-          console.warn("[EPUB] locations.generate failed, using fallback:", locErr);
           // Fallback: estimate from spine length
           const fallbackTotal = bookInstance.spine?.items?.length || 0;
           setLocation({ current: 1, total: fallbackTotal });

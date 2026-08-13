@@ -93,7 +93,6 @@ export default function NotificationPrompt({ user }) {
         dismiss();
       }
     } catch (err) {
-      console.error('[BII] Notification registration failed:', err);
       setError(pick(
         "নোটিফিকেশন চালু করা যায়নি। ব্রাউজার রিফ্রেশ করে আবার চেষ্টা করুন।",
         "Notifications could not be enabled. Please refresh the page and try again."
