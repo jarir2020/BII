@@ -9,9 +9,18 @@
     <meta name="author" content="বাঙালি ইসলামিক ইনস্টিটিউট" />
     <meta name="robots" content="index, follow" />
     <meta name="google-adsense-account" content="ca-pub-8159903471366423" />
-    <script async src="https://fundingchoicesmessages.google.com/i/pub-8159903471366423?ers=1"></script>
     <script>
       (function() {
+        var isMobile = window.matchMedia && window.matchMedia("(max-width: 767px)").matches;
+        var path = window.location && window.location.pathname ? window.location.pathname : "/";
+        var isHome = path === "/" || path === "/home";
+        if (isMobile && isHome) return;
+
+        var script = document.createElement("script");
+        script.async = true;
+        script.src = "https://fundingchoicesmessages.google.com/i/pub-8159903471366423?ers=1";
+        document.head.appendChild(script);
+
         function signalGooglefcPresent() {
           if (!window.frames['googlefcPresent']) {
             if (document.body) {
