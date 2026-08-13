@@ -1,0 +1,35 @@
+@font-face {
+  font-family: 'Hind Siliguri';
+  font-style: normal;
+  font-weight: 400;
+  font-display: optional;
+  src: url(/static/fonts/hind-siliguri-400.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Hind Siliguri';
+  font-style: normal;
+  font-weight: 500;
+  font-display: optional;
+  src: url(/static/fonts/hind-siliguri-500.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Hind Siliguri';
+  font-style: normal;
+  font-weight: 600;
+  font-display: optional;
+  src: url(/static/fonts/hind-siliguri-600.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Tiro Bangla';
+  font-style: normal;
+  font-weight: 400;
+  font-display: optional;
+  src: url(/static/fonts/tiro-bangla-regular.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Tiro Bangla';
+  font-style: italic;
+  font-weight: 400;
+  font-display: optional;
+  src: url(/static/fonts/tiro-bangla-italic.ttf) format('truetype');
+}
