@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { Toaster } from "sonner";
@@ -15,6 +15,114 @@ import { registerNativePushListeners } from "@/lib/capacitor-push-listener";
 import { setToken as __setQuickAccessToken } from "@/lib/api";
 import { Capacitor } from "@capacitor/core";
 import { App as CapacitorApp } from "@capacitor/app";
+
+// ── Loading spinner for lazy-loaded route chunks ──
+function RouteLoader() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[var(--bii-cream)]">
+      <div className="text-center space-y-3">
+        <div className="w-8 h-8 border-4 border-[var(--bii-emerald)] border-t-transparent rounded-full animate-spin mx-auto" />
+        <p className="text-sm text-[var(--bii-text-soft)]">লোড হচ্ছে...</p>
+      </div>
+    </div>
+  );
+}
+
+// ── Lazy page components ──
+const Home              = lazy(() => import("@/pages/Home"));
+const Welcome           = lazy(() => import("@/pages/Welcome"));
+const Login             = lazy(() => import("@/pages/Login"));
+const Register          = lazy(() => import("@/pages/Register"));
+const ForgotPassword    = lazy(() => import("@/pages/ForgotPassword"));
+const Profile           = lazy(() => import("@/pages/Profile"));
+const Settings          = lazy(() => import("@/pages/Settings"));
+const ChangePassword    = lazy(() => import("@/pages/ChangePassword"));
+const Courses           = lazy(() => import("@/pages/Courses"));
+const CourseDetails     = lazy(() => import("@/pages/CourseDetails"));
+const MyCourses         = lazy(() => import("@/pages/MyCourses"));
+const MyCourseDetail    = lazy(() => import("@/pages/MyCourseDetail"));
+const LiveClasses       = lazy(() => import("@/pages/LiveClasses"));
+const Videos            = lazy(() => import("@/pages/Videos"));
+const Quiz              = lazy(() => import("@/pages/Quiz"));
+const Shop              = lazy(() => import("@/pages/Shop"));
+const ShopOrder         = lazy(() => import("@/pages/ShopOrder"));
+const Notifications     = lazy(() => import("@/pages/Notifications"));
+const Contact           = lazy(() => import("@/pages/Contact"));
+const Complaint         = lazy(() => import("@/pages/Complaint"));
+const PostDetails       = lazy(() => import("@/pages/PostDetails"));
+const Payment           = lazy(() => import("@/pages/Payment").then(m => ({ default: m.Payment })));
+const PaymentSuccess    = lazy(() => import("@/pages/Payment").then(m => ({ default: m.PaymentSuccess })));
+const RewardZone        = lazy(() => import("@/pages/RewardZone"));
+const CompletionCertificate = lazy(() => import("@/pages/CompletionCertificate"));
+const Library           = lazy(() => import("@/pages/Library"));
+const LibraryBook       = lazy(() => import("@/pages/LibraryBook"));
+const LibraryReader     = lazy(() => import("@/pages/LibraryReader"));
+const Dua               = lazy(() => import("@/pages/Dua"));
+const NotFound          = lazy(() => import("@/pages/NotFound"));
+const Legal             = lazy(() => import("@/pages/Legal"));
+
+// Admin — lazy-loaded so admin routes never slow down the public shell
+const AdminLayout          = lazy(() => import("@/pages/admin/AdminLayout"));
+const AdminDashboard       = lazy(() => import("@/pages/admin/AdminDashboard"));
+const AdminAnalytics       = lazy(() => import("@/pages/admin/AdminAnalytics"));
+const AdminStudents        = lazy(() => import("@/pages/admin/AdminUsers"));
+const AdminTeachers        = lazy(() => import("@/pages/admin/AdminTeachers"));
+const AdminAdmins          = lazy(() => import("@/pages/admin/AdminAdmins"));
+const AdminEnrollments     = lazy(() => import("@/pages/admin/AdminEnrollments"));
+const AdminStudentsByCourse = lazy(() => import("@/pages/admin/AdminStudentsByCourse"));
+const AdminCourseStudents  = lazy(() => import("@/pages/admin/AdminCourseStudents"));
+const AdminCourses         = lazy(() => import("@/pages/admin/AdminCourses"));
+const AdminVideos          = lazy(() => import("@/pages/admin/AdminVideos"));
+const AdminPosts           = lazy(() => import("@/pages/admin/AdminPosts"));
+const AdminLive            = lazy(() => import("@/pages/admin/AdminLive"));
+const AdminNotifications   = lazy(() => import("@/pages/admin/AdminNotifications"));
+const AdminSettings        = lazy(() => import("@/pages/admin/AdminSettings"));
+const AdminLoginLogs       = lazy(() => import("@/pages/admin/AdminLoginLogs"));
+const AdminActivityLogs    = lazy(() => import("@/pages/admin/AdminActivityLogs"));
+const AdminMedia           = lazy(() => import("@/pages/admin/AdminMedia"));
+const AdminBackup          = lazy(() => import("@/pages/admin/AdminBackup"));
+const AdminPaymentRequests = lazy(() => import("@/pages/admin/AdminPaymentRequests"));
+const AdminRevenue         = lazy(() => import("@/pages/admin/AdminRevenue"));
+const AdminPromoCodes      = lazy(() => import("@/pages/admin/AdminPromoCodes"));
+const AdminRewardZone      = lazy(() => import("@/pages/admin/AdminRewardZone"));
+const AdminMonthlyQuiz     = lazy(() => import("@/pages/admin/AdminMonthlyQuiz"));
+const AdminLibrary         = lazy(() => import("@/pages/admin/AdminLibrary"));
+const AdminComplaints      = lazy(() => import("@/pages/admin/AdminComplaints"));
+const AdminDua             = lazy(() => import("@/pages/admin/AdminDua"));
+
+// ── Reusable admin sub-pages grouped from lazy-loaded module files ──
+const AdminCategories      = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminCategories));
+const AdminChapters        = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminChapters));
+const AdminLessons         = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminLessons));
+const AdminPdfs            = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminPdfs));
+const AdminAssignments     = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminAssignments));
+const AdminExams           = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminExams));
+const AdminResults         = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminResults));
+const AdminCertificates    = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminCertificates));
+const AdminRecorded        = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminRecorded));
+const AdminHadiths         = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminHadiths));
+const AdminIslamicContent  = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminIslamicContent));
+const AdminBlogs           = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminBlogs));
+const AdminProducts        = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminProducts));
+const AdminOrders          = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminOrders));
+const AdminBanners         = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminBanners));
+const AdminSliders         = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminSliders));
+const AdminGallery         = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminGallery));
+const AdminDownloads       = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminDownloads));
+const AdminWinnerReviews   = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminWinnerReviews));
+
+const AdminHomepage        = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminHomepage));
+const AdminWelcomePage     = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminWelcomePage));
+const AdminTheme           = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminTheme));
+const AdminSeo             = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminSeo));
+const AdminFirebase        = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminFirebase));
+const AdminSecurity        = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminSecurity));
+const AdminMaintenance     = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminMaintenance));
+const AdminPaymentGateways = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminPaymentGateways));
+const AdminSocial          = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminSocial));
+const AdminContactInfo     = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminContactInfo));
+const AdminAds             = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminAds));
+const AdminLegal           = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminLegal));
 
 /**
  * On native platforms (Capacitor), the WebView may restore the last visited
@@ -132,84 +240,6 @@ function QuickAdminAccess() {
   return <div className="p-8 text-center text-[var(--bii-text-soft)]">প্রবেশ করা হচ্ছে...</div>;
 }
 
-import Home from "@/pages/Home";
-import Welcome from "@/pages/Welcome";
-import Login from "@/pages/Login";
-import Register from "@/pages/Register";
-import ForgotPassword from "@/pages/ForgotPassword";
-import Profile from "@/pages/Profile";
-import Settings from "@/pages/Settings";
-import ChangePassword from "@/pages/ChangePassword";
-import Courses from "@/pages/Courses";
-import CourseDetails from "@/pages/CourseDetails";
-import MyCourses from "@/pages/MyCourses";
-import MyCourseDetail from "@/pages/MyCourseDetail";
-import LiveClasses from "@/pages/LiveClasses";
-import Videos from "@/pages/Videos";
-import Quiz from "@/pages/Quiz";
-import Shop from "@/pages/Shop";
-import ShopOrder from "@/pages/ShopOrder";
-import Notifications from "@/pages/Notifications";
-import Contact from "@/pages/Contact";
-import Complaint from "@/pages/Complaint";
-import PostDetails from "@/pages/PostDetails";
-import { Payment, PaymentSuccess } from "@/pages/Payment";
-import RewardZone from "@/pages/RewardZone";
-import CompletionCertificate from "@/pages/CompletionCertificate";
-
-// Admin shell
-import AdminLayout from "@/pages/admin/AdminLayout";
-import AdminDashboard from "@/pages/admin/AdminDashboard";
-import AdminAnalytics from "@/pages/admin/AdminAnalytics";
-
-// User mgmt
-import AdminStudents from "@/pages/admin/AdminUsers";
-import AdminTeachers from "@/pages/admin/AdminTeachers";
-import AdminAdmins from "@/pages/admin/AdminAdmins";
-import AdminEnrollments from "@/pages/admin/AdminEnrollments";
-import AdminStudentsByCourse from "@/pages/admin/AdminStudentsByCourse";
-import AdminCourseStudents from "@/pages/admin/AdminCourseStudents";
-
-// Course mgmt
-import AdminCourses from "@/pages/admin/AdminCourses";
-import AdminVideos from "@/pages/admin/AdminVideos";
-import AdminPosts from "@/pages/admin/AdminPosts";
-import AdminLive from "@/pages/admin/AdminLive";
-import AdminNotifications from "@/pages/admin/AdminNotifications";
-import AdminSettings from "@/pages/admin/AdminSettings";
-import AdminLoginLogs from "@/pages/admin/AdminLoginLogs";
-import AdminActivityLogs from "@/pages/admin/AdminActivityLogs";
-import AdminMedia from "@/pages/admin/AdminMedia";
-import AdminBackup from "@/pages/admin/AdminBackup";
-
-import {
-  AdminCategories, AdminChapters, AdminLessons, AdminPdfs, AdminAssignments,
-  AdminExams, AdminResults, AdminCertificates, AdminRecorded, AdminHadiths,
-  AdminIslamicContent, AdminBlogs, AdminProducts, AdminOrders,
-  AdminBanners, AdminSliders, AdminGallery, AdminDownloads, AdminWinnerReviews,
-} from "@/pages/admin/CrudPages";
-import AdminPaymentRequests from "@/pages/admin/AdminPaymentRequests";
-
-import {
-  AdminHomepage, AdminWelcomePage, AdminTheme, AdminSeo, AdminFirebase,
-  AdminSecurity, AdminMaintenance, AdminPaymentGateways, AdminSocial, AdminContactInfo,
-  AdminAds, AdminLegal,
-} from "@/pages/admin/ConfigPages";
-import AdminRevenue from "@/pages/admin/AdminRevenue";
-import AdminPromoCodes from "@/pages/admin/AdminPromoCodes";
-import AdminRewardZone from "@/pages/admin/AdminRewardZone";
-
-import AdminMonthlyQuiz from "@/pages/admin/AdminMonthlyQuiz";
-import AdminLibrary from "@/pages/admin/AdminLibrary";
-import AdminComplaints from "@/pages/admin/AdminComplaints";
-import AdminDua from "@/pages/admin/AdminDua";
-import Library from "@/pages/Library";
-import LibraryBook from "@/pages/LibraryBook";
-import LibraryReader from "@/pages/LibraryReader";
-import Dua from "@/pages/Dua";
-import NotFound from "@/pages/NotFound";
-import Legal from "@/pages/Legal";
-
 export default function App() {
   // Register native push listeners once on app mount
   React.useEffect(() => {
@@ -227,115 +257,117 @@ export default function App() {
             <NativeBackButtonBridge />
             <ForegroundPushBridge />
             <NotifPromptBridge />
-            <Routes>
-              <Route path="/" element={<Layout />}>
-                <Route index element={<Welcome />} />
-                <Route path="home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-                <Route path="login" element={<Login />} />
-                <Route path="forgot-password" element={<ForgotPassword />} />
-                <Route path="quick-access" element={<QuickAdminAccess />} />
-                <Route path="register" element={<Register />} />
+            <Suspense fallback={<RouteLoader />}>
+              <Routes>
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<Welcome />} />
+                  <Route path="home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+                  <Route path="login" element={<Login />} />
+                  <Route path="forgot-password" element={<ForgotPassword />} />
+                  <Route path="quick-access" element={<QuickAdminAccess />} />
+                  <Route path="register" element={<Register />} />
 
-                <Route path="courses" element={<Courses />} />
-                <Route path="completed-all-work" element={<CompletionCertificate />} />
-                <Route path="courses/:id" element={<CourseDetails />} />
-                <Route path="posts/:id" element={<PostDetails />} />
-                <Route path="live-classes" element={<ProtectedRoute><LiveClasses /></ProtectedRoute>} />
-                <Route path="videos" element={<Videos />} />
-                <Route path="quiz" element={<ProtectedRoute><Quiz /></ProtectedRoute>} />
-                <Route path="library" element={<Library />} />
-                  <Route path="library/:id/read" element={<LibraryReader />} />
-                <Route path="library/:id" element={<LibraryBook />} />
-                <Route path="dua" element={<ProtectedRoute><Dua /></ProtectedRoute>} />
-                <Route path="reward-zone" element={<ProtectedRoute><RewardZone /></ProtectedRoute>} />
-                <Route path="shop" element={<Shop />} />
-                <Route path="shop/order" element={<ShopOrder />} />
-                <Route path="notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-                <Route path="contact" element={<Contact />} />
-                <Route path="legal/:doc" element={<Legal />} />
-                <Route path="legal" element={<Legal />} />
+                  <Route path="courses" element={<Courses />} />
+                  <Route path="completed-all-work" element={<CompletionCertificate />} />
+                  <Route path="courses/:id" element={<CourseDetails />} />
+                  <Route path="posts/:id" element={<PostDetails />} />
+                  <Route path="live-classes" element={<ProtectedRoute><LiveClasses /></ProtectedRoute>} />
+                  <Route path="videos" element={<Videos />} />
+                  <Route path="quiz" element={<ProtectedRoute><Quiz /></ProtectedRoute>} />
+                  <Route path="library" element={<Library />} />
+                    <Route path="library/:id/read" element={<LibraryReader />} />
+                  <Route path="library/:id" element={<LibraryBook />} />
+                  <Route path="dua" element={<ProtectedRoute><Dua /></ProtectedRoute>} />
+                  <Route path="reward-zone" element={<ProtectedRoute><RewardZone /></ProtectedRoute>} />
+                  <Route path="shop" element={<Shop />} />
+                  <Route path="shop/order" element={<ShopOrder />} />
+                  <Route path="notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+                  <Route path="contact" element={<Contact />} />
+                  <Route path="legal/:doc" element={<Legal />} />
+                  <Route path="legal" element={<Legal />} />
 
-                <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                <Route path="settings" element={<Settings />} />
-                <Route path="change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
-                <Route path="my-courses" element={<ProtectedRoute><MyCourses /></ProtectedRoute>} />
-                <Route path="my-courses/:id" element={<ProtectedRoute><MyCourseDetail /></ProtectedRoute>} />
-                <Route path="complaint" element={<ProtectedRoute><Complaint /></ProtectedRoute>} />
-                <Route path="payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
-                <Route path="payment/success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
+                  <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                  <Route path="settings" element={<Settings />} />
+                  <Route path="change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+                  <Route path="my-courses" element={<ProtectedRoute><MyCourses /></ProtectedRoute>} />
+                  <Route path="my-courses/:id" element={<ProtectedRoute><MyCourseDetail /></ProtectedRoute>} />
+                  <Route path="complaint" element={<ProtectedRoute><Complaint /></ProtectedRoute>} />
+                  <Route path="payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
+                  <Route path="payment/success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
 
-                <Route path="admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
-                  <Route index element={<AdminDashboard />} />
-                  <Route path="analytics" element={<AdminAnalytics />} />
+                  <Route path="admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="analytics" element={<AdminAnalytics />} />
 
-                  <Route path="students" element={<AdminStudents />} />
-                  <Route path="teachers" element={<AdminTeachers />} />
-                  <Route path="admins" element={<AdminAdmins />} />
-                  <Route path="enrollments" element={<AdminEnrollments />} />
-                  <Route path="students-by-course" element={<AdminStudentsByCourse />} />
-                  <Route path="course-students/:courseId" element={<AdminCourseStudents />} />
+                    <Route path="students" element={<AdminStudents />} />
+                    <Route path="teachers" element={<AdminTeachers />} />
+                    <Route path="admins" element={<AdminAdmins />} />
+                    <Route path="enrollments" element={<AdminEnrollments />} />
+                    <Route path="students-by-course" element={<AdminStudentsByCourse />} />
+                    <Route path="course-students/:courseId" element={<AdminCourseStudents />} />
 
-                  <Route path="categories" element={<AdminCategories />} />
-                  <Route path="courses" element={<AdminCourses />} />
-                  <Route path="chapters" element={<AdminChapters />} />
-                  <Route path="lessons" element={<AdminLessons />} />
-                  <Route path="videos" element={<AdminVideos />} />
-                  <Route path="pdfs" element={<AdminPdfs />} />
-                  <Route path="assignments" element={<AdminAssignments />} />
-                  <Route path="quizzes" element={<AdminMonthlyQuiz />} />
-                  <Route path="exams" element={<AdminExams />} />
-                  <Route path="results" element={<AdminResults />} />
-                  <Route path="certificates" element={<AdminCertificates />} />
+                    <Route path="categories" element={<AdminCategories />} />
+                    <Route path="courses" element={<AdminCourses />} />
+                    <Route path="chapters" element={<AdminChapters />} />
+                    <Route path="lessons" element={<AdminLessons />} />
+                    <Route path="videos" element={<AdminVideos />} />
+                    <Route path="pdfs" element={<AdminPdfs />} />
+                    <Route path="assignments" element={<AdminAssignments />} />
+                    <Route path="quizzes" element={<AdminMonthlyQuiz />} />
+                    <Route path="exams" element={<AdminExams />} />
+                    <Route path="results" element={<AdminResults />} />
+                    <Route path="certificates" element={<AdminCertificates />} />
 
-                  <Route path="live-classes" element={<AdminLive />} />
-                  <Route path="recorded-classes" element={<AdminRecorded />} />
+                    <Route path="live-classes" element={<AdminLive />} />
+                    <Route path="recorded-classes" element={<AdminRecorded />} />
 
-                  <Route path="hadiths" element={<AdminDua />} />
-                  <Route path="islamic-content" element={<AdminIslamicContent />} />
+                    <Route path="hadiths" element={<AdminDua />} />
+                    <Route path="islamic-content" element={<AdminIslamicContent />} />
 
-                  <Route path="posts" element={<AdminPosts />} />
-                  <Route path="blogs" element={<AdminBlogs />} />
-                  <Route path="notifications" element={<AdminNotifications />} />
-                  <Route path="winner-reviews" element={<AdminWinnerReviews />} />
+                    <Route path="posts" element={<AdminPosts />} />
+                    <Route path="blogs" element={<AdminBlogs />} />
+                    <Route path="notifications" element={<AdminNotifications />} />
+                    <Route path="winner-reviews" element={<AdminWinnerReviews />} />
 
-                  <Route path="products" element={<AdminProducts />} />
-                  <Route path="orders" element={<AdminOrders />} />
-                  <Route path="payments" element={<AdminPaymentRequests />} />
-                  <Route path="payment-gateways" element={<AdminPaymentGateways />} />
-                  <Route path="revenue" element={<AdminRevenue />} />
-                  <Route path="promo-codes" element={<AdminPromoCodes />} />
-                  <Route path="reward-zone" element={<AdminRewardZone />} />
-                  <Route path="ads" element={<AdminAds />} />
+                    <Route path="products" element={<AdminProducts />} />
+                    <Route path="orders" element={<AdminOrders />} />
+                    <Route path="payments" element={<AdminPaymentRequests />} />
+                    <Route path="payment-gateways" element={<AdminPaymentGateways />} />
+                    <Route path="revenue" element={<AdminRevenue />} />
+                    <Route path="promo-codes" element={<AdminPromoCodes />} />
+                    <Route path="reward-zone" element={<AdminRewardZone />} />
+                    <Route path="ads" element={<AdminAds />} />
 
-                  <Route path="homepage" element={<AdminHomepage />} />
-                  <Route path="welcome" element={<AdminWelcomePage />} />
-                  <Route path="banners" element={<AdminBanners />} />
-                  <Route path="sliders" element={<AdminSliders />} />
-                  <Route path="theme" element={<AdminTheme />} />
+                    <Route path="homepage" element={<AdminHomepage />} />
+                    <Route path="welcome" element={<AdminWelcomePage />} />
+                    <Route path="banners" element={<AdminBanners />} />
+                    <Route path="sliders" element={<AdminSliders />} />
+                    <Route path="theme" element={<AdminTheme />} />
 
-                  <Route path="contact-info" element={<AdminContactInfo />} />
-                  <Route path="social" element={<AdminSocial />} />
+                    <Route path="contact-info" element={<AdminContactInfo />} />
+                    <Route path="social" element={<AdminSocial />} />
 
-                  <Route path="gallery" element={<AdminGallery />} />
-                  <Route path="media" element={<AdminMedia />} />
-                  <Route path="downloads" element={<AdminDownloads />} />
+                    <Route path="gallery" element={<AdminGallery />} />
+                    <Route path="media" element={<AdminMedia />} />
+                    <Route path="downloads" element={<AdminDownloads />} />
 
-                  <Route path="settings" element={<AdminSettings />} />
-                  <Route path="seo" element={<AdminSeo />} />
-                  <Route path="firebase" element={<AdminFirebase />} />
-                  <Route path="security" element={<AdminSecurity />} />
-                  <Route path="maintenance" element={<AdminMaintenance />} />
-                  <Route path="legal" element={<AdminLegal />} />
-                  <Route path="backup" element={<AdminBackup />} />
-                  <Route path="library" element={<AdminLibrary />} />
-                  <Route path="complaints" element={<AdminComplaints />} />
-                  <Route path="activity-logs" element={<AdminActivityLogs />} />
-                  <Route path="login-logs" element={<AdminLoginLogs />} />
+                    <Route path="settings" element={<AdminSettings />} />
+                    <Route path="seo" element={<AdminSeo />} />
+                    <Route path="firebase" element={<AdminFirebase />} />
+                    <Route path="security" element={<AdminSecurity />} />
+                    <Route path="maintenance" element={<AdminMaintenance />} />
+                    <Route path="legal" element={<AdminLegal />} />
+                    <Route path="backup" element={<AdminBackup />} />
+                    <Route path="library" element={<AdminLibrary />} />
+                    <Route path="complaints" element={<AdminComplaints />} />
+                    <Route path="activity-logs" element={<AdminActivityLogs />} />
+                    <Route path="login-logs" element={<AdminLoginLogs />} />
+                  </Route>
+
+                  <Route path="*" element={<NotFound />} />
                 </Route>
-
-                <Route path="*" element={<NotFound />} />
-              </Route>
-            </Routes>
+              </Routes>
+            </Suspense>
           </BrowserRouter>
           <Toaster richColors position="top-center" />
         </AuthProvider>

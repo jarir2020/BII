@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&family=Hind+Siliguri:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@500;600;700&display=swap');
+/* Fonts — weights trimmed to only what the app actually uses. */
 
 @tailwind base;
 @tailwind components;
