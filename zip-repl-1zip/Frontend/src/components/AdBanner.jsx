@@ -51,12 +51,14 @@ export default function AdBanner({ slot, format = "responsive", className = "" }
     } catch (_) { /* AdSense not yet loaded — will retry on next render */ }
   }, [publisherId, adsEnabled, isLoaded]);
 
+  const adUnitId = adUnits[slot] || "";
+  const adStyle  = FORMAT_STYLES[format] || FORMAT_STYLES.responsive;
+  const phHeight = PLACEHOLDER_HEIGHTS[format] || 80;
+
   // Reserve fixed height even while ads are loading to prevent CLS when ad unit appears
   if (!isLoaded) {
     return (
-      <div className={`overflow-hidden text-center my-3 ${className}`} style={{ minHeight: phHeight }}>
-        <div className="h-full w-full" />
-      </div>
+      <div className={`overflow-hidden text-center my-3 ${className}`} style={{ minHeight: phHeight }} />
     );
   }
 
@@ -65,10 +67,6 @@ export default function AdBanner({ slot, format = "responsive", className = "" }
 
   // This specific slot disabled by admin — render nothing
   if (slotEnabled && slotEnabled[slot] === false) return null;
-
-  const adUnitId = adUnits[slot] || "";
-  const adStyle  = FORMAT_STYLES[format] || FORMAT_STYLES.responsive;
-  const phHeight = PLACEHOLDER_HEIGHTS[format] || 80;
 
   /* ── No publisher ID yet → branded placeholder ── */
   if (!publisherId) {
