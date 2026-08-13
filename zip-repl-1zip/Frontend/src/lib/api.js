@@ -40,7 +40,12 @@ function request(url, options = {}) {
       err.response = { status: res.status, data: text };
       throw err;
     }
-    return text ? JSON.parse(text) : {};
+    const parsed = text ? JSON.parse(text) : {};
+    // Return an Axios-like shape so existing call sites that read `r.data`
+    // or destructure `{ data }` keep working across the app.
+    return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)
+      ? { data: parsed, ...parsed }
+      : { data: parsed };
   });
 }
 
