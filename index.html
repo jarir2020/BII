@@ -57,27 +57,6 @@
         }
         @keyframes spin{to{transform:rotate(360deg)}}
     </style>
-    <script>
-        (function(){
-            var root = document.getElementById('root');
-            var splash = document.getElementById('splash');
-            function hide(){ if(splash) splash.style.display='none'; }
-            if(root){
-                var obs = new MutationObserver(function(mutations){
-                    for(var i=0;i<mutations.length;i++){
-                        var node = mutations[i].addedNodes;
-                        for(var j=0;j<node.length;j++){
-                            if(node[j].nodeType === 1 && node[j].childNodes.length > 0){
-                                hide(); obs.disconnect(); return;
-                            }
-                        }
-                    }
-                });
-                obs.observe(root, { childList: true, subtree: true });
-            }
-            setTimeout(hide, 3000);
-        })();
-    </script>
 </head>
 <body>
     <div id="splash">
@@ -105,6 +84,27 @@
     </div>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+    <script>
+        (function(){
+            var root = document.getElementById('root');
+            var splash = document.getElementById('splash');
+            function hide(){ if(splash) splash.style.display='none'; }
+            if(root){
+                var obs = new MutationObserver(function(mutations){
+                    for(var i=0;i<mutations.length;i++){
+                        var node = mutations[i].addedNodes;
+                        for(var j=0;j<node.length;j++){
+                            if(node[j].nodeType === 1 && node[j].childNodes.length > 0){
+                                hide(); obs.disconnect(); return;
+                            }
+                        }
+                    }
+                });
+                obs.observe(root, { childList: true, subtree: true });
+            }
+            setTimeout(hide, 3000);
+        })();
+    </script>
     <script defer="defer" src="/static/js/main.50cdf199.js"></script>
     <link href="/static/css/main.4d653034.css" rel="stylesheet" />
 </body>
