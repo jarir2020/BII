@@ -9,7 +9,7 @@ import { useLang } from "../contexts/LangContext";
 import { api } from "../lib/api";
 import BrandLogo from "../components/BrandLogo";
 
-const HERO_IMG = "https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&w=1600&q=70";
+const HERO_IMG = "https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&w=800&q=80&fm=webp";
 
 export default function Welcome() {
   const { user, loading } = useAuth();
@@ -78,7 +78,7 @@ export default function Welcome() {
       {/* HERO */}
       <section className="relative overflow-hidden rounded-3xl aspect-[16/9] sm:aspect-[21/9] md:aspect-[16/9]">
         <div className="absolute inset-0">
-          <img src={HERO_IMG} alt="" className="w-full h-full object-cover" />
+          <img src={HERO_IMG} alt="" fetchPriority="high" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-[var(--bii-emerald)]/92" />
           <div className="absolute inset-0 bg-gradient-to-b from-[var(--bii-emerald)]/40 via-transparent to-[var(--bii-emerald)]/70" />
           <div className="islamic-pattern absolute inset-0 opacity-30" />

@@ -256,3 +256,18 @@ Add a service worker using the existing `firebase-messaging-sw.js` infrastructur
 6. **Step 6:** Rebuild, re-run PageSpeed Insights, iterate
 
 Start with steps 1–4 (30 min total). These alone should lift the score from 40 to ~55–60. Then do step 5 for the biggest remaining gain.
+
+#### 2.7 Hero Image Optimization ✅ DONE
+
+**File:** `src/pages/Welcome.jsx`
+
+- Changed hero image URL from `?auto=format&fit=crop&w=1600&q=70` (JPEG, 676 KB) to `?auto=format&fit=crop&w=800&q=80&fm=webp` (WebP, 232 KB)
+- Added `fetchPriority="high"` to the hero `<img>` (LCP element) so the browser prioritizes it
+- 66% reduction in hero image size: 676 KB → 232 KB (−444 KB)
+
+#### 2.8 Add JS Preload ✅ DONE
+
+**File:** `public_html/index.html` (deployed build)
+
+- Added `<link rel="preload" href="/static/js/main.055b4906.js" as="script">` before the script tag
+- Helps the browser discover and start downloading main.js earlier in the critical path
