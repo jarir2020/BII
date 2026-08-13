@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   BookOpen, GraduationCap, VideoCamera, HandHeart, Mosque, Star,
   ArrowRight
@@ -14,8 +14,15 @@ export default function Welcome() {
   const { user, loading } = useAuth();
   const { lang, pick, t } = useLang();
   const [settings, setSettings] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => { api.get("/settings").then((r) => setSettings(r.data)).catch(() => {}); }, []);
+
+  useEffect(() => {
+    if (!loading && user) {
+      navigate("/home", { replace: true });
+    }
+  }, [loading, user, navigate]);
 
   // IntersectionObserver for feature-card scroll animations (replaces framer-motion whileInView)
   const cardRefs = useRef([]);
@@ -36,33 +43,7 @@ export default function Welcome() {
   }, []);
 
   // logged-in users should never see welcome
-  if (loading) {
-    return (
-      <div className="-mt-5" aria-busy="true" aria-live="polite">
-        <div className="relative overflow-hidden rounded-3xl aspect-[16/9] bg-[var(--bii-emerald)]/10 animate-pulse">
-          <div className="absolute inset-0 bg-gradient-to-br from-[var(--bii-emerald)]/20 via-transparent to-[var(--bii-gold)]/10" />
-        </div>
-        <div className="mt-12 space-y-6">
-          <div className="text-center space-y-3">
-            <div className="h-3 w-40 mx-auto bg-[var(--bii-border)] rounded-full animate-pulse" />
-            <div className="h-10 sm:h-14 w-4/5 sm:w-2/3 mx-auto bg-[var(--bii-border)] rounded-2xl animate-pulse" />
-            <div className="h-5 w-full max-w-2xl mx-auto bg-[var(--bii-border)] rounded-full animate-pulse" />
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bii-card p-6 animate-pulse">
-                <div className="h-8 w-8 rounded-full bg-[var(--bii-border)] mb-4" />
-                <div className="h-5 w-3/5 bg-[var(--bii-border)] rounded-full" />
-                <div className="h-4 w-full bg-[var(--bii-border)] rounded-full mt-3" />
-                <div className="h-4 w-5/6 bg-[var(--bii-border)] rounded-full mt-2" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-  if (user) return <Navigate to="/home" replace />;
+  if (!loading && user) return null;
 
   const organizationSchema = {
     "@context": "https://schema.org",
@@ -125,6 +106,38 @@ export default function Welcome() {
         image={typeof window !== "undefined" ? `${window.location.origin}/logo512.png` : "https://www.bengaliislamicinstitute.com/logo512.png"}
         structuredData={organizationSchema}
       />
+      {loading && (
+        <div
+          className="fixed inset-0 z-50 bg-[var(--bii-cream)]/95 backdrop-blur-sm"
+          aria-busy="true"
+          aria-live="polite"
+        >
+          <div className="absolute inset-0 flex items-center justify-center px-4">
+            <div className="w-full max-w-5xl space-y-6">
+              <div className="relative overflow-hidden rounded-3xl aspect-[16/9] bg-[var(--bii-emerald)]/10 animate-pulse">
+                <div className="absolute inset-0 bg-gradient-to-br from-[var(--bii-emerald)]/20 via-transparent to-[var(--bii-gold)]/10" />
+              </div>
+              <div className="space-y-6">
+                <div className="text-center space-y-3">
+                  <div className="h-3 w-40 mx-auto bg-[var(--bii-border)] rounded-full animate-pulse" />
+                  <div className="h-10 sm:h-14 w-4/5 sm:w-2/3 mx-auto bg-[var(--bii-border)] rounded-2xl animate-pulse" />
+                  <div className="h-5 w-full max-w-2xl mx-auto bg-[var(--bii-border)] rounded-full animate-pulse" />
+                </div>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="bii-card p-6 animate-pulse">
+                      <div className="h-8 w-8 rounded-full bg-[var(--bii-border)] mb-4" />
+                      <div className="h-5 w-3/5 bg-[var(--bii-border)] rounded-full" />
+                      <div className="h-4 w-full bg-[var(--bii-border)] rounded-full mt-3" />
+                      <div className="h-4 w-5/6 bg-[var(--bii-border)] rounded-full mt-2" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* HERO */}
       <section className="relative overflow-hidden rounded-3xl min-h-[22rem] sm:min-h-[28rem] bg-[var(--bii-emerald)]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(212,175,55,0.22),transparent_35%),radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.18),transparent_28%),linear-gradient(135deg,rgba(10,66,43,0.96),rgba(13,87,57,0.94))]" />
