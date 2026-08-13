@@ -9,10 +9,10 @@ import { useLang } from "../contexts/LangContext";
 import { api } from "../lib/api";
 import BrandLogo from "../components/BrandLogo";
 
-// Hero image served at multiple widths via srcset so imgix delivers the right size per viewport.
-// Desktop (md+) needs ~1200px for a sharp 16:9 hero; mobile needs ~600px.
-const HERO_BASE = "https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&q=80&fm=webp";
-const HERO_SRCSET = [400, 600, 800, 1200, 1600]
+// Hero image: q=60 keeps file size low for fast LCP; srcset provides larger sizes for retina/desktop.
+// Default src w=280 targets mobile 3G; srcset scales up to w=1600 for desktop.
+const HERO_BASE = "https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&q=60&fm=webp";
+const HERO_SRCSET = [280, 400, 600, 800, 1200, 1600]
   .map((w) => `${HERO_BASE}&w=${w} ${w}w`)
   .join(", ");
 
@@ -81,12 +81,14 @@ export default function Welcome() {
   return (
     <div className="-mt-5" data-testid="welcome-page">
       {/* HERO */}
-      <section className="relative overflow-hidden rounded-3xl aspect-[16/9] sm:aspect-[21/9] md:aspect-[16/9]">
+      <section className="relative overflow-hidden rounded-3xl aspect-[16/9]">
         <div className="absolute inset-0">
           <img
-            src={HERO_BASE + "?w=400"}
+            src={HERO_BASE + "?w=280"}
             srcSet={HERO_SRCSET}
-            sizes="(min-width: 768px) 100vw, 100vw"
+            sizes="100vw"
+            width="1600"
+            height="900"
             alt=""
             fetchPriority="high"
             decoding="async"
@@ -218,40 +220,54 @@ export default function Welcome() {
         </div>
       </section>
 
-      {/* contact preview */}
-      {settings && (settings.contact_mobile || settings.whatsapp || settings.contact_phone || settings.contact_email || settings.address) && (
-        <section className="mt-10">
-          <h3 className="font-heading text-xl text-[var(--bii-emerald)] text-center mb-4">
-            {pick("যোগাযোগ", "Get in touch")}
-          </h3>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-            {settings.contact_mobile && (
-              <a href={`tel:${settings.contact_mobile}`} className="bii-card p-4 text-center">
-                <div className="text-[10px] uppercase tracking-widest text-[var(--bii-text-soft)]">{pick("মোবাইল", "Mobile")}</div>
-                <div className="mt-1 font-medium">{settings.contact_mobile}</div>
-              </a>
-            )}
-            {settings.whatsapp && (
-              <a href={`https://wa.me/${settings.whatsapp.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" className="bii-card p-4 text-center">
-                <div className="text-[10px] uppercase tracking-widest text-green-700">WhatsApp</div>
-                <div className="mt-1 font-medium">{settings.whatsapp}</div>
-              </a>
-            )}
-            {settings.contact_email && (
-              <a href={`mailto:${settings.contact_email}`} className="bii-card p-4 text-center">
-                <div className="text-[10px] uppercase tracking-widest text-[var(--bii-text-soft)]">{t("email")}</div>
-                <div className="mt-1 font-medium break-all">{settings.contact_email}</div>
-              </a>
-            )}
-            {settings.address && (
-              <div className="bii-card p-4 text-center">
-                <div className="text-[10px] uppercase tracking-widest text-[var(--bii-text-soft)]">{t("address")}</div>
-                <div className="mt-1 font-medium">{settings.address}</div>
+      {/* contact preview — fixed-height placeholder reserves space before settings load */}
+      <section className="mt-10" aria-hidden={settings ? undefined : "true"}>
+        {settings ? (
+          (settings.contact_mobile || settings.whatsapp || settings.contact_phone || settings.contact_email || settings.address) && (
+            <div>
+              <h3 className="font-heading text-xl text-[var(--bii-emerald)] text-center mb-4">
+                {pick("যোগাযোগ", "Get in touch")}
+              </h3>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                {settings.contact_mobile && (
+                  <a href={`tel:${settings.contact_mobile}`} className="bii-card p-4 text-center">
+                    <div className="text-[10px] uppercase tracking-widest text-[var(--bii-text-soft)]">{pick("মোবাইল", "Mobile")}</div>
+                    <div className="mt-1 font-medium">{settings.contact_mobile}</div>
+                  </a>
+                )}
+                {settings.whatsapp && (
+                  <a href={`https://wa.me/${settings.whatsapp.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" className="bii-card p-4 text-center">
+                    <div className="text-[10px] uppercase tracking-widest text-green-700">WhatsApp</div>
+                    <div className="mt-1 font-medium">{settings.whatsapp}</div>
+                  </a>
+                )}
+                {settings.contact_email && (
+                  <a href={`mailto:${settings.contact_email}`} className="bii-card p-4 text-center">
+                    <div className="text-[10px] uppercase tracking-widest text-[var(--bii-text-soft)]">{t("email")}</div>
+                    <div className="mt-1 font-medium break-all">{settings.contact_email}</div>
+                  </a>
+                )}
+                {settings.address && (
+                  <div className="bii-card p-4 text-center">
+                    <div className="text-[10px] uppercase tracking-widest text-[var(--bii-text-soft)]">{t("address")}</div>
+                    <div className="mt-1 font-medium">{settings.address}</div>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+          )
+        ) : (
+          /* Skeleton placeholder: same shape as the contact section to prevent CLS when settings load */
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bii-card p-4 text-center animate-pulse">
+                <div className="h-3 bg-[var(--bii-border)] rounded w-16 mx-auto" />
+                <div className="h-4 bg-[var(--bii-border)] rounded w-24 mx-auto mt-2" />
+              </div>
+            ))}
           </div>
-        </section>
-      )}
+        )}
+      </section>
     </div>
   );
 }

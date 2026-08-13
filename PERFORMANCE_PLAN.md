@@ -294,3 +294,37 @@ Start with steps 1–4 (30 min total). These alone should lift the score from 40
 - Added `loading="lazy"` + `decoding="async"` to winner photos in ReviewCard
 - These images sit below the fold (after the menu grid and ad banner), so lazy loading prevents unnecessary download
 - `decoding="async"` shifts image decode off the main thread, improving TTI
+
+## Session 2026-08-13 — Continued Optimizations
+
+### Completed
+- **Firebase tree-shaking verified** ✅ — Only `firebase/app` and `firebase/messaging` code in bundle. The 29 `@firebase/` string references are compat module name identifiers only, not actual code imports.
+- **Hero image w=600→w=400** ✅ — Default src reduced from 137KB to 68KB WebP. srcset still provides w=600/800/1200/1600 for larger viewports.
+- **Axios → native fetch** ✅ — Replaced axios with fetch() in api.js. Saved ~45KB uncompressed / ~16KB gzipped from main.js.
+- **Unused dependencies removed** ✅ — dayjs, date-fns, lodash, swr, @types/lodash removed from package.json.
+- **Production console statements removed** ✅ — Removed BII debug logs from capacitor-push.js, capacitor-push-listener.js, firebase.js, NotificationPrompt.jsx, BookReaderModal.jsx, ErrorBoundary.jsx, CompletionCertificate.jsx, LibraryReader.jsx.
+- **Cormorant Garamond font removed** ✅ — Only Tiro Bangla + Hind Siliguri needed. Saved ~30-50KB font download.
+- **framer-motion tree-shaken** ✅ — Zero refs in main.js. All animations use CSS keyframes instead.
+
+### Bundle Size Progression
+| Build | Uncompressed | Gzipped | Change |
+|-------|-------------|---------|--------|
+| Before all optimizations | ~561KB | ~168KB | baseline |
+| After hero w=600 | ~561KB | ~168KB | (same build, different src) |
+| After unused deps removed | ~561KB | ~168KB | (deps were already tree-shaken) |
+| After axios→fetch | 515KB | 151KB | **-46KB / -17KB** |
+| After console cleanup | 514KB | 151KB | -1KB |
+| After font removal | 514KB | 151KB | (CSS changed, JS same) |
+| After hero w=400 | 514KB | 151KB | (same build, different src) |
+
+### Current Critical Resources
+- **main.js**: 514KB uncmp / 148KB gzipped
+- **main.css**: 101KB uncmp / 17.5KB gzipped
+- **Fonts**: 2 families (Tiro Bangla italic + Hind Siliguri 400/500/600)
+- **Hero image (mobile)**: 68KB WebP (w=400) / 137KB (w=600) / 232KB (w=800)
+- **Firebase SW**: Separate file, uses compat SDK from CDN
+
+### Pending
+- [ ] PageSpeed retest after all deployments complete
+- [ ] Consider reducing phosphor icons in Layout.jsx (21 icons, ~5-8KB gzipped) — only if UI allows
+- [ ] Consider font subsetting for Tiro Bangla + Hind Siliguri (would require build tooling)
