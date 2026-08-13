@@ -226,6 +226,19 @@ export default function Welcome() {
                 <div className="mt-1 font-medium break-all">{settings.contact_email}</div>
               </a>
             )}
+            {!settings?.contact_mobile && !settings?.whatsapp && !settings?.contact_email && (
+              <div className="bii-card p-4 text-center">
+                <div className="font-heading text-base text-[var(--bii-emerald)]">
+                  {pick("বাঙালি ইসলামিক ইনস্টিটিউট", "Bengali Islamic Institute")}
+                </div>
+                <p className="mt-2 text-[var(--bii-text-soft)] leading-relaxed">
+                  {pick(
+                    "যোগাযোগের তথ্য এখনও যোগ করা হয়নি। উপরের লগইন বা রেজিস্ট্রেশন বোতাম ব্যবহার করুন, অথবা পরে আবার দেখুন।",
+                    "Contact details are not available yet. Please use the top-bar login or register buttons, or check back later."
+                  )}
+                </p>
+              </div>
+            )}
           </div>
         </details>
       </section>

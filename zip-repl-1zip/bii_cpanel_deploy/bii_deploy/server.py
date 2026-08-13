@@ -1167,8 +1167,8 @@ async def get_settings():
         "tagline_en": "Knowledge, Faith & Manners",
         "contact_phone": "",
         "contact_mobile": "",
-        "whatsapp": "",
-        "contact_email": "",
+        "whatsapp": "+8801792784920",
+        "contact_email": "bengaliislamicinstitute@gmail.com",
         "address": "",
         "facebook": "",
         "youtube": "",
@@ -3495,6 +3495,41 @@ async def startup():
         init_storage()
     except Exception as e:
         logging.warning(f"storage init at startup: {e}")
+
+    # Seed the main settings document with minimal contact info if it is missing.
+    try:
+        default_settings = {
+            "id": "main",
+            "name_bn": os.environ.get("INSTITUTE_NAME_BN", "বাঙালি ইসলামিক ইনস্টিটিউট"),
+            "name_en": os.environ.get("INSTITUTE_NAME_EN", "Bengali Islamic Institute"),
+            "tagline_bn": "ইলম, ঈমান ও আদব",
+            "tagline_en": "Knowledge, Faith & Manners",
+            "contact_phone": "",
+            "contact_mobile": "",
+            "whatsapp": "+8801792784920",
+            "contact_email": "bengaliislamicinstitute@gmail.com",
+            "address": "",
+            "facebook": "",
+            "youtube": "",
+            "bkash_number": "01974911990",
+            "nagad_number": "01974911990",
+            "rocket_number": "01974911990",
+            "whatsapp_notify": "01792784920",
+            "whatsapp_api_key": "",
+        }
+        stored_settings = await db.settings.find_one({"id": "main"}, {"_id": 0}) or {}
+        if stored_settings:
+            patch = {
+                key: value
+                for key, value in default_settings.items()
+                if key != "id" and not stored_settings.get(key)
+            }
+            if patch:
+                await db.settings.update_one({"id": "main"}, {"$set": patch})
+        else:
+            await db.settings.insert_one(default_settings)
+    except Exception as e:
+        logging.warning(f"settings seed at startup: {e}")
 
     # Register Telegram webhook (best-effort — no crash if it fails).
     # SITE_URL must be the public production URL. REPLIT_DEV_DOMAIN is only
