@@ -34,6 +34,7 @@ export default function Layout() {
   const { lang, setLang, t }          = useLang();
   const navigate                      = useNavigate();
   const location                      = useLocation();
+  const showSiteAds                   = location.pathname !== "/" && location.pathname !== "/home";
 
   const closeSidebar = () => setOpenSidebar(false);
 
@@ -160,7 +161,7 @@ export default function Layout() {
       </header>
 
       {/* Header ad banner */}
-      <AdBanner slot="header-banner" format="horizontal" className="max-w-5xl mx-auto" />
+      {showSiteAds && <AdBanner slot="header-banner" format="horizontal" className="max-w-5xl mx-auto" />}
 
       {/* SIDEBAR */}
       {openSidebar && (
@@ -351,7 +352,7 @@ export default function Layout() {
         </div>
 
         {/* Footer ad banner */}
-        <AdBanner slot="footer-banner" format="horizontal" className="mt-4" />
+        {showSiteAds && <AdBanner slot="footer-banner" format="horizontal" className="mt-4" />}
       </footer>
     </div>
   );

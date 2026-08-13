@@ -65,16 +65,6 @@ export function AdsProvider({ children }) {
           !!(d[`enabled_${platform}`] || d[`ads_enabled_${platform}`]) &&
           !!publisherId;
 
-        // Inject AdSense script only once when publisher ID is configured
-        if (publisherId && !document.getElementById("adsense-script")) {
-          const script = document.createElement("script");
-          script.id = "adsense-script";
-          script.async = true;
-          script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${publisherId}`;
-          script.crossOrigin = "anonymous";
-          document.head.appendChild(script);
-        }
-
         // Build per-slot enabled flags from nested {web, app} structure
         // Falls back to old flat format for backwards compatibility
         const rawSlots = d.slots || {};

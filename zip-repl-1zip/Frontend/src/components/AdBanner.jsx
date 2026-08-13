@@ -37,6 +37,24 @@ const PLACEHOLDER_HEIGHTS = {
   banner:       60,
 };
 
+function loadAdSenseScript(publisherId) {
+  if (typeof document === "undefined") return Promise.resolve();
+
+  const existing = document.getElementById("adsense-script");
+  if (existing) return Promise.resolve();
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.id = "adsense-script";
+    script.async = true;
+    script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${publisherId}`;
+    script.crossOrigin = "anonymous";
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("AdSense script failed to load"));
+    document.head.appendChild(script);
+  });
+}
+
 export default function AdBanner({ slot, format = "responsive", className = "" }) {
   const { publisherId, adUnits, slotEnabled, adsEnabled, isLoaded } = useAds();
   const insRef  = useRef(null);
@@ -45,10 +63,32 @@ export default function AdBanner({ slot, format = "responsive", className = "" }
   useEffect(() => {
     if (!publisherId || !adsEnabled || !isLoaded || pushed.current) return;
     if (!insRef.current) return;
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-      pushed.current = true;
-    } catch (_) { /* AdSense not yet loaded — will retry on next render */ }
+    let cancelled = false;
+    const run = async () => {
+      try {
+        await loadAdSenseScript(publisherId);
+        if (cancelled) return;
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        pushed.current = true;
+      } catch (_) {
+        /* AdSense failed to load — keep the page functional */
+      }
+    };
+
+    const schedule = () => {
+      if (typeof window !== "undefined" && typeof window.requestIdleCallback === "function") {
+        const id = window.requestIdleCallback(run, { timeout: 1500 });
+        return () => window.cancelIdleCallback?.(id);
+      }
+      const id = window.setTimeout(run, 1200);
+      return () => window.clearTimeout(id);
+    };
+
+    const cleanup = schedule();
+    return () => {
+      cancelled = true;
+      if (typeof cleanup === "function") cleanup();
+    };
   }, [publisherId, adsEnabled, isLoaded]);
 
   const adUnitId = adUnits[slot] || "";
