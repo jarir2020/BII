@@ -70,6 +70,8 @@ function ReviewCard({ r }) {
           <img
             src={imgUrl(r.winner_photo) || PLACEHOLDER_AVATAR}
             alt={r.winner_name}
+            loading="lazy"
+            decoding="async"
             onError={(e) => { e.target.src = PLACEHOLDER_AVATAR; }}
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
           />
