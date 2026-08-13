@@ -69,7 +69,7 @@ export default function Layout() {
           <button
             data-testid="open-sidebar-btn"
             onClick={() => setOpenSidebar(true)}
-            className="p-2 rounded-lg hover:bg-white/10 active:scale-95 transition"
+            className="hidden sm:inline-flex p-2 rounded-lg hover:bg-white/10 active:scale-95 transition"
             aria-label="open menu"
           >
             <List size={26} weight="bold" />
@@ -164,7 +164,7 @@ export default function Layout() {
 
       {/* SIDEBAR */}
       {openSidebar && (
-        <>
+        <div className="hidden sm:block">
           <div
             data-testid="sidebar-backdrop"
             onClick={closeSidebar}
@@ -266,7 +266,7 @@ export default function Layout() {
                 © {new Date().getFullYear()} {t("appName")}
               </div>
           </aside>
-        </>
+        </div>
       )}
 
       {/* MAIN */}
