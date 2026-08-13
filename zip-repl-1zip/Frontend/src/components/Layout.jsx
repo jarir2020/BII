@@ -35,6 +35,7 @@ export default function Layout() {
   const navigate                      = useNavigate();
   const location                      = useLocation();
   const showSiteAds                   = location.pathname !== "/" && location.pathname !== "/home";
+  const showMobileSidebar             = !!user && location.pathname !== "/";
 
   const closeSidebar = () => setOpenSidebar(false);
 
@@ -42,6 +43,12 @@ export default function Layout() {
     api.get("/configs/social_links").then((r) => setSocial(r.data || {})).catch(() => {});
     api.get("/settings").then((r) => setSettings(r.data || {})).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!showMobileSidebar) {
+      setOpenSidebar(false);
+    }
+  }, [showMobileSidebar]);
 
   // Merge settings facebook/youtube into social
   const mergedSocial = {
@@ -70,7 +77,7 @@ export default function Layout() {
           <button
             data-testid="open-sidebar-btn"
             onClick={() => setOpenSidebar(true)}
-            className="hidden sm:inline-flex p-2 rounded-lg hover:bg-white/10 active:scale-95 transition"
+            className={`${showMobileSidebar ? "inline-flex" : "hidden sm:inline-flex"} p-2 rounded-lg hover:bg-white/10 active:scale-95 transition`}
             aria-label="open menu"
           >
             <List size={26} weight="bold" />
@@ -165,7 +172,7 @@ export default function Layout() {
 
       {/* SIDEBAR */}
       {openSidebar && (
-        <div className="hidden sm:block">
+        <div className={showMobileSidebar ? "" : "hidden sm:block"}>
           <div
             data-testid="sidebar-backdrop"
             onClick={closeSidebar}
