@@ -77,6 +77,9 @@ export default function Welcome() {
     ),
   };
 
+  const contactWhatsapp = settings?.whatsapp || "+8801792784920";
+  const contactEmail = settings?.contact_email || "bengaliislamicinstitute@gmail.com";
+
   const features = [
     {
       icon: <BookOpen size={30} weight="duotone" />,
@@ -319,39 +322,33 @@ export default function Welcome() {
       {/* contact preview — fixed-height placeholder reserves space before settings load */}
       <section className="mt-10" aria-hidden={settings ? undefined : "true"}>
         {settings ? (
-          (settings.contact_mobile || settings.whatsapp || settings.contact_phone || settings.contact_email || settings.address) && (
-            <div>
-              <h3 className="font-heading text-xl text-[var(--bii-emerald)] text-center mb-4">
-                {pick("যোগাযোগ", "Get in touch")}
-              </h3>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-                {settings.contact_mobile && (
-                  <a href={`tel:${settings.contact_mobile}`} className="bii-card p-4 text-center">
-                    <div className="text-[10px] uppercase tracking-widest text-[var(--bii-text-soft)]">{pick("মোবাইল", "Mobile")}</div>
-                    <div className="mt-1 font-medium">{settings.contact_mobile}</div>
-                  </a>
-                )}
-                {settings.whatsapp && (
-                  <a href={`https://wa.me/${settings.whatsapp.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" className="bii-card p-4 text-center">
-                    <div className="text-[10px] uppercase tracking-widest text-green-700">WhatsApp</div>
-                    <div className="mt-1 font-medium">{settings.whatsapp}</div>
-                  </a>
-                )}
-                {settings.contact_email && (
-                  <a href={`mailto:${settings.contact_email}`} className="bii-card p-4 text-center">
-                    <div className="text-[10px] uppercase tracking-widest text-[var(--bii-text-soft)]">{t("email")}</div>
-                    <div className="mt-1 font-medium break-all">{settings.contact_email}</div>
-                  </a>
-                )}
-                {settings.address && (
-                  <div className="bii-card p-4 text-center">
-                    <div className="text-[10px] uppercase tracking-widest text-[var(--bii-text-soft)]">{t("address")}</div>
-                    <div className="mt-1 font-medium">{settings.address}</div>
-                  </div>
-                )}
-              </div>
+          <div>
+            <h3 className="font-heading text-xl text-[var(--bii-emerald)] text-center mb-4">
+              {pick("যোগাযোগ", "Get in touch")}
+            </h3>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+              {settings.contact_mobile && (
+                <a href={`tel:${settings.contact_mobile}`} className="bii-card p-4 text-center">
+                  <div className="text-[10px] uppercase tracking-widest text-[var(--bii-text-soft)]">{pick("মোবাইল", "Mobile")}</div>
+                  <div className="mt-1 font-medium">{settings.contact_mobile}</div>
+                </a>
+              )}
+              <a href={`https://wa.me/${contactWhatsapp.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" className="bii-card p-4 text-center">
+                <div className="text-[10px] uppercase tracking-widest text-green-700">WhatsApp</div>
+                <div className="mt-1 font-medium">{contactWhatsapp}</div>
+              </a>
+              <a href={`mailto:${contactEmail}`} className="bii-card p-4 text-center">
+                <div className="text-[10px] uppercase tracking-widest text-[var(--bii-text-soft)]">{t("email")}</div>
+                <div className="mt-1 font-medium break-all">{contactEmail}</div>
+              </a>
+              {settings.address && (
+                <div className="bii-card p-4 text-center">
+                  <div className="text-[10px] uppercase tracking-widest text-[var(--bii-text-soft)]">{t("address")}</div>
+                  <div className="mt-1 font-medium">{settings.address}</div>
+                </div>
+              )}
             </div>
-          )
+          </div>
         ) : (
           /* Skeleton placeholder: same shape as the contact section to prevent CLS when settings load */
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
