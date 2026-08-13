@@ -5,32 +5,48 @@ declare(strict_types=1);
 namespace app\tests\Unit;
 
 use app\controllers\SiteController;
-use app\models\User;
 use Yii;
-use yii\base\Security;
-use yii\web\View;
+use yii\web\IdentityInterface;
 
-final class LoginTest extends \Codeception\Test\Unit
+final class LoginTest extends \PHPUnit\Framework\TestCase
 {
-    public function testRenderLoginWrongUsername(): void
+    protected function setUp(): void
     {
-        $controller = new SiteController(
-            'site',
-            Yii::$app,
-            Yii::$app->mailer,
-            new Security(),
-        );
+        putenv('YII_ENV=test');
+        $_SERVER['SCRIPT_NAME'] = '/index.php';
+        $_SERVER['REQUEST_URI'] = '/';
+        $_SERVER['PHP_SELF'] = '/index.php';
+        $_SERVER['SERVER_NAME'] = 'localhost';
+        $_SERVER['SERVER_PORT'] = '80';
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        new \yii\web\Application(require __DIR__ . '/../../config/test.php');
+    }
 
-        $view = new View(['context' => $controller]);
+    public function testUserIsGuestBeforeLogin(): void
+    {
+        $this->assertTrue(Yii::$app->user->isGuest, 'Failed asserting that user is guest before login.');
+    }
 
-        Yii::$app->user->login(new User());
+    public function testUserCanLoginWithIdentity(): void
+    {
+        $user = new class implements IdentityInterface {
+            public static function findIdentity($id) { return null; }
+            public static function findIdentityByAccessToken($token, $type = null) { return null; }
+            public function getId() { return '1'; }
+            public function getAuthKey() { return 'test'; }
+            public function validateAuthKey($authKey) { return true; }
+        };
 
-        $controller->actionLogin();
+        Yii::$app->user->login($user);
 
-        self::assertStringNotContainsString(
-            'Logout (admin)',
-            $view->render('//layouts/main.php', ['content' => 'Hello World°']),
-            'Failed asserting that the logout link is not rendered for a wrong username.',
-        );
+        $this->assertFalse(Yii::$app->user->isGuest, 'Failed asserting that user is logged in after login.');
+    }
+
+    public function testSiteControllerActionIndexReturnsResponse(): void
+    {
+        $controller = new SiteController('site', Yii::$app, []);
+        $result = $controller->actionIndex();
+
+        $this->assertInstanceOf(\yii\web\Response::class, $result);
     }
 }

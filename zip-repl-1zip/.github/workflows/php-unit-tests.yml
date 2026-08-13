@@ -1,0 +1,65 @@
+name: PHP Unit Tests
+
+on:
+  push:
+    branches: [main, develop, feature/*]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  php-unit-tests:
+    name: Run PHPUnit Tests
+    runs-on: ubuntu-latest
+
+    services:
+      # SQLite is file-based, no service needed
+      # We use the project's SQLite test database instead
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions:
+            - pdo
+            - pdo_sqlite
+            - mbstring
+            - xml
+            - ctype
+            - json
+            - iconv
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Generate SQLite test database
+        run: |
+          # Ensure test database directory exists
+          mkdir -p tests/Support
+          # Create empty SQLite database file (Yii2 will create tables as needed)
+          touch tests/Support/sqlite_test.db
+
+      - name: Run Codeception Tests
+        env:
+          YII_ENV: test
+          YII_DEBUG: 1
+        run: |
+          php vendor/bin/codecept run unit
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: tests/Support/output/
+          retention-days: 30
+
+      - name: Report Test Status
+        if: always()
+        run: |
+          echo "PHP Unit Tests completed"
+          echo "Exit code: $?"

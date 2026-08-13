@@ -8,7 +8,7 @@ use app\models\ContactForm;
 use Yii;
 use yii\mail\MessageInterface;
 
-final class ContactFormTest extends \Codeception\Test\Unit
+final class ContactFormTest extends \PHPUnit\Framework\TestCase
 {
     public mixed $tester = null;
 

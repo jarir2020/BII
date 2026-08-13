@@ -9,7 +9,12 @@ import { useLang } from "../contexts/LangContext";
 import { api } from "../lib/api";
 import BrandLogo from "../components/BrandLogo";
 
-const HERO_IMG = "https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&w=600&q=80&fm=webp";
+// Hero image served at multiple widths via srcset so imgix delivers the right size per viewport.
+// Desktop (md+) needs ~1200px for a sharp 16:9 hero; mobile needs ~600px.
+const HERO_BASE = "https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&q=80&fm=webp";
+const HERO_SRCSET = [400, 600, 800, 1200, 1600]
+  .map((w) => `${HERO_BASE}&w=${w} ${w}w`)
+  .join(", ");
 
 export default function Welcome() {
   const { user, loading } = useAuth();
@@ -78,7 +83,15 @@ export default function Welcome() {
       {/* HERO */}
       <section className="relative overflow-hidden rounded-3xl aspect-[16/9] sm:aspect-[21/9] md:aspect-[16/9]">
         <div className="absolute inset-0">
-          <img src={HERO_IMG} alt="" fetchPriority="high" decoding="async" className="w-full h-full object-cover" />
+          <img
+            src={HERO_BASE + "?w=800"}
+            srcSet={HERO_SRCSET}
+            sizes="(min-width: 768px) 100vw, 100vw"
+            alt=""
+            fetchPriority="high"
+            decoding="async"
+            className="w-full h-full object-cover"
+          />
           <div className="absolute inset-0 bg-[var(--bii-emerald)]/92" />
           <div className="absolute inset-0 bg-gradient-to-b from-[var(--bii-emerald)]/40 via-transparent to-[var(--bii-emerald)]/70" />
           <div className="islamic-pattern absolute inset-0 opacity-30" />

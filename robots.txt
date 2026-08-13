@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /quick-access
+
+# Sitemap
+Sitemap: /sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1

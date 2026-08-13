@@ -6,7 +6,7 @@ namespace app\tests\Unit\Models;
 
 use app\models\User;
 
-final class UserTest extends \Codeception\Test\Unit
+final class UserTest extends \PHPUnit\Framework\TestCase
 {
     public function testFindUserById()
     {

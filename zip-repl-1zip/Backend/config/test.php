@@ -19,6 +19,9 @@ return [
     'language' => 'en-US',
     'components' => [
         'db' => $db,
+        'jwt' => [
+            'class' => \app\components\JwtAuth::class,
+        ],
         'mailer' => [
             'class' => \yii\symfonymailer\Mailer::class,
             'messageClass' => \yii\symfonymailer\Message::class,
@@ -37,6 +40,7 @@ return [
         'request' => [
             'cookieValidationKey' => 'test',
             'enableCsrfValidation' => false,
+            'scriptUrl' => '/index.php',
             // but if you absolutely need it set cookie domain to localhost
             /*
             'csrfCookie' => [

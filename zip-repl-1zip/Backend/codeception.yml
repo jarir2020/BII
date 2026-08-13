@@ -13,10 +13,6 @@ settings:
   memory_limit: 1024M
   colors: true
 modules:
-  config:
-    Yii2:
-      configFile: config/test.php
-extensions:
   enabled:
     - Codeception\Extension\RunFailed
 coverage:
@@ -28,3 +24,6 @@ coverage:
     - /models/*
     - /views/*
     - /widgets/*
+envs:
+  - name: DB_DSN
+    value: sqlite:/home/jarir-ahmed/Downloads/bengalislamicInstitute/public_html/zip-repl-1zip/Backend/tests/Support/sqlite_test.db

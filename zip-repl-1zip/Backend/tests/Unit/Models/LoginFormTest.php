@@ -8,7 +8,7 @@ use app\models\LoginForm;
 use Yii;
 use yii\base\Security;
 
-final class LoginFormTest extends \Codeception\Test\Unit
+final class LoginFormTest extends \PHPUnit\Framework\TestCase
 {
     private $_model;
 

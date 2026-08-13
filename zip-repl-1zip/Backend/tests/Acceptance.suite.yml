@@ -11,6 +11,7 @@ modules:
         url: http://localhost
     - Yii2:
         part: orm
+        configFile: 'config/test.php'
         entryScript: index-test.php
         cleanup: false
 step_decorators: ~
