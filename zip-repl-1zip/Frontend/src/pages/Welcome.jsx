@@ -147,10 +147,10 @@ export default function Welcome() {
             <h1 className="font-heading text-3xl sm:text-5xl leading-tight">
               {pick(settings?.name_bn || "বাঙালি ইসলামিক ইনস্টিটিউট", settings?.name_en || "Bengali Islamic Institute")}
             </h1>
-            <p className="mt-3 sm:mt-4 text-sm sm:text-lg max-w-2xl mx-auto opacity-90 leading-relaxed">
+            <p className="mt-3 sm:mt-4 text-sm sm:text-lg max-w-2xl mx-auto opacity-90 leading-relaxed whitespace-pre-line">
               {pick(
-                "বাংলা ভাষায় বিশুদ্ধ ইসলামী ইলম, আখলাক ও আদবের শিক্ষাকেন্দ্র। অনলাইনে বাড়িতে বসেই শিখুন।",
-                "An online center for authentic Islamic knowledge, ethics and manners — in Bengali, from your home."
+                "🌿 রাসূলুল্লাহ ﷺ বলেছেন:\n“তোমাদের মধ্যে সর্বোত্তম সে-ই, যে কুরআন শেখে এবং অন্যকে শিক্ষা দেয়।”\n— সহিহ বুখারি",
+                "Prophet Muhammad ﷺ said:\n“The best among you are those who learn the Quran and teach it.”\n— Sahih al-Bukhari"
               )}
             </p>
             <div className="hidden sm:block text-xs mt-3 opacity-75">
