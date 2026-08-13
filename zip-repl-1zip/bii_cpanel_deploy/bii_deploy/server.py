@@ -4207,6 +4207,18 @@ if _FRONTEND_BUILD.exists():
     if _static_dir.exists():
         app.mount("/static", StaticFiles(directory=str(_static_dir)), name="react-static")
 
+    @app.middleware("http")
+    async def cache_static_assets(request: Request, call_next):
+        response = await call_next(request)
+        path = request.url.path
+        if path.startswith("/static/") and response.status_code == 200:
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        elif path == "/" or path.endswith(".html"):
+            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, proxy-revalidate"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        return response
+
     @app.get("/{full_path:path}", include_in_schema=False)
     async def serve_react_app(full_path: str):
         """Catch-all: serve React index.html for client-side routing."""

@@ -10,13 +10,6 @@ import { api } from "../lib/api";
 import BrandLogo from "../components/BrandLogo";
 import Seo from "../components/Seo";
 
-// Hero image: q=60 keeps file size low for fast LCP; srcset provides larger sizes for retina/desktop.
-// Default src w=280 targets mobile 3G; srcset scales up to w=1600 for desktop.
-const HERO_BASE = "https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&q=55&fm=webp";
-const HERO_SRCSET = [280, 400, 600, 800, 1000, 1200]
-  .map((w) => `${HERO_BASE}&w=${w} ${w}w`)
-  .join(", ");
-
 export default function Welcome() {
   const { user, loading } = useAuth();
   const { lang, pick, t } = useLang();
@@ -130,22 +123,15 @@ export default function Welcome() {
         structuredData={organizationSchema}
       />
       {/* HERO */}
-      <section className="relative overflow-hidden rounded-3xl aspect-[16/9]">
-        <div className="absolute inset-0">
-          <img
-            src={HERO_BASE + "?w=280"}
-            srcSet={HERO_SRCSET}
-            sizes="100vw"
-            width="1600"
-            height="900"
-            alt={pick("বাঙালি ইসলামিক ইনস্টিটিউটের ইসলামি শিক্ষার দৃশ্যাবলী", "Islamic learning background for Bengali Islamic Institute")}
-            fetchPriority="high"
-            decoding="async"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-[var(--bii-emerald)]/92" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[var(--bii-emerald)]/40 via-transparent to-[var(--bii-emerald)]/70" />
-          <div className="islamic-pattern absolute inset-0 opacity-30" />
+      <section className="relative overflow-hidden rounded-3xl min-h-[24rem] sm:min-h-[28rem] bg-[var(--bii-emerald)]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(212,175,55,0.22),transparent_35%),radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.18),transparent_28%),linear-gradient(135deg,rgba(10,66,43,0.96),rgba(13,87,57,0.94))]" />
+        <div className="islamic-pattern absolute inset-0 opacity-25" />
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-[var(--bii-gold)]/15 blur-3xl" />
+          <div className="absolute -bottom-12 -left-12 w-56 h-56 rounded-full bg-white/10 blur-3xl" />
+          <div className="absolute right-6 sm:right-12 bottom-6 sm:bottom-10 opacity-40 scale-90 sm:scale-100">
+            <BrandLogo size={176} />
+          </div>
         </div>
         <div className="relative px-6 sm:px-12 py-16 sm:py-24 text-white text-center">
           <div className="hero-fade-in">
