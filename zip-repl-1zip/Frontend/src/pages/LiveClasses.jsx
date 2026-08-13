@@ -71,6 +71,13 @@ function LiveClassCard({ lc }) {
   const liveNow = isLiveNow(lc.scheduled_at);
   const isFree = !!lc.is_free;
   const joinUrl = getValidLiveClassUrl(lc.join_url);
+  const joinPreview = joinUrl ? (() => {
+    try {
+      return new URL(joinUrl).hostname.replace(/^www\./i, "");
+    } catch {
+      return joinUrl;
+    }
+  })() : null;
   const [showSteps, setShowSteps] = useState(false);
 
   const borderClass = isFree
@@ -172,9 +179,15 @@ function LiveClassCard({ lc }) {
         {/* Zoom link preview */}
         <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--bii-cream)] border border-[var(--bii-border)] mb-4">
           <LinkSimple size={16} className="text-[var(--bii-gold)] flex-shrink-0" />
-          <span className="text-xs text-[var(--bii-text-soft)] truncate flex-1 font-mono">
-            {lc.join_url}
-          </span>
+          {joinPreview ? (
+            <span className="text-xs text-[var(--bii-text-soft)] truncate flex-1 font-mono">
+              {joinPreview}
+            </span>
+          ) : (
+            <span className="text-xs text-amber-700 flex-1">
+              {pick("যোগদানের লিংকটি সঠিকভাবে সেট করা হয়নি", "Join link is not configured correctly")}
+            </span>
+          )}
         </div>
 
         {/* Action buttons */}

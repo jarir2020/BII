@@ -6,6 +6,7 @@ import {
 } from "@phosphor-icons/react";
 import { api, formatApiError } from "../../lib/api";
 import { useLang } from "../../contexts/LangContext";
+import { getValidLiveClassUrl } from "../../lib/liveClassLinks";
 
 const EMPTY = {
   title_bn: "",
@@ -76,6 +77,11 @@ export default function AdminLive() {
     setSaving(true);
     try {
       const payload = { ...form };
+      const validJoinUrl = getValidLiveClassUrl(payload.join_url);
+      if (!validJoinUrl) {
+        throw new Error("সঠিক Zoom/HTTP link দিন");
+      }
+      payload.join_url = validJoinUrl;
       // Free class has no course binding
       if (payload.is_free) payload.course_id = "";
       if (editing) await api.put(`/live-classes/${editing}`, payload);
@@ -340,6 +346,7 @@ export default function AdminLive() {
 function LiveCard({ l, courseMap, onEdit, onDel, editing }) {
   const upcoming = isUpcoming(l.scheduled_at);
   const isEditingThis = editing === l.id;
+  const validJoinUrl = getValidLiveClassUrl(l.join_url);
 
   return (
     <div
@@ -404,12 +411,18 @@ function LiveCard({ l, courseMap, onEdit, onDel, editing }) {
         )}
 
         <div className="flex items-center gap-1 p-2 rounded-lg bg-[var(--bii-cream)] border border-[var(--bii-border)] mt-2">
-          <span className="text-xs text-[var(--bii-text-soft)] font-mono truncate flex-1">{l.join_url}</span>
-          <CopyBtn text={l.join_url} />
-          <a href={l.join_url} target="_blank" rel="noreferrer"
-            className="p-1.5 rounded-lg hover:bg-white text-[var(--bii-emerald)] transition" title="টেস্ট লিংক">
-            <ArrowSquareOut size={14} weight="bold" />
-          </a>
+          <span className="text-xs text-[var(--bii-text-soft)] font-mono truncate flex-1">
+            {validJoinUrl ? l.join_url : "Invalid link"}
+          </span>
+          {validJoinUrl && (
+            <>
+              <CopyBtn text={l.join_url} />
+              <a href={l.join_url} target="_blank" rel="noreferrer"
+                className="p-1.5 rounded-lg hover:bg-white text-[var(--bii-emerald)] transition" title="টেস্ট লিংক">
+                <ArrowSquareOut size={14} weight="bold" />
+              </a>
+            </>
+          )}
         </div>
       </div>
     </div>

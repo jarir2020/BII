@@ -2,8 +2,14 @@
 export function getValidLiveClassUrl(value) {
   if (typeof value !== "string" || !value.trim()) return null;
 
-  const raw = value.trim();
-  if (!/^https?:\/\//i.test(raw)) return null;
+  let raw = value.trim();
+  if (!/^https?:\/\//i.test(raw)) {
+    if (/^[^\s/]+\.[^\s/]+/.test(raw)) {
+      raw = `https://${raw}`;
+    } else {
+      return null;
+    }
+  }
 
   try {
     const url = new URL(raw);
