@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useSearchParams, u
 import { Toaster } from "sonner";
 
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { LangProvider } from "@/contexts/LangContext";
+import { LangProvider, useLang } from "@/contexts/LangContext";
 import { AdsProvider } from "@/contexts/AdsContext";
 import Layout from "@/components/Layout";
 import { ProtectedRoute, AdminRoute } from "@/components/Routes";
