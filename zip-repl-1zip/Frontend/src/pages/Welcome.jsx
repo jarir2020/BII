@@ -84,7 +84,7 @@ export default function Welcome() {
       <section className="relative overflow-hidden rounded-3xl aspect-[16/9] sm:aspect-[21/9] md:aspect-[16/9]">
         <div className="absolute inset-0">
           <img
-            src={HERO_BASE + "?w=800"}
+            src={HERO_BASE + "?w=600"}
             srcSet={HERO_SRCSET}
             sizes="(min-width: 768px) 100vw, 100vw"
             alt=""
