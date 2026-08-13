@@ -198,6 +198,14 @@ Check `src/lib/firebase.js` — if it only imports from `firebase/app` and `fire
 - Removed `Cormorant+Garamond:wght@700` (not used).
 *Result: Single font request with trimmed weights; no Inter waste; CSS down to 17 KB (no sourcemap).*
 
+#### 3.4 Font CSS Preload ✅ DONE
+
+**File:** `public/index.html`
+
+- Added `<link rel="preload" href="https://fonts.googleapis.com/...&display=swap" as="style">` before the actual font CSS link
+- Eliminates one round-trip to discover the font CSS file; browser starts fetching it immediately after HTML parse
+*Result: Fonts load ~1 round-trip faster on first visit.*
+
 #### 3.3 Optimize Images (when hero/banner images are added) ✅ DOCUMENTED
 
 No code change needed — the guide is in the plan for when hero/banner images are added to the homepage.
@@ -271,3 +279,18 @@ Start with steps 1–4 (30 min total). These alone should lift the score from 40
 
 - Added `<link rel="preload" href="/static/js/main.055b4906.js" as="script">` before the script tag
 - Helps the browser discover and start downloading main.js earlier in the critical path
+
+#### 2.9 Hero Image Further Reduction (W=800→600) ✅ DONE
+
+**File:** `src/pages/Welcome.jsx`
+
+- Reduced hero image width from 800→600px: 232 KB → 140 KB WebP (−92 KB, 40% further savings)
+- Added `decoding="async"` to hero `<img>` (off-main-thread decode, though LCP image already has `fetchPriority="high"`)
+
+#### 2.10 Lazy-Load Winner Photos ✅ DONE
+
+**File:** `src/pages/Home.jsx`
+
+- Added `loading="lazy"` + `decoding="async"` to winner photos in ReviewCard
+- These images sit below the fold (after the menu grid and ad banner), so lazy loading prevents unnecessary download
+- `decoding="async"` shifts image decode off the main thread, improving TTI
