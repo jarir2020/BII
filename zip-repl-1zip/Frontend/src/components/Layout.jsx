@@ -77,7 +77,7 @@ export default function Layout() {
 
           <Link to={user ? "/home" : "/"} className="flex items-center gap-2 flex-1 min-w-0" data-testid="brand-home-link">
             <BrandLogo size={36} />
-            <div className="min-w-0">
+            <div className="hidden sm:block min-w-0">
               <div className="font-heading text-base sm:text-lg leading-tight truncate">
                 {lang === "bn" ? "বাঙালি ইসলামিক ইনস্টিটিউট" : "Bengali Islamic Institute"}
               </div>
