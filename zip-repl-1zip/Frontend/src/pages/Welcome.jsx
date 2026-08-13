@@ -320,46 +320,32 @@ export default function Welcome() {
       </section>
 
       {/* contact preview — fixed-height placeholder reserves space before settings load */}
-      <section className="mt-10" aria-hidden={settings ? undefined : "true"}>
-        {settings ? (
-          <div>
-            <h3 className="font-heading text-xl text-[var(--bii-emerald)] text-center mb-4">
-              {pick("যোগাযোগ", "Get in touch")}
-            </h3>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-              {settings.contact_mobile && (
-                <a href={`tel:${settings.contact_mobile}`} className="bii-card p-4 text-center">
-                  <div className="text-[10px] uppercase tracking-widest text-[var(--bii-text-soft)]">{pick("মোবাইল", "Mobile")}</div>
-                  <div className="mt-1 font-medium">{settings.contact_mobile}</div>
-                </a>
-              )}
-              <a href={`https://wa.me/${contactWhatsapp.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" className="bii-card p-4 text-center">
-                <div className="text-[10px] uppercase tracking-widest text-green-700">WhatsApp</div>
-                <div className="mt-1 font-medium">{contactWhatsapp}</div>
-              </a>
-              <a href={`mailto:${contactEmail}`} className="bii-card p-4 text-center">
-                <div className="text-[10px] uppercase tracking-widest text-[var(--bii-text-soft)]">{t("email")}</div>
-                <div className="mt-1 font-medium break-all">{contactEmail}</div>
-              </a>
-              {settings.address && (
-                <div className="bii-card p-4 text-center">
-                  <div className="text-[10px] uppercase tracking-widest text-[var(--bii-text-soft)]">{t("address")}</div>
-                  <div className="mt-1 font-medium">{settings.address}</div>
-                </div>
-              )}
+      <section className="mt-10">
+        <h3 className="font-heading text-xl text-[var(--bii-emerald)] text-center mb-4">
+          {pick("যোগাযোগ", "Get in touch")}
+        </h3>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+          {settings?.contact_mobile && (
+            <a href={`tel:${settings.contact_mobile}`} className="bii-card p-4 text-center">
+              <div className="text-[10px] uppercase tracking-widest text-[var(--bii-text-soft)]">{pick("মোবাইল", "Mobile")}</div>
+              <div className="mt-1 font-medium">{settings.contact_mobile}</div>
+            </a>
+          )}
+          <a href={`https://wa.me/${contactWhatsapp.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" className="bii-card p-4 text-center">
+            <div className="text-[10px] uppercase tracking-widest text-green-700">WhatsApp</div>
+            <div className="mt-1 font-medium">{contactWhatsapp}</div>
+          </a>
+          <a href={`mailto:${contactEmail}`} className="bii-card p-4 text-center">
+            <div className="text-[10px] uppercase tracking-widest text-[var(--bii-text-soft)]">{t("email")}</div>
+            <div className="mt-1 font-medium break-all">{contactEmail}</div>
+          </a>
+          {settings?.address && (
+            <div className="bii-card p-4 text-center">
+              <div className="text-[10px] uppercase tracking-widest text-[var(--bii-text-soft)]">{t("address")}</div>
+              <div className="mt-1 font-medium">{settings.address}</div>
             </div>
-          </div>
-        ) : (
-          /* Skeleton placeholder: same shape as the contact section to prevent CLS when settings load */
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bii-card p-4 text-center animate-pulse">
-                <div className="h-3 bg-[var(--bii-border)] rounded w-16 mx-auto" />
-                <div className="h-4 bg-[var(--bii-border)] rounded w-24 mx-auto mt-2" />
-              </div>
-            ))}
-          </div>
-        )}
+          )}
+        </div>
       </section>
       </div>
     </div>

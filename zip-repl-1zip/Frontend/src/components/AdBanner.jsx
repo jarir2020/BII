@@ -68,28 +68,8 @@ export default function AdBanner({ slot, format = "responsive", className = "" }
   // This specific slot disabled by admin — render nothing
   if (slotEnabled && slotEnabled[slot] === false) return null;
 
-  /* ── No publisher ID yet → branded placeholder ── */
-  if (!publisherId) {
-    return (
-      <div
-        className={`flex items-center justify-center rounded-xl border border-dashed border-[var(--bii-gold)]/40 bg-[var(--bii-cream)] text-[var(--bii-text-soft)] text-xs select-none my-3 ${className}`}
-        style={{ minHeight: phHeight, width: "100%" }}
-        aria-hidden="true"
-      >
-        <div className="text-center px-4 py-2 space-y-0.5">
-          <div className="text-[var(--bii-emerald)] font-semibold text-[11px] uppercase tracking-widest">
-            বিজ্ঞাপন এখানে দেখাবে
-          </div>
-          <div className="opacity-50 text-[10px]">
-            slot: {slot} · format: {format}
-          </div>
-          <div className="opacity-50 text-[10px]">
-            Admin → বিজ্ঞাপন সেটিংস → Publisher ID দিন
-          </div>
-        </div>
-      </div>
-    );
-  }
+  /* ── No publisher ID yet → render nothing ── */
+  if (!publisherId) return null;
 
   /* ── Publisher ID present → real AdSense unit ── */
   return (
