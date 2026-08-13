@@ -3,6 +3,7 @@
 *.env
 !.env.example
 *.env.local
+.env.ftp.local
 *.env.production
 
 # ── PHP / Yii2 ─────────────────────────────────────────────
@@ -46,4 +47,5 @@ zip-repl-1zip/zipFile/
 # CI/CD build artifact (assembled merged public_html)
 deploy/_staging/
 ANDROID_APP_PLAN.md
-API_DOCUMENTATION.mdpackage-lock.json
+API_DOCUMENTATION.md
+package-lock.json
