@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import {
   BookOpen, GraduationCap, VideoCamera, HandHeart, Mosque, Star,
   SignIn, UserPlus, ArrowRight
@@ -18,6 +17,24 @@ export default function Welcome() {
   const [settings, setSettings] = useState(null);
 
   useEffect(() => { api.get("/settings").then((r) => setSettings(r.data)).catch(() => {}); }, []);
+
+  // IntersectionObserver for feature-card scroll animations (replaces framer-motion whileInView)
+  const cardRefs = useRef([]);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("bii-fade-in");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+    cardRefs.current.forEach((el) => { if (el) observer.observe(el); });
+    return () => observer.disconnect();
+  }, []);
 
   // logged-in users should never see welcome
   if (loading) return <div className="p-8 text-center text-[var(--bii-text-soft)]">{t("loading")}</div>;
@@ -67,7 +84,7 @@ export default function Welcome() {
           <div className="islamic-pattern absolute inset-0 opacity-30" />
         </div>
         <div className="relative px-6 sm:px-12 py-16 sm:py-24 text-white text-center">
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <div className="hero-fade-in">
             <div className="inline-block mb-5">
               <BrandLogo size={80} />
             </div>
@@ -99,7 +116,7 @@ export default function Welcome() {
             <div className="text-xs mt-3 opacity-75">
               {pick("ভর্তি হয়ে কোর্স, লাইভ ক্লাস, ভিডিও ও কুইজে অংশ নিন", "Register to access courses, live classes, videos and quizzes")}
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -123,18 +140,15 @@ export default function Welcome() {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {features.map((f, i) => (
-            <motion.div
+            <div
               key={i}
-              initial={{ opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: i * 0.05 }}
-              className="bii-card p-6"
+              ref={(el) => { cardRefs.current[i] = el; }}
+              className="bii-card p-6 opacity-0 translate-y-3 transition-all duration-400 ease-out"
             >
               <div className="text-[var(--bii-emerald)] mb-3">{f.icon}</div>
               <h3 className="font-heading text-lg text-[var(--bii-emerald)]">{f.title}</h3>
               <p className="text-sm text-[var(--bii-text-soft)] mt-1.5 leading-relaxed">{f.desc}</p>
-            </motion.div>
+            </div>
           ))}
         </div>
       </section>

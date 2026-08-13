@@ -149,3 +149,18 @@ h1, h2, h3, .font-heading {
 ins.adsbygoogle[data-ad-status="unfilled"] { display: none !important; }
 /* Hide the AdBanner wrapper entirely (removes its margins too) when unfilled */
 div:has(> ins.adsbygoogle[data-ad-status="unfilled"]) { display: none !important; }
+
+/* ── Hero fade-in (replaces framer-motion initial/animate) ── */
+@keyframes biiHeroFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.hero-fade-in {
+  animation: biiHeroFadeIn 0.5s ease-out both;
+}
+
+/* ── Scroll-triggered card fade-in (replaces whileInView) ── */
+.bii-fade-in {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
