@@ -47,7 +47,7 @@ export default function Register() {
           </button>
         </form>
         <div className="text-sm text-center mt-5 text-[var(--bii-text-soft)] space-y-2">
-          <div>{t("alreadyHaveAccount")} <Link to="/login" data-testid="register-to-login-link" className="text-[var(--bii-emerald)] font-semibold">{t("login")}</Link></div>
+          <div>{t("alreadyHaveAccount")}</div>
           <div><Link to="/forgot-password" className="text-[var(--bii-emerald)] font-semibold underline underline-offset-2">{t("forgotPassword")}</Link></div>
         </div>
       </div>

@@ -40,7 +40,6 @@ export default function MyCourses() {
       <div data-testid="my-courses-page" className="bii-card p-8 text-center">
         <h1 className="font-heading text-2xl text-[var(--bii-emerald)] mb-2">{t("menuMyCourses")}</h1>
         <p className="text-[var(--bii-text-soft)]">{pick("আপনার কোর্স দেখতে লগইন করুন", "Please log in to view your courses")}</p>
-        <Link to="/login" className="bii-btn-primary inline-block mt-4">{pick("লগইন", "Log in")}</Link>
       </div>
     );
   }

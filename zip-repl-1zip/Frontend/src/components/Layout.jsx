@@ -98,6 +98,25 @@ export default function Layout() {
           </button>
 
           {!user && (
+            <div className="hidden sm:flex items-center gap-2">
+              <Link
+                to="/login"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition text-sm"
+              >
+                <SignIn size={16} weight="bold" />
+                <span>{t("login")}</span>
+              </Link>
+              <Link
+                to="/register"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--bii-gold)] text-[var(--bii-emerald)] hover:opacity-95 transition text-sm font-semibold"
+              >
+                <UserPlus size={16} weight="bold" />
+                <span>{t("register")}</span>
+              </Link>
+            </div>
+          )}
+
+          {!user && (
             <div className="sm:hidden flex items-center gap-2">
               <Link
                 to="/login"

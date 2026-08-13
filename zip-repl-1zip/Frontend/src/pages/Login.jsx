@@ -54,9 +54,7 @@ export default function Login() {
           </button>
         </form>
         <div className="text-sm text-center mt-5 space-y-2">
-          <div className="text-[var(--bii-text-soft)]">
-            {t("dontHaveAccount")} <Link to="/register" data-testid="login-to-register-link" className="text-[var(--bii-emerald)] font-semibold">{t("register")}</Link>
-          </div>
+          <div className="text-[var(--bii-text-soft)]">{t("dontHaveAccount")}</div>
           <div>
             <Link
               to="/forgot-password"

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { EnvelopeSimple, LockKey, ArrowLeft, CheckCircle, Key } from "@phosphor-icons/react";
+import { useNavigate } from "react-router-dom";
+import { EnvelopeSimple, LockKey, CheckCircle, Key } from "@phosphor-icons/react";
 import { api, formatApiError } from "../lib/api";
 import { useLang } from "../contexts/LangContext";
 import BrandLogo from "../components/BrandLogo";
@@ -305,18 +305,6 @@ export default function ForgotPassword() {
             >
               {t("login")}
             </button>
-          </div>
-        )}
-
-        {/* লগইনে ফিরে যান */}
-        {step !== "done" && (
-          <div className="text-center mt-6 pt-4 border-t border-[var(--bii-border)]">
-            <Link
-              to="/login"
-              className="text-sm text-[var(--bii-emerald)] font-semibold hover:underline flex items-center justify-center gap-1"
-            >
-              <ArrowLeft size={14} /> {pick("লগইনে ফিরে যান", "Back to Login")}
-            </Link>
           </div>
         )}
 

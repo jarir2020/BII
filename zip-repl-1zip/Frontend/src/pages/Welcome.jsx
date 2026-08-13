@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Link, Navigate } from "react-router-dom";
 import {
   BookOpen, GraduationCap, VideoCamera, HandHeart, Mosque, Star,
-  SignIn, UserPlus, ArrowRight
+  ArrowRight
 } from "@phosphor-icons/react";
 import { useAuth } from "../contexts/AuthContext";
 import { useLang } from "../contexts/LangContext";
@@ -150,19 +150,6 @@ export default function Welcome() {
                 "An online center for authentic Islamic knowledge, ethics and manners — in Bengali, from your home."
               )}
             </p>
-            <div className="mt-8 hidden sm:flex flex-wrap gap-3 justify-center">
-              <Link to="/login" data-testid="welcome-login-btn" className="bii-btn-gold inline-flex items-center gap-2">
-                <SignIn size={18} weight="bold" /> {t("login")}
-              </Link>
-              <Link to="/register" data-testid="welcome-register-btn" className="inline-flex items-center gap-2 bg-white/15 hover:bg-white/25 backdrop-blur px-5 py-3 rounded-xl border border-white/30 transition">
-                <UserPlus size={18} weight="bold" /> {t("register")}
-              </Link>
-            </div>
-            <div className="hidden sm:block mt-3">
-              <Link to="/forgot-password" className="text-sm font-semibold text-yellow-400 hover:text-yellow-200 underline underline-offset-4 drop-shadow transition">
-                {t("forgotPassword")}
-              </Link>
-            </div>
             <div className="hidden sm:block text-xs mt-3 opacity-75">
               {pick("ভর্তি হয়ে কোর্স, লাইভ ক্লাস, ভিডিও ও কুইজে অংশ নিন", "Register to access courses, live classes, videos and quizzes")}
             </div>
@@ -172,33 +159,6 @@ export default function Welcome() {
 
       {/* MOBILE QUICK LINKS */}
       <section className="mt-6 sm:hidden space-y-3">
-        <div className="bii-card p-4">
-          <div className="text-[11px] tracking-[0.3em] text-[var(--bii-gold)] uppercase">
-            {pick("শুরু করুন", "Get started")}
-          </div>
-          <p className="mt-2 text-sm text-[var(--bii-text-soft)] leading-relaxed">
-            {pick(
-              "অ্যাকাউন্ট খুলে কোর্স, লাইভ ক্লাস, ভিডিও এবং কুইজে ঢুকে পড়ুন।",
-              "Create an account to access courses, live classes, videos and quizzes."
-            )}
-          </p>
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <Link to="/login" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--bii-emerald)] text-white px-4 py-3 text-sm font-semibold">
-              <SignIn size={16} weight="bold" />
-              {t("login")}
-            </Link>
-            <Link to="/register" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--bii-gold)] text-[var(--bii-emerald)] px-4 py-3 text-sm font-semibold">
-              <UserPlus size={16} weight="bold" />
-              {t("register")}
-            </Link>
-          </div>
-          <div className="mt-3 text-center">
-            <Link to="/forgot-password" className="text-sm font-semibold text-[var(--bii-emerald)] underline underline-offset-4">
-              {t("forgotPassword")}
-            </Link>
-          </div>
-        </div>
-
         <details className="bii-card p-4">
           <summary className="cursor-pointer list-none flex items-center justify-between gap-3">
             <span className="font-heading text-lg text-[var(--bii-emerald)]">
@@ -340,19 +300,6 @@ export default function Welcome() {
           <p className="mt-2 opacity-85 text-sm sm:text-base max-w-xl mx-auto">
             {pick("সম্পূর্ণ ফ্রি অ্যাকাউন্ট। মাত্র এক মিনিটে রেজিস্ট্রেশন।", "Free account. Register in under a minute.")}
           </p>
-          <div className="mt-6 flex flex-wrap gap-3 justify-center">
-            <Link to="/register" data-testid="welcome-cta-register" className="bii-btn-gold inline-flex items-center gap-2">
-              {t("register")} <ArrowRight size={18} weight="bold" />
-            </Link>
-            <Link to="/login" data-testid="welcome-cta-login" className="inline-flex items-center gap-2 bg-white/15 hover:bg-white/25 backdrop-blur px-5 py-3 rounded-xl border border-white/30 transition">
-              {t("login")}
-            </Link>
-          </div>
-          <div className="mt-3">
-            <Link to="/forgot-password" className="text-sm font-semibold text-yellow-400 hover:text-yellow-200 underline underline-offset-4 drop-shadow transition">
-              {t("forgotPassword")}
-            </Link>
-          </div>
         </div>
       </section>
 
