@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from "react";
 import AdBanner from "../components/AdBanner";
 import BottomBanner from "../components/BottomBanner";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import {
   Books, GraduationCap, VideoCamera, FilmSlate, Trophy, Storefront,
   Bell, PhoneCall, Question, HandsPraying, Star, PlayCircle, MapPin,
@@ -217,15 +216,12 @@ function WinnerReviews({ reviews }) {
         onTouchEnd={onTouchEnd}
       >
         {getVisible().map((r, i) => (
-          <motion.div
+          <div
             key={`${r.id}-${idx}-${i}`}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, delay: i * 0.06 }}
-            className={i === 0 ? "" : i === 1 ? "hidden sm:block" : "hidden lg:block"}
+            className={`${i === 0 ? "" : i === 1 ? "hidden sm:block" : "hidden lg:block"} bii-stagger bii-stagger-${i + 1}`}
           >
             <ReviewCard r={r} />
-          </motion.div>
+          </div>
         ))}
       </div>
 
@@ -319,12 +315,7 @@ export default function Home() {
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5">
           {menu.map((m, i) => (
-            <motion.div
-              key={m.to}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.35 }}
-            >
+            <div key={m.to} className="bii-stagger bii-stagger-1" style={{ animationDelay: `${i * 50}ms` }}>
               <Link
                 to={m.to}
                 data-testid={m.testid}
@@ -344,7 +335,7 @@ export default function Home() {
                   </span>
                 )}
               </Link>
-            </motion.div>
+            </div>
           ))}
         </div>
       </section>

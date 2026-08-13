@@ -76,7 +76,7 @@ export default function Welcome() {
   return (
     <div className="-mt-5" data-testid="welcome-page">
       {/* HERO */}
-      <section className="relative overflow-hidden rounded-3xl">
+      <section className="relative overflow-hidden rounded-3xl aspect-[16/9] sm:aspect-[21/9] md:aspect-[16/9]">
         <div className="absolute inset-0">
           <img src={HERO_IMG} alt="" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-[var(--bii-emerald)]/92" />

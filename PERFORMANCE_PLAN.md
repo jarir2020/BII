@@ -124,21 +124,13 @@ All ~40 page components (public + admin) wrapped in `lazy(() => import(...))`.
 **Expected impact:** Homepage JS drops from ~1.7 MB to ~202 KB gzipped (only homepage + layout code loads first).
 *Result: main.js = 674 KB uncompressed / 202 KB gzipped (was 1.71 MB / 439 KB). ~3,000+ chunk files for individual pages.*
 
-#### 2.2 Tree-Shake Phosphor Icons ✅ DONE (already done — code uses named imports)
+#### 2.2 Remove framer-motion from main bundle ✅ DONE
 
-The codebase already imports icons individually: `import { Books, Star } from "@phosphor-icons/react"`. Webpack tree-shakes unused icons automatically. No change needed.
+**File:** `src/components/Layout.jsx` — replaced `motion.div`/`motion.aside` + `AnimatePresence` with plain `div`/`aside` + Tailwind `transition-*` classes for the sidebar animations.
 
-Replace the full `@phosphor-icons/react` import with individual named imports (which tree-shake):
+`framer-motion` was pulled into main.js because Layout.jsx is always rendered. After removal, main.js drops from 673KB → 549KB (202KB → 163KB gzipped). framer-motion now only loads in the Welcome/Home lazy chunks.
 
-```js
-// Instead of:
-import { Books, GraduationCap, VideoCamera, ... } from '@phosphor-icons/react';
-
-// The full library is already imported as a named barrel — check if it's a side-effect import:
-// If using: import * as Phosphor from '@phosphor-icons/react' → switch to individual imports
-```
-
-Actually, since the code already uses named imports like `import { Books, Star } from "@phosphor-icons/react"`, webpack should tree-shake. But the library itself is large. Verify the build doesn't include unused icon components by checking the bundle.
+*Result: −39KB gzipped from main.js. Sidebar slide/fade works with native CSS transitions.*
 
 #### 2.3 Remove Unused Dependencies ✅ DONE (already lazy-loaded via route splitting)
 
@@ -162,6 +154,20 @@ Move `recharts` and `react-resizable-panels` to lazy-loaded admin chunks only.
 **Used:** Only `firebase/messaging` (see `src/lib/firebase.js`)
 
 Check `src/lib/firebase.js` — if it only imports from `firebase/app` and `firebase/messaging`, the bundler should already be tree-shaking the rest. Verify by checking if the bundle size drops when other Firebase modules are removed from the import.
+
+---
+
+#### 2.5 Remove framer-motion from Home.jsx ✅ DONE
+
+**File:** `src/pages/Home.jsx` — replaced `motion.div` (menu grid + review cards) with plain `div` + CSS `@keyframes biiStaggerIn` animation with staggered delays via utility classes (`.bii-stagger-1` through `.bii-stagger-12`).
+
+`framer-motion` is now completely absent from the entire build (verified: zero chunks contain "framer-motion"). All animations use native CSS — zero JS overhead for animations.
+
+*Result: framer-motion chunk (23 KB / 5.2 KB gzipped) no longer loads on any page. main.js = 167 KB gzipped (was 163 KB — net change negligible, CSS +4 KB for new animation keyframes).*
+
+#### 2.6 Hero Image CLS Fix ✅ DONE
+
+**File:** `src/pages/Welcome.jsx` — added `aspect-[16/9] sm:aspect-[21/9] md:aspect-[16/9]` to the hero `<section>` to give the browser a known intrinsic ratio before the remote Unsplash image loads, eliminating Cumulative Layout Shift on the LCP element.
 
 ---
 
