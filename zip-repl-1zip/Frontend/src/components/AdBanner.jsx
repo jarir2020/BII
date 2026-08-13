@@ -51,8 +51,14 @@ export default function AdBanner({ slot, format = "responsive", className = "" }
     } catch (_) { /* AdSense not yet loaded — will retry on next render */ }
   }, [publisherId, adsEnabled, isLoaded]);
 
-  // Not loaded yet — render nothing to avoid layout shift
-  if (!isLoaded) return null;
+  // Reserve fixed height even while ads are loading to prevent CLS when ad unit appears
+  if (!isLoaded) {
+    return (
+      <div className={`overflow-hidden text-center my-3 ${className}`} style={{ minHeight: phHeight }}>
+        <div className="h-full w-full" />
+      </div>
+    );
+  }
 
   // Ads disabled globally — render nothing
   if (!adsEnabled) return null;

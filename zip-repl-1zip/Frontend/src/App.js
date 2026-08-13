@@ -30,10 +30,10 @@ function RouteLoader() {
 
 // ── Lazy page components ──
 const Home              = lazy(() => import("@/pages/Home"));
-const Welcome           = lazy(() => import("@/pages/Welcome"));
-const Login             = lazy(() => import("@/pages/Login"));
-const Register          = lazy(() => import("@/pages/Register"));
-const ForgotPassword    = lazy(() => import("@/pages/ForgotPassword"));
+import Welcome from "@/pages/Welcome";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import ForgotPassword from "@/pages/ForgotPassword";
 const Profile           = lazy(() => import("@/pages/Profile"));
 const Settings          = lazy(() => import("@/pages/Settings"));
 const ChangePassword    = lazy(() => import("@/pages/ChangePassword"));
