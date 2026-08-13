@@ -1,6 +1,6 @@
 import React, { lazy, Suspense } from "react";
 import "@/App.css";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { Toaster } from "sonner";
 
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -15,6 +15,7 @@ import { registerNativePushListeners } from "@/lib/capacitor-push-listener";
 import { setToken as __setQuickAccessToken } from "@/lib/api";
 import { Capacitor } from "@capacitor/core";
 import { App as CapacitorApp } from "@capacitor/app";
+import Seo from "@/components/Seo";
 
 // ── Loading spinner for lazy-loaded route chunks ──
 function RouteLoader() {
@@ -240,6 +241,139 @@ function QuickAdminAccess() {
   return <div className="p-8 text-center text-[var(--bii-text-soft)]">প্রবেশ করা হচ্ছে...</div>;
 }
 
+function RouteMetaBridge() {
+  const location = useLocation();
+  const { lang, pick } = useLang();
+
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://www.bengaliislamicinstitute.com";
+  const canonical = `${origin}${location.pathname}`;
+
+  const route = (() => {
+    const path = location.pathname;
+    const publicRoutes = {
+      "/": {
+        title: pick("বাঙালি ইসলামিক ইনস্টিটিউট — ইলম, ঈমান ও আদব", "Bengali Islamic Institute — Knowledge, Faith & Manners"),
+        description: pick(
+          "বাংলাভাষী মুসলিমদের জন্য অনলাইন ইসলামিক শিক্ষার প্ল্যাটফর্ম — কুরআন, হাদিস, ফিকহ, আকিদা, লাইভ ক্লাস, লাইব্রেরি ও আরও অনেক কিছু।",
+          "An online Islamic learning platform for Bengali-speaking Muslims with Quran, Hadith, Fiqh, Aqidah, live classes, a library and more."
+        ),
+      },
+      "/courses": {
+        title: pick("কোর্সসমূহ | বাঙালি ইসলামিক ইনস্টিটিউট", "Courses | Bengali Islamic Institute"),
+        description: pick(
+          "কুরআন, তাজবীদ, আরবি, ফিকহ, মাসাঈল এবং অন্যান্য ইসলামিক কোর্স ব্রাউজ করুন।",
+          "Browse Islamic courses in Quran, Tajweed, Arabic, Fiqh, practical rulings and more."
+        ),
+      },
+      "/library": {
+        title: pick("লাইব্রেরি | বাঙালি ইসলামিক ইনস্টিটিউট", "Library | Bengali Islamic Institute"),
+        description: pick(
+          "ইসলামিক বই, পিডিএফ ও রিডিং রিসোর্স অনলাইনে পড়ুন।",
+          "Read Islamic books, PDFs and learning resources online."
+        ),
+      },
+      "/videos": {
+        title: pick("ক্লাসের ভিডিও | বাঙালি ইসলামিক ইনস্টিটিউট", "Class Videos | Bengali Islamic Institute"),
+        description: pick(
+          "রেকর্ডেড ক্লাস ও ইসলামিক শিক্ষামূলক ভিডিও দেখুন।",
+          "Watch recorded classes and Islamic educational videos."
+        ),
+      },
+      "/shop": {
+        title: pick("অনলাইন শপ | বাঙালি ইসলামিক ইনস্টিটিউট", "Online Shop | Bengali Islamic Institute"),
+        description: pick(
+          "বই, প্রোডাক্ট ও ইসলামী উপহার সামগ্রী দেখুন ও অর্ডার করুন।",
+          "Browse and order books, products and Islamic gift items."
+        ),
+      },
+      "/contact": {
+        title: pick("যোগাযোগ | বাঙালি ইসলামিক ইনস্টিটিউট", "Contact | Bengali Islamic Institute"),
+        description: pick(
+          "ফোন, ইমেইল, WhatsApp এবং সোশ্যাল চ্যানেলের মাধ্যমে আমাদের সাথে যোগাযোগ করুন।",
+          "Contact us by phone, email, WhatsApp or social channels."
+        ),
+      },
+    };
+
+    if (publicRoutes[path]) return { ...publicRoutes[path], noindex: false };
+    if (path.startsWith("/courses/")) {
+      return {
+        title: pick("কোর্সের বিস্তারিত | বাঙালি ইসলামিক ইনস্টিটিউট", "Course Details | Bengali Islamic Institute"),
+        description: pick(
+          "নির্বাচিত কোর্সের বিস্তারিত, সিলেবাস, ভর্তি এবং পাঠ্যক্রম দেখুন।",
+          "See course details, syllabus, enrollment information and curriculum."
+        ),
+        noindex: false,
+      };
+    }
+    if (path.startsWith("/library/")) {
+      return {
+        title: pick("বইয়ের বিস্তারিত | বাঙালি ইসলামিক ইনস্টিটিউট", "Book Details | Bengali Islamic Institute"),
+        description: pick(
+          "লাইব্রেরির নির্বাচিত বইয়ের বিস্তারিত ও পড়ার পাতা দেখুন।",
+          "View details for a selected library book and reading page."
+        ),
+        noindex: false,
+      };
+    }
+    if (path.startsWith("/legal/")) {
+      return {
+        title: pick("আইনি নথি | বাঙালি ইসলামিক ইনস্টিটিউট", "Legal | Bengali Islamic Institute"),
+        description: pick(
+          "শর্তাবলী, গোপনীয়তা নীতি এবং রিফান্ড নীতি পড়ুন।",
+          "Read the terms, privacy policy and refund policy."
+        ),
+        noindex: false,
+      };
+    }
+
+    const noindexPaths = [
+      "/home",
+      "/login",
+      "/register",
+      "/forgot-password",
+      "/profile",
+      "/settings",
+      "/change-password",
+      "/my-courses",
+      "/quiz",
+      "/live-classes",
+      "/reward-zone",
+      "/notifications",
+      "/payment",
+      "/complaint",
+      "/quick-access",
+      "/admin",
+    ];
+
+    const noindex = noindexPaths.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+
+    return {
+      title: pick("বাঙালি ইসলামিক ইনস্টিটিউট", "Bengali Islamic Institute"),
+      description: pick(
+        "বাংলাভাষী মুসলিমদের জন্য অনলাইন ইসলামিক শিক্ষার প্ল্যাটফর্ম।",
+        "An online Islamic learning platform for Bengali-speaking Muslims."
+      ),
+      noindex,
+    };
+  })();
+
+  return (
+    <Seo
+      lang={lang}
+      title={route.title}
+      description={route.description}
+      canonical={canonical}
+      noindex={route.noindex}
+      image={`${origin}/logo512.png`}
+      keywords={pick(
+        "ইসলামিক শিক্ষা, অনলাইন কোর্স, কুরআন, হাদিস, ফিকহ, বাংলা ইসলাম, বাঙালি ইসলামিক ইনস্টিটিউট",
+        "Islamic education, online courses, Quran, Hadith, Fiqh, Bengali Islam, Bengali Islamic Institute"
+      )}
+    />
+  );
+}
+
 export default function App() {
   // Register native push listeners once on app mount
   React.useEffect(() => {
@@ -248,11 +382,12 @@ export default function App() {
 
   return (
     <div className="App">
-      <ErrorBoundary>
+        <ErrorBoundary>
       <LangProvider>
         <AdsProvider>
         <AuthProvider>
           <BrowserRouter>
+            <RouteMetaBridge />
             <CapacitorAuthGate />
             <NativeBackButtonBridge />
             <ForegroundPushBridge />

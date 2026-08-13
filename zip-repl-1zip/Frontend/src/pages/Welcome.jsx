@@ -8,11 +8,12 @@ import { useAuth } from "../contexts/AuthContext";
 import { useLang } from "../contexts/LangContext";
 import { api } from "../lib/api";
 import BrandLogo from "../components/BrandLogo";
+import Seo from "../components/Seo";
 
 // Hero image: q=60 keeps file size low for fast LCP; srcset provides larger sizes for retina/desktop.
 // Default src w=280 targets mobile 3G; srcset scales up to w=1600 for desktop.
-const HERO_BASE = "https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&q=60&fm=webp";
-const HERO_SRCSET = [280, 400, 600, 800, 1200, 1600]
+const HERO_BASE = "https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&q=55&fm=webp";
+const HERO_SRCSET = [280, 400, 600, 800, 1000, 1200]
   .map((w) => `${HERO_BASE}&w=${w} ${w}w`)
   .join(", ");
 
@@ -42,8 +43,46 @@ export default function Welcome() {
   }, []);
 
   // logged-in users should never see welcome
-  if (loading) return <div className="p-8 text-center text-[var(--bii-text-soft)]">{t("loading")}</div>;
+  if (loading) {
+    return (
+      <div className="-mt-5" aria-busy="true" aria-live="polite">
+        <div className="relative overflow-hidden rounded-3xl aspect-[16/9] bg-[var(--bii-emerald)]/10 animate-pulse">
+          <div className="absolute inset-0 bg-gradient-to-br from-[var(--bii-emerald)]/20 via-transparent to-[var(--bii-gold)]/10" />
+        </div>
+        <div className="mt-12 space-y-6">
+          <div className="text-center space-y-3">
+            <div className="h-3 w-40 mx-auto bg-[var(--bii-border)] rounded-full animate-pulse" />
+            <div className="h-10 sm:h-14 w-4/5 sm:w-2/3 mx-auto bg-[var(--bii-border)] rounded-2xl animate-pulse" />
+            <div className="h-5 w-full max-w-2xl mx-auto bg-[var(--bii-border)] rounded-full animate-pulse" />
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="bii-card p-6 animate-pulse">
+                <div className="h-8 w-8 rounded-full bg-[var(--bii-border)] mb-4" />
+                <div className="h-5 w-3/5 bg-[var(--bii-border)] rounded-full" />
+                <div className="h-4 w-full bg-[var(--bii-border)] rounded-full mt-3" />
+                <div className="h-4 w-5/6 bg-[var(--bii-border)] rounded-full mt-2" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (user) return <Navigate to="/home" replace />;
+
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "EducationalOrganization",
+    name: "Bengali Islamic Institute",
+    alternateName: "বাঙালি ইসলামিক ইনস্টিটিউট",
+    url: typeof window !== "undefined" ? window.location.origin : "https://www.bengaliislamicinstitute.com",
+    logo: typeof window !== "undefined" ? `${window.location.origin}/logo512.png` : "https://www.bengaliislamicinstitute.com/logo512.png",
+    description: pick(
+      "বাংলাভাষী মুসলিমদের জন্য অনলাইন ইসলামিক শিক্ষার প্ল্যাটফর্ম।",
+      "An online Islamic learning platform for Bengali-speaking Muslims."
+    ),
+  };
 
   const features = [
     {
@@ -80,6 +119,16 @@ export default function Welcome() {
 
   return (
     <div className="-mt-5" data-testid="welcome-page">
+      <Seo
+        title={pick("বাঙালি ইসলামিক ইনস্টিটিউট — স্বাগতম", "Bengali Islamic Institute — Welcome")}
+        description={pick(
+          "বাংলাভাষী মুসলিমদের জন্য অনলাইন ইসলামিক শিক্ষার প্ল্যাটফর্ম — কুরআন, হাদিস, ফিকহ, লাইভ ক্লাস, লাইব্রেরি এবং আরও অনেক কিছু।",
+          "An online Islamic learning platform for Bengali-speaking Muslims with Quran, Hadith, Fiqh, live classes, a library and more."
+        )}
+        canonical={typeof window !== "undefined" ? `${window.location.origin}/` : "https://www.bengaliislamicinstitute.com/"}
+        image={typeof window !== "undefined" ? `${window.location.origin}/logo512.png` : "https://www.bengaliislamicinstitute.com/logo512.png"}
+        structuredData={organizationSchema}
+      />
       {/* HERO */}
       <section className="relative overflow-hidden rounded-3xl aspect-[16/9]">
         <div className="absolute inset-0">
@@ -89,7 +138,7 @@ export default function Welcome() {
             sizes="100vw"
             width="1600"
             height="900"
-            alt=""
+            alt={pick("বাঙালি ইসলামিক ইনস্টিটিউটের ইসলামি শিক্ষার দৃশ্যাবলী", "Islamic learning background for Bengali Islamic Institute")}
             fetchPriority="high"
             decoding="async"
             className="w-full h-full object-cover"
