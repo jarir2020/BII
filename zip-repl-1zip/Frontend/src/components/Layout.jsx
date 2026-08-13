@@ -7,7 +7,6 @@ import {
   FacebookLogo, YoutubeLogo, InstagramLogo, TwitterLogo,
   LinkedinLogo, TelegramLogo, TiktokLogo, WhatsappLogo, ArrowLeft
 } from "@phosphor-icons/react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
 import { useLang } from "../contexts/LangContext";
 import { api } from "../lib/api";
@@ -126,24 +125,17 @@ export default function Layout() {
       <AdBanner slot="header-banner" format="horizontal" className="max-w-5xl mx-auto" />
 
       {/* SIDEBAR */}
-      <AnimatePresence>
-        {openSidebar && (
-          <>
-            <motion.div
-              data-testid="sidebar-backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={closeSidebar}
-              className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
-            />
-            <motion.aside
-              data-testid="sidebar-drawer"
-              initial={{ x: -320 }}
-              animate={{ x: 0 }}
-              exit={{ x: -320 }}
-              transition={{ type: "spring", stiffness: 320, damping: 32 }}
-              className="fixed top-0 left-0 z-50 h-full w-[300px] bg-white shadow-2xl border-r border-[var(--bii-border)] flex flex-col"
+      {openSidebar && (
+        <>
+          <div
+            data-testid="sidebar-backdrop"
+            onClick={closeSidebar}
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-200"
+          />
+          <aside
+            data-testid="sidebar-drawer"
+            className="fixed top-0 left-0 z-50 h-full w-[300px] bg-white shadow-2xl border-r border-[var(--bii-border)] flex flex-col transition-transform duration-300 ease-in-out"
+          >
             >
               <div className="bg-[var(--bii-emerald)] text-white p-5 relative">
                 <div className="islamic-pattern absolute inset-0 opacity-25" />
@@ -236,10 +228,9 @@ export default function Layout() {
               <div className="p-4 text-[11px] text-[var(--bii-text-soft)] text-center">
                 © {new Date().getFullYear()} {t("appName")}
               </div>
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
+          </aside>
+        </>
+      )}
 
       {/* MAIN */}
       <main className="max-w-5xl mx-auto px-4 py-3">
