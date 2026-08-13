@@ -1,5 +1,3 @@
-import axios from "axios";
-
 // In dev, CRACO proxies /api → localhost:8000 so BACKEND_URL should be "".
 // Fall back to "" so relative /api paths work via the dev-server proxy.
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "https://www.bengaliislamicinstitute.com";
@@ -11,11 +9,6 @@ export function imgUrl(v) {
   return `${BACKEND_URL}${v}`;
 }
 
-export const api = axios.create({
-  baseURL: API,
-  withCredentials: true,
-});
-
 // keep token in localStorage too as Bearer fallback
 const TOKEN_KEY = "bii_token";
 
@@ -24,30 +17,51 @@ export function setToken(t) {
   else localStorage.removeItem(TOKEN_KEY);
 }
 
-api.interceptors.request.use((config) => {
+function authHeaders() {
   const t = localStorage.getItem(TOKEN_KEY);
-  if (t) config.headers.Authorization = `Bearer ${t}`;
-  return config;
-});
+  return t ? { Authorization: `Bearer ${t}` } : {};
+}
+
+function request(url, options = {}) {
+  const fullUrl = url.startsWith("http") ? url : `${API}${url}`;
+  return fetch(fullUrl, {
+    ...options,
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders(),
+      ...(options.headers || {}),
+    },
+  }).then(async (res) => {
+    const text = await res.text();
+    if (!res.ok) {
+      const err = new Error(text || res.statusText);
+      err.status = res.status;
+      err.response = { status: res.status, data: text };
+      throw err;
+    }
+    return text ? JSON.parse(text) : {};
+  });
+}
+
+export const api = {
+  get: (url, options) => request(url, { ...options, method: "GET" }),
+  post: (url, body, options) => request(url, { ...options, method: "POST", body: JSON.stringify(body) }),
+  delete: (url, options) => request(url, { ...options, method: "DELETE" }),
+};
 
 export function formatApiError(err) {
-  // Log full error details for debugging
-  console.error("[API Error]", {
-    message: err?.message,
-    status: err?.response?.status,
-    data: err?.response?.data,
-    url: err?.config?.url,
-    baseURL: err?.config?.baseURL,
-  });
-
   // Network error (no response from server)
-  if (err?.message === "Network Error") {
+  if (err?.message === "Failed to fetch" || err?.status === 0) {
     return "Network Error — could not reach the server. Check your internet connection and try again.";
   }
 
-  const body = err?.response?.data;
+  let body = err?.response?.data;
+  if (typeof body === "string") {
+    try { body = JSON.parse(body); } catch { /* ignore */ }
+  }
   const d = body?.detail ?? body?.message ?? body?.error ?? body?.errors;
-  if (d == null) return err?.message || "কিছু একটা ভুল হয়েছে";
+  if (d == null) return err?.message || "কিছু একটা ভুল হয়েছ̈ে";
   if (typeof d === "string") return d;
   if (Array.isArray(d)) return d.map((e) => (e?.msg ? e.msg : JSON.stringify(e))).join(" ");
   if (typeof d?.msg === "string") return d.msg;
