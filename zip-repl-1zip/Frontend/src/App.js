@@ -464,6 +464,7 @@ export default function App() {
                     <Route path="notifications" element={<AdminNotifications />} />
                     <Route path="winner-reviews" element={<AdminWinnerReviews />} />
 
+                    <Route path="product" element={<Navigate to="/admin/products" replace />} />
                     <Route path="products" element={<AdminProducts />} />
                     <Route path="orders" element={<AdminOrders />} />
                     <Route path="payments" element={<AdminPaymentRequests />} />

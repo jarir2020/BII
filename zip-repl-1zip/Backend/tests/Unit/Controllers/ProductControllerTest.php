@@ -9,10 +9,26 @@ use app\helpers\Uuid;
 use Yii;
 
 /**
- * Unit tests for ProductController — product management.
+ * Unit tests for ProductController (singular) — ensures the singular alias
+ * works identically to ProductsController.
+ *
+ * The controller extends ProductsController (CrudController), so all
+ * operations go through actionIndex() and actionView() dispatched by HTTP method.
  */
 final class ProductControllerTest extends ApiControllerTestCase
 {
+    /** Set the simulated HTTP method for the current test request. */
+    private function setMethod(string $method): void
+    {
+        $_SERVER['REQUEST_METHOD'] = $method;
+    }
+
+    /** Set body params for PUT/DELETE requests (where $_POST is not read). */
+    private function setBody(array $params): void
+    {
+        Yii::$app->request->bodyParams = $params;
+    }
+
     public function testIndexReturnsEmpty(): void
     {
         $controller = new \app\modules\api\controllers\ProductController('products', Yii::$app, []);
@@ -27,8 +43,8 @@ final class ProductControllerTest extends ApiControllerTestCase
     {
         Yii::$app->db->createCommand()->insert('products', [
             'id' => Uuid::v4(),
-            'title_bn' => 'পণ্য ১',
-            'title_en' => 'Product 1',
+            'name_bn' => 'পণ্য ১',
+            'name_en' => 'Product 1',
             'price' => 500,
             'stock' => 10,
             'is_active' => 1,
@@ -40,22 +56,7 @@ final class ProductControllerTest extends ApiControllerTestCase
         $data = $result->data;
 
         $this->assertCount(1, $data);
-        $this->assertSame('Product 1', $data[0]['title_en']);
-    }
-
-    public function testIndexRequiresAdmin(): void
-    {
-        $userId = $this->createTestUser('student');
-        $this->authenticateAs($userId);
-
-        $controller = new \app\modules\api\controllers\ProductController('products', Yii::$app, []);
-
-        try {
-            $controller->actionIndex();
-            $this->fail('Expected 403');
-        } catch (\yii\web\HttpException $e) {
-            $this->assertSame(403, $e->statusCode);
-        }
+        $this->assertSame('Product 1', $data[0]['name_en']);
     }
 
     public function testPostCreatesProductRequiresAdmin(): void
@@ -64,8 +65,8 @@ final class ProductControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\ProductController('products', Yii::$app, []);
-        Yii::$app->request->isPost = true;
-        $_POST = ['title_en' => 'New Product'];
+        $this->setMethod('POST');
+        $this->setBody(['name_en' => 'New Product']);
 
         try {
             $controller->actionIndex();
@@ -81,20 +82,20 @@ final class ProductControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\ProductController('products', Yii::$app, []);
-        Yii::$app->request->isPost = true;
-        $_POST = [
-            'title_bn' => 'নতুন পণ্য',
-            'title_en' => 'New Product',
+        $this->setMethod('POST');
+        $this->setBody([
+            'name_bn' => 'নতুন পণ্য',
+            'name_en' => 'New Product',
             'price' => 750,
             'stock' => 25,
             'is_active' => true,
-        ];
+        ]);
 
         $result = $controller->actionIndex();
         $data = $result->data;
 
-        $this->assertSame('নতুন পণ্য', $data['title_bn']);
-        $this->assertSame('New Product', $data['title_en']);
+        $this->assertSame('নতুন পণ্য', $data['name_bn']);
+        $this->assertSame('New Product', $data['name_en']);
         $this->assertSame(750.0, $data['price']);
         $this->assertSame(25, (int) $data['stock']);
     }
@@ -104,10 +105,21 @@ final class ProductControllerTest extends ApiControllerTestCase
         $userId = $this->createTestUser('student');
         $this->authenticateAs($userId);
 
+        $productId = Uuid::v4();
+        Yii::$app->db->createCommand()->insert('products', [
+            'id' => $productId,
+            'name_en' => 'Delete Product',
+            'price' => 300,
+            'stock' => 10,
+            'is_active' => 1,
+            'created_at' => Time::now(),
+        ])->execute();
+
         $controller = new \app\modules\api\controllers\ProductController('products', Yii::$app, []);
+        $this->setMethod('DELETE');
 
         try {
-            $controller->actionDelete('some-id');
+            $controller->actionView($productId);
             $this->fail('Expected 403');
         } catch (\yii\web\HttpException $e) {
             $this->assertSame(403, $e->statusCode);
@@ -122,7 +134,7 @@ final class ProductControllerTest extends ApiControllerTestCase
         $productId = Uuid::v4();
         Yii::$app->db->createCommand()->insert('products', [
             'id' => $productId,
-            'title_en' => 'Delete Product',
+            'name_en' => 'Delete Product',
             'price' => 300,
             'stock' => 10,
             'is_active' => 1,
@@ -130,7 +142,8 @@ final class ProductControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\ProductController('products', Yii::$app, []);
-        $result = $controller->actionDelete($productId);
+        $this->setMethod('DELETE');
+        $result = $controller->actionView($productId);
         $data = $result->data;
 
         $this->assertTrue($data['ok']);
@@ -149,7 +162,7 @@ final class ProductControllerTest extends ApiControllerTestCase
         $productId = Uuid::v4();
         Yii::$app->db->createCommand()->insert('products', [
             'id' => $productId,
-            'title_en' => 'Original',
+            'name_en' => 'Original',
             'price' => 500,
             'stock' => 10,
             'is_active' => 1,
@@ -157,11 +170,11 @@ final class ProductControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\ProductController('products', Yii::$app, []);
-        Yii::$app->request->isPut = true;
-        $_POST = ['title_en' => 'Updated'];
+        $this->setMethod('PUT');
+        $this->setBody(['name_en' => 'Updated']);
 
         try {
-            $controller->actionUpdate($productId);
+            $controller->actionView($productId);
             $this->fail('Expected 403');
         } catch (\yii\web\HttpException $e) {
             $this->assertSame(403, $e->statusCode);
@@ -176,7 +189,7 @@ final class ProductControllerTest extends ApiControllerTestCase
         $productId = Uuid::v4();
         Yii::$app->db->createCommand()->insert('products', [
             'id' => $productId,
-            'title_en' => 'Original',
+            'name_en' => 'Original',
             'price' => 500,
             'stock' => 10,
             'is_active' => 1,
@@ -184,13 +197,13 @@ final class ProductControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\ProductController('products', Yii::$app, []);
-        Yii::$app->request->isPut = true;
-        $_POST = ['title_en' => 'Updated Product', 'price' => 600];
+        $this->setMethod('PUT');
+        $this->setBody(['name_en' => 'Updated Product', 'price' => 600]);
 
-        $result = $controller->actionUpdate($productId);
+        $result = $controller->actionView($productId);
         $data = $result->data;
 
-        $this->assertSame('Updated Product', $data['title_en']);
+        $this->assertSame('Updated Product', $data['name_en']);
         $this->assertSame(600.0, $data['price']);
         $this->assertSame($productId, $data['id']);
     }
@@ -212,7 +225,7 @@ final class ProductControllerTest extends ApiControllerTestCase
         $productId = Uuid::v4();
         Yii::$app->db->createCommand()->insert('products', [
             'id' => $productId,
-            'title_en' => 'View Product',
+            'name_en' => 'View Product',
             'price' => 1000,
             'stock' => 5,
             'is_active' => 1,
@@ -223,7 +236,7 @@ final class ProductControllerTest extends ApiControllerTestCase
         $result = $controller->actionView($productId);
         $data = $result->data;
 
-        $this->assertSame('View Product', $data['title_en']);
+        $this->assertSame('View Product', $data['name_en']);
         $this->assertSame(1000.0, $data['price']);
     }
 }
