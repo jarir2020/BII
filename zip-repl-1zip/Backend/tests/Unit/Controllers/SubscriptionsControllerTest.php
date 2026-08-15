@@ -94,7 +94,7 @@ final class SubscriptionsControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new SubscriptionPlansController('subscription-plans', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'name' => 'Test Plan',
             'price' => 500,

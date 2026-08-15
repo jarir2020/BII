@@ -15,7 +15,7 @@ final class AuthControllerTest extends ApiControllerTestCase
 {
     public function testRegisterStoresUser(): void
     {
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'name' => 'New Student',
             'email' => 'newstudent@test.com',
@@ -34,7 +34,7 @@ final class AuthControllerTest extends ApiControllerTestCase
 
     public function testRegisterRequiresEmail(): void
     {
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['name' => 'No Email', 'password' => 'Password123!'];
 
         $controller = new \app\modules\api\controllers\AuthController('auth', Yii::$app, []);
@@ -51,7 +51,7 @@ final class AuthControllerTest extends ApiControllerTestCase
     {
         $userId = $this->createTestUser();
 
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'name' => 'Duplicate',
             'email' => $userId, // use same email as existing user
@@ -72,7 +72,7 @@ final class AuthControllerTest extends ApiControllerTestCase
     {
         $userId = $this->createTestUser();
 
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'email' => 'testuser@example.com',
             'password' => 'Password123!',
@@ -90,7 +90,7 @@ final class AuthControllerTest extends ApiControllerTestCase
     {
         $userId = $this->createTestUser();
 
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'email' => 'testuser@example.com',
             'password' => 'WrongPassword',
@@ -108,7 +108,7 @@ final class AuthControllerTest extends ApiControllerTestCase
 
     public function testLoginRejectsMissingEmail(): void
     {
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['password' => 'Password123!'];
 
         $controller = new \app\modules\api\controllers\AuthController('auth', Yii::$app, []);
@@ -124,7 +124,7 @@ final class AuthControllerTest extends ApiControllerTestCase
     public function testLogoutRequiresAuth(): void
     {
         $controller = new \app\modules\api\controllers\AuthController('auth', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['token' => 'some-token'];
 
         try {
@@ -141,7 +141,7 @@ final class AuthControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\AuthController('auth', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
 
         $result = $controller->actionLogout();
         $data = $result->data;
@@ -155,7 +155,7 @@ final class AuthControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\AuthController('auth', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['token' => 'existing-token'];
 
         $result = $controller->actionRefreshToken();
@@ -195,7 +195,7 @@ final class AuthControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\AuthController('auth', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['name' => 'Updated Name'];
 
         $result = $controller->actionUpdateProfile();

@@ -194,7 +194,7 @@ final class PaymentsControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\PaymentsController('payments', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['order_id' => $orderId, 'transaction_id' => 'VERIFY_TXN'];
 
         $result = $controller->actionVerifyPayment();

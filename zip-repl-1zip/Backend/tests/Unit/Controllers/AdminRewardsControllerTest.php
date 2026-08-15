@@ -80,7 +80,7 @@ final class AdminRewardsControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\AdminRewardsController('admin-rewards', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['user_id' => 'some-id', 'amount' => 50];
 
         try {
@@ -99,7 +99,7 @@ final class AdminRewardsControllerTest extends ApiControllerTestCase
         $userId = $this->createTestUser();
 
         $controller = new \app\modules\api\controllers\AdminRewardsController('admin-rewards', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'user_id' => $userId,
             'amount' => 75,
@@ -127,7 +127,7 @@ final class AdminRewardsControllerTest extends ApiControllerTestCase
         Yii::$app->db->createCommand()->update('users', ['reward_points' => 200], 'id = :id', [':id' => $userId])->execute();
 
         $controller = new \app\modules\api\controllers\AdminRewardsController('admin-rewards', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'user_id' => $userId,
             'amount' => -50,
@@ -154,7 +154,7 @@ final class AdminRewardsControllerTest extends ApiControllerTestCase
         Yii::$app->db->createCommand()->update('users', ['reward_points' => 10], 'id = :id', [':id' => $userId])->execute();
 
         $controller = new \app\modules\api\controllers\AdminRewardsController('admin-rewards', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'user_id' => $userId,
             'amount' => -50,
@@ -175,7 +175,7 @@ final class AdminRewardsControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\AdminRewardsController('admin-rewards', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'user_id' => 'non-existent-user',
             'amount' => 50,

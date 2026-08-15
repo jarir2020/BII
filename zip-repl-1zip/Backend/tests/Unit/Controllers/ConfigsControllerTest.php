@@ -46,7 +46,7 @@ final class ConfigsControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\ConfigsController('configs', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'site_name' => 'New Site Name',
             'site_description' => 'Updated description',
@@ -64,7 +64,7 @@ final class ConfigsControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\ConfigsController('configs', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['site_name' => 'Hacked'];
 
         try {

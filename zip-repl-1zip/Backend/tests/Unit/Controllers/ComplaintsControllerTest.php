@@ -69,7 +69,7 @@ final class ComplaintsControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\ComplaintsController('complaints', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'subject' => 'Payment not working',
             'description' => 'I paid but not enrolled.',
@@ -86,7 +86,7 @@ final class ComplaintsControllerTest extends ApiControllerTestCase
     public function testPostRequiresAuth(): void
     {
         $controller = new \app\modules\api\controllers\ComplaintsController('complaints', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['subject' => 'No auth'];
 
         try {
@@ -144,7 +144,7 @@ final class ComplaintsControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\ComplaintsController('complaints', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['to_user_id' => 'admin-id'];
 
         try {
@@ -170,7 +170,7 @@ final class ComplaintsControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\ComplaintsController('complaints', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['to_user_id' => $adminId];
 
         $result = $controller->actionAssign($complaintId);
@@ -187,7 +187,7 @@ final class ComplaintsControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\ComplaintsController('complaints', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['status' => 'invalid_status'];
 
         try {
@@ -213,7 +213,7 @@ final class ComplaintsControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\ComplaintsController('complaints', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['status' => 'resolved'];
 
         $result = $controller->actionSetStatus($complaintId);
@@ -229,7 +229,7 @@ final class ComplaintsControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\ComplaintsController('complaints', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['status' => 'resolved'];
 
         try {
@@ -255,7 +255,7 @@ final class ComplaintsControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\ComplaintsController('complaints', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['reply' => 'We have resolved the issue.'];
 
         $result = $controller->actionReply($complaintId);

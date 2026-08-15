@@ -49,7 +49,7 @@ final class AdminsControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\AdminsController('admins', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'name' => 'New Admin',
             'email' => 'newadmin@example.com',
@@ -71,7 +71,7 @@ final class AdminsControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\AdminsController('admins', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'name' => 'Password Admin',
             'email' => 'passadmin@example.com',
@@ -152,7 +152,7 @@ final class AdminsControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\AdminsController('admins', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['status' => 0];
 
         try {
@@ -180,7 +180,7 @@ final class AdminsControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\AdminsController('admins', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['status' => 0];
 
         $result = $controller->actionToggleStatus($adminId);
@@ -211,7 +211,7 @@ final class AdminsControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\AdminsController('admins', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['status' => 1];
 
         $result = $controller->actionToggleStatus($adminId);
@@ -231,7 +231,7 @@ final class AdminsControllerTest extends ApiControllerTestCase
         $this->authenticateAs($superAdminId, 'super_admin');
 
         $controller = new \app\modules\api\controllers\AdminsController('admins', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['status' => 'invalid'];
 
         try {

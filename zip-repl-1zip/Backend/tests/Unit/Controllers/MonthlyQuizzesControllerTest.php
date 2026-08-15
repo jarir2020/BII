@@ -68,7 +68,7 @@ final class MonthlyQuizzesControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\MonthlyQuizzesController('monthly-quizzes', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'title_en' => 'February Quiz',
             'description' => 'Feb quiz',
@@ -173,7 +173,7 @@ final class MonthlyQuizzesControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\MonthlyQuizzesController('monthly-quizzes', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         Yii::$app->request->setQueryParams(['quiz_id' => $quizId]);
         $_POST = [
             'question' => 'What is the capital of Bangladesh?',

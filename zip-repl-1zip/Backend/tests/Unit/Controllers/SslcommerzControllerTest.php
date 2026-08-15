@@ -42,7 +42,7 @@ final class SslcommerzControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\SslcommerzController('sslcommerz', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'order_id' => $orderId,
             'amount' => 1000,
@@ -86,7 +86,7 @@ final class SslcommerzControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\SslcommerzController('sslcommerz', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'val_id' => 'SSLTEST123',
             'amount' => 1000,
@@ -122,7 +122,7 @@ final class SslcommerzControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\SslcommerzController('sslcommerz', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'val_id' => 'SSLFAIL',
             'amount' => 500,

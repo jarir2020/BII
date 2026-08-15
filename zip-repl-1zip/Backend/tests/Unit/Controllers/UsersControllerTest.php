@@ -71,7 +71,7 @@ final class UsersControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\UsersController('users', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['name' => 'Updated Student', 'phone' => '+8801XXXXXXXXX'];
 
         $result = $controller->actionUpdateProfile();
@@ -83,7 +83,7 @@ final class UsersControllerTest extends ApiControllerTestCase
     public function testUpdatePasswordRequiresAuth(): void
     {
         $controller = new \app\modules\api\controllers\UsersController('users', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['old_password' => 'Password123!', 'new_password' => 'NewPassword123!'];
 
         try {
@@ -100,7 +100,7 @@ final class UsersControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\UsersController('users', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'old_password' => 'Password123!',
             'new_password' => 'NewPassword456!',
@@ -112,7 +112,7 @@ final class UsersControllerTest extends ApiControllerTestCase
         $this->assertTrue($data['ok']);
 
         // Verify old password no longer works
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'email' => 'testuser@example.com',
             'password' => 'Password123!',
@@ -133,7 +133,7 @@ final class UsersControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\UsersController('users', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'old_password' => 'WrongPassword',
             'new_password' => 'NewPassword456!',

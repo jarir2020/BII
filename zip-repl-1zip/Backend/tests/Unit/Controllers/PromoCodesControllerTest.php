@@ -73,7 +73,7 @@ final class PromoCodesControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\PromoCodesController('promo-codes', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['code' => 'TEST20'];
 
         try {
@@ -90,7 +90,7 @@ final class PromoCodesControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\PromoCodesController('promo-codes', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'code' => 'SAVE20',
             'discount_type' => 'fixed',
@@ -112,7 +112,7 @@ final class PromoCodesControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\PromoCodesController('promo-codes', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'discount_type' => 'percentage',
             'discount_value' => 15,

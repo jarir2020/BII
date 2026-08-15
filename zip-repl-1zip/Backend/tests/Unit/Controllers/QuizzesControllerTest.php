@@ -68,7 +68,7 @@ final class QuizzesControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\QuizzesController('quizzes', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'title_en' => 'New Quiz',
             'description' => 'Description',
@@ -206,7 +206,7 @@ final class QuizzesControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\QuizzesController('quizzes', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         Yii::$app->request->setQueryParams(['quiz_id' => $quizId]);
         $_POST = [
             'question' => 'Question text',
@@ -236,7 +236,7 @@ final class QuizzesControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\QuizzesController('quizzes', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         Yii::$app->request->setQueryParams(['quiz_id' => $quizId]);
         $_POST = [
             'question' => 'Multi select',
@@ -364,7 +364,7 @@ final class QuizzesControllerTest extends ApiControllerTestCase
     {
         $quizId = Uuid::v4();
         $controller = new \app\modules\api\controllers\QuizzesController('quizzes', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         Yii::$app->request->setQueryParams(['quiz_id' => $quizId]);
 
         try {
@@ -389,7 +389,7 @@ final class QuizzesControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\QuizzesController('quizzes', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         Yii::$app->request->setQueryParams(['quiz_id' => $quizId]);
         $result = $controller->actionTakeQuiz();
         $data = $result->data;
@@ -402,7 +402,7 @@ final class QuizzesControllerTest extends ApiControllerTestCase
     public function testSubmitAnswerRequiresAuth(): void
     {
         $controller = new \app\modules\api\controllers\QuizzesController('quizzes', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['attempt_id' => 'id', 'question_id' => 'q', 'answer_index' => 0];
 
         try {
@@ -446,7 +446,7 @@ final class QuizzesControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\QuizzesController('quizzes', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'attempt_id' => $attemptId,
             'question_id' => $questionId,
@@ -496,7 +496,7 @@ final class QuizzesControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\QuizzesController('quizzes', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'attempt_id' => $attemptId,
             'question_id' => $questionId,

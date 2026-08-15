@@ -61,7 +61,7 @@ final class MigrationsControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\MigrationsController('migrations', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $result = $controller->actionApply();
         $data = $result->data;
 
@@ -88,7 +88,7 @@ final class MigrationsControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\MigrationsController('migrations', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         Yii::$app->request->setQueryParams(['down' => '1']);
         $result = $controller->actionDown();
         $data = $result->data;
@@ -102,7 +102,7 @@ final class MigrationsControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\MigrationsController('migrations', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         Yii::$app->request->setQueryParams(['dry_run' => '1']);
         $result = $controller->actionApply();
         $data = $result->data;

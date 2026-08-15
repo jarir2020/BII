@@ -32,7 +32,7 @@ final class UploadControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\UploadController('upload', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         Yii::$app->request->setHeaders(['Content-Type' => 'multipart/form-data']);
         $_FILES = [
             'file' => [
@@ -57,7 +57,7 @@ final class UploadControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\UploadController('upload', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         Yii::$app->request->setHeaders(['Content-Type' => 'multipart/form-data']);
         $_FILES = [
             'file' => [
@@ -80,7 +80,7 @@ final class UploadControllerTest extends ApiControllerTestCase
     public function testPostProfilePhotoRequiresAuth(): void
     {
         $controller = new \app\modules\api\controllers\UploadController('upload', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
 
         try {
             $controller->actionPostProfilePhoto();
@@ -96,7 +96,7 @@ final class UploadControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\UploadController('upload', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         Yii::$app->request->setHeaders(['Content-Type' => 'multipart/form-data']);
         $_FILES = [
             'file' => [

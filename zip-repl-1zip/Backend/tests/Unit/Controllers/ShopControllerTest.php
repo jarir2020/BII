@@ -78,7 +78,7 @@ final class ShopControllerTest extends ApiControllerTestCase
     public function testAddToCartRequiresAuth(): void
     {
         $controller = new \app\modules\api\controllers\ShopController('shop', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['product_id' => Uuid::v4()];
 
         try {
@@ -105,7 +105,7 @@ final class ShopControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\ShopController('shop', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['product_id' => $productId, 'quantity' => 2];
 
         $result = $controller->actionAddToCart();
@@ -168,7 +168,7 @@ final class ShopControllerTest extends ApiControllerTestCase
     public function testCheckoutRequiresAuth(): void
     {
         $controller = new \app\modules\api\controllers\ShopController('shop', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['payment_method' => 'bkash'];
 
         try {
@@ -185,7 +185,7 @@ final class ShopControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\ShopController('shop', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['payment_method' => 'bkash'];
 
         try {
@@ -220,7 +220,7 @@ final class ShopControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\ShopController('shop', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['payment_method' => 'bkash'];
 
         $result = $controller->actionCheckout();

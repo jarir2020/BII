@@ -18,16 +18,8 @@ use Yii;
 final class ProductControllerTest extends ApiControllerTestCase
 {
     /** Set the simulated HTTP method for the current test request. */
-    private function setMethod(string $method): void
-    {
-        $_SERVER['REQUEST_METHOD'] = $method;
-    }
 
     /** Set body params for PUT/DELETE requests (where $_POST is not read). */
-    private function setBody(array $params): void
-    {
-        Yii::$app->request->bodyParams = $params;
-    }
 
     public function testIndexReturnsEmpty(): void
     {

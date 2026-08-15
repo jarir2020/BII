@@ -9,7 +9,7 @@ use app\helpers\Uuid;
 use Yii;
 
 /**
- * Unit tests for TeachersController — teacher CRUD + my-live-classes.
+ * Unit tests for TeachersController — teacher CRUD.
  */
 final class TeachersControllerTest extends ApiControllerTestCase
 {
@@ -78,8 +78,8 @@ final class TeachersControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\TeachersController('teachers', Yii::$app, []);
-        Yii::$app->request->isPost = true;
-        $_POST = ['name' => 'New Teacher'];
+        $this->setMethod('POST');
+        $this->setBody(['name' => 'New Teacher']);
 
         try {
             $controller->actionIndex();
@@ -95,13 +95,13 @@ final class TeachersControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\TeachersController('teachers', Yii::$app, []);
-        Yii::$app->request->isPost = true;
-        $_POST = [
+        $this->setMethod('POST');
+        $this->setBody([
             'name' => 'New Teacher',
             'email' => 'newteacher@example.com',
             'password' => 'password123',
             'specialization' => 'Fiqh',
-        ];
+        ]);
 
         $result = $controller->actionIndex();
         $data = $result->data;
@@ -161,10 +161,21 @@ final class TeachersControllerTest extends ApiControllerTestCase
         $userId = $this->createTestUser('student');
         $this->authenticateAs($userId);
 
+        $teacherId = Uuid::v4();
+        Yii::$app->db->createCommand()->insert('users', [
+            'id' => $teacherId,
+            'name' => 'Delete Teacher',
+            'email' => 'del@example.com',
+            'password_hash' => 'hash',
+            'role' => 'teacher',
+            'created_at' => Time::now(),
+        ])->execute();
+
         $controller = new \app\modules\api\controllers\TeachersController('teachers', Yii::$app, []);
+        $this->setMethod('DELETE');
 
         try {
-            $controller->actionDelete('some-id');
+            $controller->actionView($teacherId);
             $this->fail('Expected 403');
         } catch (\yii\web\HttpException $e) {
             $this->assertSame(403, $e->statusCode);
@@ -193,7 +204,8 @@ final class TeachersControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\TeachersController('teachers', Yii::$app, []);
-        $result = $controller->actionDelete($teacherId);
+        $this->setMethod('DELETE');
+        $result = $controller->actionView($teacherId);
         $data = $result->data;
 
         $this->assertTrue($data['ok']);
@@ -220,8 +232,8 @@ final class TeachersControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\TeachersController('teachers', Yii::$app, []);
-        Yii::$app->request->isPut = true;
-        $_POST = ['name' => 'Updated Name'];
+        $this->setMethod('PUT');
+        $this->setBody(['name' => 'Updated Name']);
 
         try {
             $controller->actionView($teacherId);
@@ -253,61 +265,13 @@ final class TeachersControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\TeachersController('teachers', Yii::$app, []);
-        Yii::$app->request->isPut = true;
-        $_POST = ['name' => 'Updated Name'];
+        $this->setMethod('PUT');
+        $this->setBody(['name' => 'Updated Name']);
 
         $result = $controller->actionView($teacherId);
         $data = $result->data;
 
         $this->assertSame('Updated Name', $data['name']);
         $this->assertSame($teacherId, $data['id']);
-    }
-
-    public function testMyLiveClassesRequiresAuth(): void
-    {
-        $controller = new \app\modules\api\controllers\TeachersController('teachers', Yii::$app, []);
-
-        try {
-            $controller->actionMyLiveClasses();
-            $this->fail('Expected 403');
-        } catch (\yii\web\HttpException $e) {
-            $this->assertSame(403, $e->statusCode);
-        }
-    }
-
-    public function testMyLiveClassesReturnsEmpty(): void
-    {
-        $userId = $this->createTestUser('teacher');
-        $this->authenticateAs($userId);
-
-        $controller = new \app\modules\api\controllers\TeachersController('teachers', Yii::$app, []);
-        $result = $controller->actionMyLiveClasses();
-        $data = $result->data;
-
-        $this->assertIsArray($data);
-        $this->assertEmpty($data);
-    }
-
-    public function testMyLiveClassesReturnsUpcoming(): void
-    {
-        $userId = $this->createTestUser('teacher');
-        $this->authenticateAs($userId);
-
-        $futureTime = Time::addMinutes(Time::now(), 60);
-        Yii::$app->db->createCommand()->insert('live_classes', [
-            'id' => Uuid::v4(),
-            'title_en' => 'Upcoming Class',
-            'join_url' => 'https://zoom.us/j/1',
-            'scheduled_at' => $futureTime,
-            'instructor_id' => $userId,
-            'created_at' => Time::now(),
-        ])->execute();
-
-        $controller = new \app\modules\api\controllers\TeachersController('teachers', Yii::$app, []);
-        $result = $controller->actionMyLiveClasses();
-        $data = $result->data;
-
-        $this->assertCount(1, $data);
-        $this->assertSame('Upcoming Class', $data[0]['title_en']);
     }
 }

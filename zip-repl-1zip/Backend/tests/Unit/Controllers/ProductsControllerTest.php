@@ -15,16 +15,8 @@ use Yii;
 final class ProductsControllerTest extends ApiControllerTestCase
 {
     /** Set the simulated HTTP method for the current test request. */
-    private function setMethod(string $method): void
-    {
-        $_SERVER['REQUEST_METHOD'] = $method;
-    }
 
     /** Set body params, overriding any cached request body. */
-    private function setBody(array $params): void
-    {
-        Yii::$app->request->bodyParams = $params;
-    }
 
     public function testIndexReturnsEmpty(): void
     {

@@ -19,7 +19,7 @@ final class FilesControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\FilesController('files', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         Yii::$app->request->setHeaders(['Content-Type' => 'multipart/form-data']);
         $_FILES = [
             'file' => [
@@ -45,7 +45,7 @@ final class FilesControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\FilesController('files', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         Yii::$app->request->setHeaders(['Content-Type' => 'multipart/form-data']);
         $_FILES = [
             'file' => [

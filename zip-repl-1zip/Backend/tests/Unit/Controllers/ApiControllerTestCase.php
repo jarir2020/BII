@@ -32,6 +32,36 @@ abstract class ApiControllerTestCase extends \PHPUnit\Framework\TestCase
         $this->setUpDatabase();
     }
 
+    protected function tearDown(): void
+    {
+        // Reset request method to GET for the next test
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        // Reset $_POST to prevent leaking between tests
+        $_POST = [];
+        // Reset body params to null so getBodyParam() re-reads from $_POST
+        if (Yii::$app) {
+            Yii::$app->request->bodyParams = null;
+        }
+        parent::tearDown();
+    }
+
+    /**
+     * Set the simulated HTTP method for the current test request.
+     * Uses $_SERVER instead of the read-only isPost/isPut/isDelete properties.
+     */
+    protected function setMethod(string $method): void
+    {
+        $_SERVER['REQUEST_METHOD'] = $method;
+    }
+
+    /**
+     * Set the request body params (used for POST/PUT/DELETE where $_POST may not be read).
+     */
+    protected function setBody(array $params): void
+    {
+        Yii::$app->request->bodyParams = $params;
+    }
+
     protected function setUpDatabase(): void
     {
         $db = Yii::$app->db;

@@ -53,7 +53,7 @@ final class LiveClassesControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\LiveClassesController('live-classes', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['title_en' => 'New Class'];
 
         try {
@@ -72,7 +72,7 @@ final class LiveClassesControllerTest extends ApiControllerTestCase
         $teacherId = $this->createTestUser('teacher');
 
         $controller = new \app\modules\api\controllers\LiveClassesController('live-classes', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'title_bn' => 'নতুন ক্লাস',
             'title_en' => 'New Live Class',

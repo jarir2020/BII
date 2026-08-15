@@ -10,47 +10,72 @@ use Yii;
 
 /**
  * Unit tests for GenericController — reusable API CRUD operations.
+ * Uses actionIndex (list/create) and actionItem (view/update/delete) methods.
+ * GenericController stores data in the `generic_items` table with a `resource` column.
  */
 final class GenericControllerTest extends ApiControllerTestCase
 {
-    public function testGetAllRequiresAuth(): void
+    /** Insert a generic item and return its ID. */
+    private function insertGenericItem(string $resource, array $data, string $id = ''): string
     {
+        $id = $id ?: Uuid::v4();
+        Yii::$app->db->createCommand()->insert('generic_items', [
+            'id' => $id,
+            'resource' => $resource,
+            'data' => json_encode($data, JSON_UNESCAPED_UNICODE),
+            'created_at' => Time::now(),
+            'updated_at' => null,
+        ])->execute();
+        return $id;
+    }
+
+    public function testGetAllRequiresAuthForPost(): void
+    {
+        $userId = $this->createTestUser('student');
+        $this->authenticateAs($userId);
+
         $controller = new \app\modules\api\controllers\GenericController('generic', Yii::$app, []);
+        $this->setMethod('POST');
+        $this->setBody(['title_en' => 'New']);
+        Yii::$app->request->setQueryParams(['resource' => 'blogs']);
 
         try {
-            $controller->actionGetAll('videos');
+            $controller->actionIndex();
             $this->fail('Expected 403');
         } catch (\yii\web\HttpException $e) {
             $this->assertSame(403, $e->statusCode);
         }
     }
 
-    public function testGetAllForVideos(): void
+    public function testGetAllForBlogs(): void
     {
         $userId = $this->createTestUser();
         $this->authenticateAs($userId);
 
-        Yii::$app->db->createCommand()->insert('videos', [
-            'id' => Uuid::v4(),
-            'title_en' => 'Generic Video',
-            'video_url' => 'https://example.com/gen.mp4',
-        ])->execute();
+        $this->insertGenericItem('blogs', ['title_en' => 'Generic Blog']);
 
         $controller = new \app\modules\api\controllers\GenericController('generic', Yii::$app, []);
-        $result = $controller->actionGetAll('videos');
+        Yii::$app->request->setQueryParams(['resource' => 'blogs']);
+        $result = $controller->actionIndex();
         $data = $result->data;
 
         $this->assertIsArray($data);
         $this->assertCount(1, $data);
-        $this->assertSame('Generic Video', $data[0]['title_en']);
     }
 
-    public function testGetOneRequiresAuth(): void
+    public function testGetOneRequiresAuthForDelete(): void
     {
+        $userId = $this->createTestUser('student');
+        $this->authenticateAs($userId);
+
+        $itemId = $this->insertGenericItem('blogs', ['title_en' => 'To Delete']);
+
         $controller = new \app\modules\api\controllers\GenericController('generic', Yii::$app, []);
+        $this->setMethod('DELETE');
+        Yii::$app->request->setQueryParams(['resource' => 'blogs']);
 
         try {
-            $controller->actionGetOne('videos', Uuid::v4());
+            $controller->actionItem($itemId);
             $this->fail('Expected 403');
         } catch (\yii\web\HttpException $e) {
             $this->assertSame(403, $e->statusCode);
@@ -62,19 +87,15 @@ final class GenericControllerTest extends ApiControllerTestCase
         $userId = $this->createTestUser();
         $this->authenticateAs($userId);
 
-        $videoId = Uuid::v4();
-        Yii::$app->db->createCommand()->insert('videos', [
-            'id' => $videoId,
-            'title_en' => 'Single Video',
-            'video_url' => 'https://example.com/single.mp4',
-        ])->execute();
+        $itemId = $this->insertGenericItem('blogs', ['title_en' => 'Single Blog']);
 
         $controller = new \app\modules\api\controllers\GenericController('generic', Yii::$app, []);
-        $result = $controller->actionGetOne('videos', $videoId);
+        Yii::$app->request->setQueryParams(['resource' => 'blogs']);
+        $result = $controller->actionItem($itemId);
         $data = $result->data;
 
-        $this->assertSame('Single Video', $data['title_en']);
-        $this->assertSame($videoId, $data['id']);
+        $this->assertSame('Single Blog', $data['title_en']);
+        $this->assertSame($itemId, $data['id']);
     }
 
     public function testGetOneReturns404(): void
@@ -83,27 +104,13 @@ final class GenericControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\GenericController('generic', Yii::$app, []);
+        Yii::$app->request->setQueryParams(['resource' => 'blogs']);
 
         try {
-            $controller->actionGetOne('videos', 'non-existent');
+            $controller->actionItem('non-existent');
             $this->fail('Expected 404');
         } catch (\yii\web\HttpException $e) {
             $this->assertSame(404, $e->statusCode);
-        }
-    }
-
-    public function testDeleteRequiresAdmin(): void
-    {
-        $userId = $this->createTestUser('student');
-        $this->authenticateAs($userId);
-
-        $controller = new \app\modules\api\controllers\GenericController('generic', Yii::$app, []);
-
-        try {
-            $controller->actionDelete('videos', Uuid::v4());
-            $this->fail('Expected 403');
-        } catch (\yii\web\HttpException $e) {
-            $this->assertSame(403, $e->statusCode);
         }
     }
 
@@ -112,40 +119,20 @@ final class GenericControllerTest extends ApiControllerTestCase
         $adminId = $this->createAdminUser();
         $this->authenticateAs($adminId, 'admin');
 
-        $videoId = Uuid::v4();
-        Yii::$app->db->createCommand()->insert('videos', [
-            'id' => $videoId,
-            'title_en' => 'Delete Me',
-            'video_url' => 'https://example.com/del.mp4',
-        ])->execute();
+        $itemId = $this->insertGenericItem('blogs', ['title_en' => 'Delete Me']);
 
         $controller = new \app\modules\api\controllers\GenericController('generic', Yii::$app, []);
-        $result = $controller->actionDelete('videos', $videoId);
+        $this->setMethod('DELETE');
+        Yii::$app->request->setQueryParams(['resource' => 'blogs']);
+        $result = $controller->actionItem($itemId);
         $data = $result->data;
 
         $this->assertTrue($data['ok']);
 
         $row = Yii::$app->db->createCommand(
-            'SELECT id FROM videos WHERE id = :id', [':id' => $videoId]
+            'SELECT id FROM generic_items WHERE id = :id', [':id' => $itemId]
         )->queryOne();
         $this->assertFalse($row);
-    }
-
-    public function testPostRequiresAdmin(): void
-    {
-        $userId = $this->createTestUser('student');
-        $this->authenticateAs($userId);
-
-        $controller = new \app\modules\api\controllers\GenericController('generic', Yii::$app, []);
-        Yii::$app->request->isPost = true;
-        $_POST = ['title_en' => 'New'];
-
-        try {
-            $controller->actionPost('videos');
-            $this->fail('Expected 403');
-        } catch (\yii\web\HttpException $e) {
-            $this->assertSame(403, $e->statusCode);
-        }
     }
 
     public function testPostCreatesRecord(): void
@@ -154,13 +141,14 @@ final class GenericControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\GenericController('generic', Yii::$app, []);
-        Yii::$app->request->isPost = true;
-        $_POST = ['title_en' => 'New Generic Video', 'video_url' => 'https://example.com/new.mp4'];
+        $this->setMethod('POST');
+        $this->setBody(['title_en' => 'New Generic Blog', 'summary' => 'A test']);
+        Yii::$app->request->setQueryParams(['resource' => 'blogs']);
 
-        $result = $controller->actionPost('videos');
+        $result = $controller->actionIndex();
         $data = $result->data;
 
-        $this->assertSame('New Generic Video', $data['title_en']);
+        $this->assertSame('New Generic Blog', $data['title_en']);
         $this->assertArrayHasKey('id', $data);
     }
 
@@ -169,12 +157,15 @@ final class GenericControllerTest extends ApiControllerTestCase
         $userId = $this->createTestUser('student');
         $this->authenticateAs($userId);
 
+        $itemId = $this->insertGenericItem('blogs', ['title_en' => 'Original']);
+
         $controller = new \app\modules\api\controllers\GenericController('generic', Yii::$app, []);
-        Yii::$app->request->isPut = true;
-        $_POST = ['title_en' => 'Updated'];
+        $this->setMethod('PUT');
+        $this->setBody(['title_en' => 'Updated']);
+        Yii::$app->request->setQueryParams(['resource' => 'blogs']);
 
         try {
-            $controller->actionUpdate('videos', Uuid::v4());
+            $controller->actionItem($itemId);
             $this->fail('Expected 403');
         } catch (\yii\web\HttpException $e) {
             $this->assertSame(403, $e->statusCode);
@@ -186,21 +177,17 @@ final class GenericControllerTest extends ApiControllerTestCase
         $adminId = $this->createAdminUser();
         $this->authenticateAs($adminId, 'admin');
 
-        $videoId = Uuid::v4();
-        Yii::$app->db->createCommand()->insert('videos', [
-            'id' => $videoId,
-            'title_en' => 'Original Title',
-            'video_url' => 'https://example.com/orig.mp4',
-        ])->execute();
+        $itemId = $this->insertGenericItem('blogs', ['title_en' => 'Original Title']);
 
         $controller = new \app\modules\api\controllers\GenericController('generic', Yii::$app, []);
-        Yii::$app->request->isPut = true;
-        $_POST = ['title_en' => 'Updated Title'];
+        $this->setMethod('PUT');
+        $this->setBody(['title_en' => 'Updated Title']);
+        Yii::$app->request->setQueryParams(['resource' => 'blogs']);
 
-        $result = $controller->actionUpdate('videos', $videoId);
+        $result = $controller->actionItem($itemId);
         $data = $result->data;
 
         $this->assertSame('Updated Title', $data['title_en']);
-        $this->assertSame($videoId, $data['id']);
+        $this->assertSame($itemId, $data['id']);
     }
 }

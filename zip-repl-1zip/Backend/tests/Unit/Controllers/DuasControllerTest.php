@@ -146,7 +146,7 @@ final class DuasControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\DuasController('duas', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['dua_id' => $duaId];
 
         $result = $controller->actionBookmark();
@@ -175,7 +175,7 @@ final class DuasControllerTest extends ApiControllerTestCase
 
         // First bookmark
         $controller = new \app\modules\api\controllers\DuasController('duas', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['dua_id' => $duaId];
         $controller->actionBookmark();
 

@@ -72,7 +72,7 @@ final class SubscriptionPlansControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\SubscriptionPlansController('subscription-plans', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'name' => 'Gold Plan',
             'description' => 'Gold tier',
@@ -96,7 +96,7 @@ final class SubscriptionPlansControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\SubscriptionPlansController('subscription-plans', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'name' => 'Legacy Plan',
             'price' => 100,
@@ -168,8 +168,8 @@ final class SubscriptionPlansControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\SubscriptionPlansController('subscription-plans', Yii::$app, []);
-        Yii::$app->request->isPut = true;
-        $_POST = ['name' => 'Updated'];
+        $this->setMethod('PUT');
+        $this->setBody(['name' => 'Updated']);
 
         try {
             $controller->actionUpdate($planId);
@@ -195,8 +195,8 @@ final class SubscriptionPlansControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\SubscriptionPlansController('subscription-plans', Yii::$app, []);
-        Yii::$app->request->isPut = true;
-        $_POST = ['name' => 'Updated Plan', 'price' => 750];
+        $this->setMethod('PUT');
+        $this->setBody(['name' => 'Updated Plan', 'price' => 750]);
 
         $result = $controller->actionUpdate($planId);
         $data = $result->data;

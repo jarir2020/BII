@@ -16,7 +16,7 @@ final class WebPushControllerTest extends ApiControllerTestCase
     public function testSubscribeRequiresAuth(): void
     {
         $controller = new \app\modules\api\controllers\WebPushController('web-push', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['endpoint' => 'https://fcm.googleapis.com/fcm/send/xyz'];
 
         try {
@@ -33,7 +33,7 @@ final class WebPushControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\WebPushController('web-push', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'endpoint' => 'https://fcm.googleapis.com/fcm/send/test-endpoint-123',
             'p256dh' => 'p256dh-key',
@@ -68,7 +68,7 @@ final class WebPushControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\WebPushController('web-push', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'endpoint' => 'https://fcm.googleapis.com/fcm/send/old-endpoint',
             'p256dh' => 'new-key',
@@ -105,7 +105,7 @@ final class WebPushControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\WebPushController('web-push', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['endpoint' => 'https://fcm.googleapis.com/fcm/send/unsub-me'];
 
         $result = $controller->actionUnsubscribe();
@@ -126,7 +126,7 @@ final class WebPushControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\WebPushController('web-push', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['endpoint' => 'https://fcm.googleapis.com/fcm/send/nonexistent'];
 
         $result = $controller->actionUnsubscribe();

@@ -90,7 +90,7 @@ final class PostsControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\PostsController('posts', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['title_en' => 'New Post'];
 
         try {
@@ -107,7 +107,7 @@ final class PostsControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\PostsController('posts', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'title_bn' => 'নতুন পোস্ট',
             'title_en' => 'New Blog Post',

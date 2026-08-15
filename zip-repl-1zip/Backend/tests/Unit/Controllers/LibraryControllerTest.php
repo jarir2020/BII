@@ -189,7 +189,7 @@ final class LibraryControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\LibraryController('library', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['hadith_id' => $hadithId];
 
         $result = $controller->actionBookmark();
@@ -217,7 +217,7 @@ final class LibraryControllerTest extends ApiControllerTestCase
 
         // First bookmark
         $controller = new \app\modules\api\controllers\LibraryController('library', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['hadith_id' => $hadithId];
         $controller->actionBookmark();
 

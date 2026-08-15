@@ -31,7 +31,7 @@ final class TelegramControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\TelegramController('telegram', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['chat_id' => 123, 'text' => 'Test message'];
 
         try {
@@ -48,7 +48,7 @@ final class TelegramControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\TelegramController('telegram', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'chat_id' => 987654321,
             'text' => 'Test notification',
@@ -68,7 +68,7 @@ final class TelegramControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\TelegramController('telegram', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = ['url' => 'https://example.com/telegram/webhook'];
 
         $result = $controller->actionSetWebhook();

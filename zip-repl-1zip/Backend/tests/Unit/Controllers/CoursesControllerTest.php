@@ -42,7 +42,7 @@ final class CoursesControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\CoursesController('courses', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'title_bn' => 'নতুন কোর্স',
             'title_en' => 'New Course',
@@ -63,7 +63,7 @@ final class CoursesControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\CoursesController('courses', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'title_bn' => 'কোরআন শিক্ষা',
             'title_en' => 'Quran Education',
@@ -87,7 +87,7 @@ final class CoursesControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\CoursesController('courses', Yii::$app, []);
-        Yii::$app->request->isPost = true;
+        $this->setMethod('POST');
         $_POST = [
             'title_en' => 'Free Course',
             'price' => 999,
@@ -241,7 +241,7 @@ final class CoursesControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\CoursesController('courses', Yii::$app, []);
-        Yii::$app->request->isDelete = true;
+        $this->setMethod('DELETE');
 
         try {
             $controller->actionView($courseId);
@@ -258,7 +258,7 @@ final class CoursesControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\CoursesController('courses', Yii::$app, []);
-        Yii::$app->request->isDelete = true;
+        $this->setMethod('DELETE');
         $result = $controller->actionView($courseId);
         $data = $result->data;
 
@@ -278,8 +278,8 @@ final class CoursesControllerTest extends ApiControllerTestCase
         $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\CoursesController('courses', Yii::$app, []);
-        Yii::$app->request->isPut = true;
-        $_POST = ['title_en' => 'Updated'];
+        $this->setMethod('PUT');
+        $this->setBody(['title_en' => 'Updated']);
 
         try {
             $controller->actionView($courseId);
@@ -296,8 +296,8 @@ final class CoursesControllerTest extends ApiControllerTestCase
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\CoursesController('courses', Yii::$app, []);
-        Yii::$app->request->isPut = true;
-        $_POST = ['title_en' => 'Updated Title'];
+        $this->setMethod('PUT');
+        $this->setBody(['title_en' => 'Updated Title']);
 
         $result = $controller->actionView($courseId);
         $data = $result->data;

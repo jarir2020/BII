@@ -18,7 +18,7 @@ final class SettingsControllerTest extends ApiControllerTestCase
         $result = $controller->actionIndex();
         $data = $result->data;
 
-        $this->assertSame('বಾঙালি ইসলামিক ইনস্টিটিউট', $data['name_bn']);
+        $this->assertSame('বাঙালি ইসলামিক ইনস্টিটিউট', $data['name_bn']);
         $this->assertSame('Bengali Islamic Institute', $data['name_en']);
         $this->assertSame('Knowledge, Faith & Manners', $data['tagline_en']);
         $this->assertSame('01974911990', $data['bkash_number']);
@@ -45,11 +45,14 @@ final class SettingsControllerTest extends ApiControllerTestCase
 
     public function testPutUpdatesSettings(): void
     {
-        Yii::$app->request->isPut = true;
-        $_POST = [
+        $adminId = $this->createAdminUser();
+        $this->authenticateAs($adminId, 'admin');
+
+        $this->setMethod('PUT');
+        $this->setBody([
             'name_bn' => 'নতুন নাম',
             'contact_email' => 'new@example.com',
-        ];
+        ]);
 
         $controller = new \app\modules\api\controllers\SettingsController('settings', Yii::$app, []);
         $result = $controller->actionIndex();
@@ -70,8 +73,11 @@ final class SettingsControllerTest extends ApiControllerTestCase
             'updated_at' => Time::now(),
         ])->execute();
 
-        Yii::$app->request->isPut = true;
-        $_POST = ['contact_email' => 'updated@example.com'];
+        $adminId = $this->createAdminUser();
+        $this->authenticateAs($adminId, 'admin');
+
+        $this->setMethod('PUT');
+        $this->setBody(['contact_email' => 'updated@example.com']);
 
         $controller = new \app\modules\api\controllers\SettingsController('settings', Yii::$app, []);
         $result = $controller->actionIndex();
@@ -87,8 +93,11 @@ final class SettingsControllerTest extends ApiControllerTestCase
 
     public function testPutMergesWithDefaults(): void
     {
-        Yii::$app->request->isPut = true;
-        $_POST = ['custom_field' => 'value'];
+        $adminId = $this->createAdminUser();
+        $this->authenticateAs($adminId, 'admin');
+
+        $this->setMethod('PUT');
+        $this->setBody(['custom_field' => 'value']);
 
         $controller = new \app\modules\api\controllers\SettingsController('settings', Yii::$app, []);
         $result = $controller->actionIndex();
