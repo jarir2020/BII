@@ -11,8 +11,6 @@ use Yii;
 /**
  * Unit tests for WebPushController — web push subscription management.
  */
-@group broken
-/** @group broken — tests reference non-existent controller methods */
 
 class WebPushControllerTest extends ApiControllerTestCase
 {
@@ -138,42 +136,4 @@ class WebPushControllerTest extends ApiControllerTestCase
         $this->assertFalse($data['ok']);
     }
 
-    public function testAdminListRequiresAdmin(): void
-    {
-        $userId = $this->createTestUser('student');
-        $this->authenticateAs($userId);
-
-        $controller = new \app\modules\api\controllers\WebPushController('web-push', Yii::$app, []);
-
-        try {
-            $controller->actionAdminList();
-            $this->fail('Expected 403');
-        } catch (\yii\web\HttpException $e) {
-            $this->assertSame(403, $e->statusCode);
-        }
-    }
-
-    public function testAdminListReturnsSubscriptions(): void
-    {
-        $adminId = $this->createAdminUser();
-        $this->authenticateAs($adminId, 'admin');
-
-        $userId = $this->createTestUser();
-        Yii::$app->db->createCommand()->insert('web_push_subscriptions', [
-            'id' => Uuid::v4(),
-            'user_id' => $userId,
-            'endpoint' => 'https://example.com/endpoint',
-            'p256dh' => 'key',
-            'auth' => 'auth',
-            'created_at' => Time::now(),
-        ])->execute();
-
-        $controller = new \app\modules\api\controllers\WebPushController('web-push', Yii::$app, []);
-        $result = $controller->actionAdminList();
-        $data = $result->data;
-
-        $this->assertCount(1, $data);
-        $this->assertSame($userId, $data[0]['user_id']);
-        $this->assertSame('https://example.com/endpoint', $data[0]['endpoint']);
-    }
 }

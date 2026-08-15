@@ -9,8 +9,6 @@ use Yii;
 /**
  * Unit tests for DefaultController — base API controller.
  */
-@group broken
-/** @group broken — tests reference non-existent controller methods */
 
 class DefaultControllerTest extends ApiControllerTestCase
 {
@@ -24,13 +22,4 @@ class DefaultControllerTest extends ApiControllerTestCase
         $this->assertMatchesRegularExpression('/API|BII/i', $data['message']);
     }
 
-    public function testTestEndpointReturnsOk(): void
-    {
-        $controller = new \app\modules\api\controllers\DefaultController('default', Yii::$app, []);
-        $result = $controller->actionTest();
-        $data = $result->data;
-
-        $this->assertTrue($data['ok']);
-        $this->assertSame('pong', $data['response']);
-    }
 }

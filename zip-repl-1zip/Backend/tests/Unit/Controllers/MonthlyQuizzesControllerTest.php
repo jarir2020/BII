@@ -11,30 +11,24 @@ use Yii;
 /**
  * Unit tests for MonthlyQuizzesController — monthly quiz management.
  */
-@group broken
-/** @group broken — tests reference non-existent controller methods */
-
 class MonthlyQuizzesControllerTest extends ApiControllerTestCase
 {
-    public function testIndexRequiresAdmin(): void
+    public function testGetListRequiresLogin(): void
     {
-        $userId = $this->createTestUser('student');
-        $this->authenticateAs($userId);
-
         $controller = new \app\modules\api\controllers\MonthlyQuizzesController('monthly-quizzes', Yii::$app, []);
 
         try {
             $controller->actionIndex();
-            $this->fail('Expected 403');
+            $this->fail('Expected 401');
         } catch (\yii\web\HttpException $e) {
-            $this->assertSame(403, $e->statusCode);
+            $this->assertSame(401, $e->statusCode);
         }
     }
 
-    public function testIndexReturnsEmpty(): void
+    public function testGetListReturnsEmpty(): void
     {
-        $adminId = $this->createAdminUser();
-        $this->authenticateAs($adminId, 'admin');
+        $userId = $this->createTestUser();
+        $this->authenticateAs($userId);
 
         $controller = new \app\modules\api\controllers\MonthlyQuizzesController('monthly-quizzes', Yii::$app, []);
         $result = $controller->actionIndex();
@@ -44,16 +38,20 @@ class MonthlyQuizzesControllerTest extends ApiControllerTestCase
         $this->assertEmpty($data);
     }
 
-    public function testIndexReturnsMonthlyQuizzes(): void
+    public function testGetListReturnsQuizzes(): void
     {
-        $adminId = $this->createAdminUser();
-        $this->authenticateAs($adminId, 'admin');
+        $userId = $this->createTestUser();
+        $this->authenticateAs($userId);
 
         Yii::$app->db->createCommand()->insert('monthly_quizzes', [
             'id' => Uuid::v4(),
+            'title_bn' => 'মাসিক কুইজ ১',
             'title_en' => 'Monthly Quiz 1',
-            'description' => 'January quiz',
-            'total_marks' => 20,
+            'exam_date' => '2026-01-15',
+            'start_time' => '10:00',
+            'end_time' => '11:00',
+            'duration_minutes' => 60,
+            'pass_marks' => 20,
             'created_at' => Time::now(),
         ])->execute();
 
@@ -65,130 +63,47 @@ class MonthlyQuizzesControllerTest extends ApiControllerTestCase
         $this->assertSame('Monthly Quiz 1', $data[0]['title_en']);
     }
 
-    public function testPostCreatesMonthlyQuiz(): void
+    public function testPostRequiresAdmin(): void
+    {
+        $userId = $this->createTestUser();
+        $this->authenticateAs($userId);
+
+        $controller = new \app\modules\api\controllers\MonthlyQuizzesController('monthly-quizzes', Yii::$app, []);
+        $this->setMethod('POST');
+        $this->setBody([
+            'title_en' => 'February Quiz',
+            'exam_date' => '2026-02-15',
+        ]);
+
+        try {
+            $controller->actionIndex();
+            $this->fail('Expected 403');
+        } catch (\yii\web\HttpException $e) {
+            $this->assertSame(403, $e->statusCode);
+        }
+    }
+
+    public function testPostCreatesQuiz(): void
     {
         $adminId = $this->createAdminUser();
         $this->authenticateAs($adminId, 'admin');
 
         $controller = new \app\modules\api\controllers\MonthlyQuizzesController('monthly-quizzes', Yii::$app, []);
         $this->setMethod('POST');
-        $_POST = [
+        $this->setBody([
+            'title_bn' => 'ফেব্রুয়ারি কুইজ',
             'title_en' => 'February Quiz',
-            'description' => 'Feb quiz',
-            'total_marks' => 25,
-        ];
+            'exam_date' => '2026-02-15',
+            'start_time' => '10:00',
+            'end_time' => '11:00',
+            'duration_minutes' => 60,
+            'pass_marks' => 15,
+        ]);
 
         $result = $controller->actionIndex();
         $data = $result->data;
 
         $this->assertSame('February Quiz', $data['title_en']);
-        $this->assertSame(25, (int) $data['total_marks']);
-    }
-
-    public function testDeleteRequiresAdmin(): void
-    {
-        $userId = $this->createTestUser('student');
-        $this->authenticateAs($userId);
-
-        $controller = new \app\modules\api\controllers\MonthlyQuizzesController('monthly-quizzes', Yii::$app, []);
-
-        try {
-            $controller->actionDelete('some-id');
-            $this->fail('Expected 403');
-        } catch (\yii\web\HttpException $e) {
-            $this->assertSame(403, $e->statusCode);
-        }
-    }
-
-    public function testDeleteRemovesQuiz(): void
-    {
-        $adminId = $this->createAdminUser();
-        $this->authenticateAs($adminId, 'admin');
-
-        $quizId = Uuid::v4();
-        Yii::$app->db->createCommand()->insert('monthly_quizzes', [
-            'id' => $quizId,
-            'title_en' => 'Delete Me',
-            'total_marks' => 10,
-            'created_at' => Time::now(),
-        ])->execute();
-
-        $controller = new \app\modules\api\controllers\MonthlyQuizzesController('monthly-quizzes', Yii::$app, []);
-        $result = $controller->actionDelete($quizId);
-        $data = $result->data;
-
-        $this->assertTrue($data['ok']);
-
-        $row = Yii::$app->db->createCommand(
-            'SELECT id FROM monthly_quizzes WHERE id = :id', [':id' => $quizId]
-        )->queryOne();
-        $this->assertFalse($row);
-    }
-
-    public function testQuestionsRequiresAdmin(): void
-    {
-        $userId = $this->createTestUser('student');
-        $this->authenticateAs($userId);
-
-        $controller = new \app\modules\api\controllers\MonthlyQuizzesController('monthly-quizzes', Yii::$app, []);
-
-        try {
-            $controller->actionQuestions();
-            $this->fail('Expected 403');
-        } catch (\yii\web\HttpException $e) {
-            $this->assertSame(403, $e->statusCode);
-        }
-    }
-
-    public function testQuestionsReturnsEmpty(): void
-    {
-        $adminId = $this->createAdminUser();
-        $this->authenticateAs($adminId, 'admin');
-
-        $quizId = Uuid::v4();
-        Yii::$app->db->createCommand()->insert('monthly_quizzes', [
-            'id' => $quizId,
-            'title_en' => 'Quiz',
-            'total_marks' => 10,
-            'created_at' => Time::now(),
-        ])->execute();
-
-        $controller = new \app\modules\api\controllers\MonthlyQuizzesController('monthly-quizzes', Yii::$app, []);
-        Yii::$app->request->setQueryParams(['quiz_id' => $quizId]);
-        $result = $controller->actionQuestions();
-        $data = $result->data;
-
-        $this->assertIsArray($data);
-        $this->assertEmpty($data);
-    }
-
-    public function testPostQuestion(): void
-    {
-        $adminId = $this->createAdminUser();
-        $this->authenticateAs($adminId, 'admin');
-
-        $quizId = Uuid::v4();
-        Yii::$app->db->createCommand()->insert('monthly_quizzes', [
-            'id' => $quizId,
-            'title_en' => 'Quiz',
-            'total_marks' => 10,
-            'created_at' => Time::now(),
-        ])->execute();
-
-        $controller = new \app\modules\api\controllers\MonthlyQuizzesController('monthly-quizzes', Yii::$app, []);
-        $this->setMethod('POST');
-        Yii::$app->request->setQueryParams(['quiz_id' => $quizId]);
-        $_POST = [
-            'question' => 'What is the capital of Bangladesh?',
-            'options' => 'Dhaka,Chittagong,Rajshahi,Sylhet',
-            'answer_index' => 0,
-            'marks' => 5,
-        ];
-
-        $result = $controller->actionQuestions();
-        $data = $result->data;
-
-        $this->assertTrue($data['ok']);
-        $this->assertSame('What is the capital of Bangladesh?', $data['question']);
+        $this->assertSame('2026-02-15', $data['exam_date']);
     }
 }

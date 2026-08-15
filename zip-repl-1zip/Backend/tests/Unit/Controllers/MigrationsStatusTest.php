@@ -11,8 +11,6 @@ use Yii;
 /**
  * Unit tests for MigrationsController — database migration operations.
  */
-@group broken
-/** @group broken — tests reference non-existent controller methods */
 
 class MigrationsStatusTest extends ApiControllerTestCase
 {

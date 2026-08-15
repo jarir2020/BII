@@ -10,8 +10,6 @@ use Yii;
 /**
  * Unit tests for DuasController — dua collection with search and bookmarking.
  */
-@group broken
-/** @group broken — tests reference non-existent controller methods */
 
 class DuasControllerTest extends ApiControllerTestCase
 {
@@ -125,100 +123,4 @@ class DuasControllerTest extends ApiControllerTestCase
         }
     }
 
-    public function testBookmarkRequiresAuth(): void
-    {
-        $controller = new \app\modules\api\controllers\DuasController('duas', Yii::$app, []);
-
-        try {
-            $controller->actionBookmark();
-            $this->fail('Expected 403');
-        } catch (\yii\web\HttpException $e) {
-            $this->assertSame(403, $e->statusCode);
-        }
-    }
-
-    public function testBookmarkCreatesEntry(): void
-    {
-        $userId = $this->createTestUser();
-        $this->authenticateAs($userId);
-
-        $duaId = Uuid::v4();
-        Yii::$app->db->createCommand()->insert('duas', [
-            'id' => $duaId,
-            'title_en' => 'Bookmark Dua',
-        ])->execute();
-
-        $controller = new \app\modules\api\controllers\DuasController('duas', Yii::$app, []);
-        $this->setMethod('POST');
-        $_POST = ['dua_id' => $duaId];
-
-        $result = $controller->actionBookmark();
-        $data = $result->data;
-
-        $this->assertTrue($data['ok']);
-        $this->assertTrue($data['bookmarked']);
-
-        $row = Yii::$app->db->createCommand(
-            'SELECT id FROM bookmarks WHERE user_id = :u AND dua_id = :d',
-            [':u' => $userId, ':d' => $duaId]
-        )->queryOne();
-        $this->assertNotFalse($row);
-    }
-
-    public function testBookmarkRemovesExisting(): void
-    {
-        $userId = $this->createTestUser();
-        $this->authenticateAs($userId);
-
-        $duaId = Uuid::v4();
-        Yii::$app->db->createCommand()->insert('duas', [
-            'id' => $duaId,
-            'title_en' => 'Toggle Dua',
-        ])->execute();
-
-        // First bookmark
-        $controller = new \app\modules\api\controllers\DuasController('duas', Yii::$app, []);
-        $this->setMethod('POST');
-        $_POST = ['dua_id' => $duaId];
-        $controller->actionBookmark();
-
-        // Second — should toggle off
-        $result = $controller->actionBookmark();
-        $data = $result->data;
-
-        $this->assertTrue($data['ok']);
-        $this->assertFalse($data['bookmarked']);
-
-        $row = Yii::$app->db->createCommand(
-            'SELECT id FROM bookmarks WHERE user_id = :u AND dua_id = :d',
-            [':u' => $userId, ':d' => $duaId]
-        )->queryOne();
-        $this->assertFalse($row);
-    }
-
-    public function testMyBookmarksReturnsBookmarkedDuas(): void
-    {
-        $userId = $this->createTestUser();
-        $this->authenticateAs($userId);
-
-        $duaId = Uuid::v4();
-        Yii::$app->db->createCommand()->insert('duas', [
-            'id' => $duaId,
-            'title_en' => 'My Bookmark Dua',
-        ])->execute();
-
-        Yii::$app->db->createCommand()->insert('bookmarks', [
-            'id' => Uuid::v4(),
-            'user_id' => $userId,
-            'dua_id' => $duaId,
-            'created_at' => \app\helpers\Time::now(),
-        ])->execute();
-
-        $controller = new \app\modules\api\controllers\DuasController('duas', Yii::$app, []);
-        $result = $controller->actionMyBookmarks();
-        $data = $result->data;
-
-        $this->assertCount(1, $data);
-        $this->assertSame('My Bookmark Dua', $data[0]['title_en']);
-    }
 }
