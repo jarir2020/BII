@@ -90,10 +90,13 @@ abstract class ApiControllerTestCase extends \PHPUnit\Framework\TestCase
             'role'          => 'VARCHAR(32) NOT NULL DEFAULT \'student\'',
             'student_id'    => 'VARCHAR(32) NOT NULL DEFAULT \'\'',
             'phone'         => 'VARCHAR(64) NOT NULL DEFAULT \'\'',
-            'address'       => 'TEXT',
-            'profile_photo' => 'VARCHAR(512) NOT NULL DEFAULT \'\'',
-            'created_at'    => 'VARCHAR(40)',
-            'updated_at'    => 'VARCHAR(40)',
+            'address'       => 'TEXT',            'profile_photo' => 'VARCHAR(512) NOT NULL DEFAULT \'\'',
+            'permissions' => 'TEXT',
+            'bio' => 'TEXT',
+            'specialization' => 'VARCHAR(255) NOT NULL DEFAULT \'\'',
+            'status' => 'TINYINT(1) NOT NULL DEFAULT 1',
+            'created_at' => 'VARCHAR(40)',
+            'updated_at' => 'VARCHAR(40)',
         ])->execute();
         $cm->createIndex('idx_users_email', 'users', 'email', true)->execute();
         $cm->createIndex('idx_users_student_id', 'users', 'student_id')->execute();
@@ -677,6 +680,9 @@ abstract class ApiControllerTestCase extends \PHPUnit\Framework\TestCase
         ])->execute();
         $cm->createIndex('idx_quiz_submissions_user_id', 'quiz_submissions', 'user_id')->execute();
         $cm->createIndex('idx_quiz_submissions_quiz_id', 'quiz_submissions', 'quiz_id')->execute();
+
+        // Seed counters to avoid MySQL-specific ON DUPLICATE KEY UPDATE in SQLite
+        $cm->insert('counters', ['name' => 'student_id', 'seq' => 100])->execute();
 
         // Seed default ad_slots config
         $cm->insert('configs', [

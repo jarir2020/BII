@@ -54,13 +54,24 @@ class User extends ActiveRecord
         $year = (int) gmdate('Y');
         $key = "student_id_{$year}";
 
-        // LAST_INSERT_ID(expr) makes the inserted/updated value readable via
-        // getLastInsertID() on both the INSERT and the ON-DUPLICATE path.
-        $sql = 'INSERT INTO counters (`name`, `seq`) VALUES (:name, LAST_INSERT_ID(1)) '
-            . 'ON DUPLICATE KEY UPDATE `seq` = LAST_INSERT_ID(`seq` + 1)';
-        \Yii::$app->db->createCommand($sql, [':name' => $key])->execute();
+        $db = \Yii::$app->db;
+        $driver = $db->getDriverName();
 
-        $seq = (int) \Yii::$app->db->getLastInsertID();
+        if ($driver === 'sqlite') {
+            // SQLite: use INSERT OR REPLACE for atomic upsert
+            $db->createCommand(
+                'INSERT OR REPLACE INTO counters (name, seq) VALUES (:name, COALESCE((SELECT seq FROM counters WHERE name = :name2), 0) + 1)',
+                [':name' => $key, ':name2' => $key]
+            )->execute();
+            $seq = (int) $db->createCommand('SELECT seq FROM counters WHERE name = :name', [':name' => $key])->queryScalar();
+        } else {
+            // MySQL/MariaDB: use LAST_INSERT_ID(expr) for atomic upsert
+            $sql = 'INSERT INTO counters (`name`, `seq`) VALUES (:name, LAST_INSERT_ID(1)) '
+                . 'ON DUPLICATE KEY UPDATE `seq` = LAST_INSERT_ID(`seq` + 1)';
+            $db->createCommand($sql, [':name' => $key])->execute();
+            $seq = (int) $db->getLastInsertID();
+        }
+
         return sprintf('%d%04d', $year, $seq);
     }
 
