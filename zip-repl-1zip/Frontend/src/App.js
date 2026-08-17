@@ -92,38 +92,38 @@ const AdminComplaints      = lazy(() => import("@/pages/admin/AdminComplaints"))
 const AdminDua             = lazy(() => import("@/pages/admin/AdminDua"));
 
 // ── Reusable admin sub-pages grouped from lazy-loaded module files ──
-const AdminCategories      = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminCategories));
-const AdminChapters        = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminChapters));
-const AdminLessons         = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminLessons));
-const AdminPdfs            = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminPdfs));
-const AdminAssignments     = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminAssignments));
-const AdminExams           = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminExams));
-const AdminResults         = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminResults));
-const AdminCertificates    = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminCertificates));
-const AdminRecorded        = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminRecorded));
-const AdminHadiths         = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminHadiths));
-const AdminIslamicContent  = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminIslamicContent));
-const AdminBlogs           = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminBlogs));
-const AdminProducts        = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminProducts));
-const AdminOrders          = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminOrders));
-const AdminBanners         = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminBanners));
-const AdminSliders         = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminSliders));
-const AdminGallery         = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminGallery));
-const AdminDownloads       = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminDownloads));
-const AdminWinnerReviews   = lazy(() => import("@/pages/admin/CrudPages").then(m => m.AdminWinnerReviews));
+const AdminCategories      = lazy(() => import("@/pages/admin/CrudPages").then(m => ({ default: m.AdminCategories })));
+const AdminChapters        = lazy(() => import("@/pages/admin/CrudPages").then(m => ({ default: m.AdminChapters })));
+const AdminLessons         = lazy(() => import("@/pages/admin/CrudPages").then(m => ({ default: m.AdminLessons })));
+const AdminPdfs            = lazy(() => import("@/pages/admin/CrudPages").then(m => ({ default: m.AdminPdfs })));
+const AdminAssignments     = lazy(() => import("@/pages/admin/CrudPages").then(m => ({ default: m.AdminAssignments })));
+const AdminExams           = lazy(() => import("@/pages/admin/CrudPages").then(m => ({ default: m.AdminExams })));
+const AdminResults         = lazy(() => import("@/pages/admin/CrudPages").then(m => ({ default: m.AdminResults })));
+const AdminCertificates    = lazy(() => import("@/pages/admin/CrudPages").then(m => ({ default: m.AdminCertificates })));
+const AdminRecorded        = lazy(() => import("@/pages/admin/CrudPages").then(m => ({ default: m.AdminRecorded })));
+const AdminHadiths         = lazy(() => import("@/pages/admin/CrudPages").then(m => ({ default: m.AdminHadiths })));
+const AdminIslamicContent  = lazy(() => import("@/pages/admin/CrudPages").then(m => ({ default: m.AdminIslamicContent })));
+const AdminBlogs           = lazy(() => import("@/pages/admin/CrudPages").then(m => ({ default: m.AdminBlogs })));
+const AdminProducts        = lazy(() => import("@/pages/admin/CrudPages").then(m => ({ default: m.AdminProducts })));
+const AdminOrders          = lazy(() => import("@/pages/admin/CrudPages").then(m => ({ default: m.AdminOrders })));
+const AdminBanners         = lazy(() => import("@/pages/admin/CrudPages").then(m => ({ default: m.AdminBanners })));
+const AdminSliders         = lazy(() => import("@/pages/admin/CrudPages").then(m => ({ default: m.AdminSliders })));
+const AdminGallery         = lazy(() => import("@/pages/admin/CrudPages").then(m => ({ default: m.AdminGallery })));
+const AdminDownloads       = lazy(() => import("@/pages/admin/CrudPages").then(m => ({ default: m.AdminDownloads })));
+const AdminWinnerReviews   = lazy(() => import("@/pages/admin/CrudPages").then(m => ({ default: m.AdminWinnerReviews })));
 
-const AdminHomepage        = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminHomepage));
-const AdminWelcomePage     = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminWelcomePage));
-const AdminTheme           = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminTheme));
-const AdminSeo             = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminSeo));
-const AdminFirebase        = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminFirebase));
-const AdminSecurity        = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminSecurity));
-const AdminMaintenance     = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminMaintenance));
-const AdminPaymentGateways = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminPaymentGateways));
-const AdminSocial          = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminSocial));
-const AdminContactInfo     = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminContactInfo));
-const AdminAds             = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminAds));
-const AdminLegal           = lazy(() => import("@/pages/admin/ConfigPages").then(m => m.AdminLegal));
+const AdminHomepage        = lazy(() => import("@/pages/admin/ConfigPages").then(m => ({ default: m.AdminHomepage })));
+const AdminWelcomePage     = lazy(() => import("@/pages/admin/ConfigPages").then(m => ({ default: m.AdminWelcomePage })));
+const AdminTheme           = lazy(() => import("@/pages/admin/ConfigPages").then(m => ({ default: m.AdminTheme })));
+const AdminSeo             = lazy(() => import("@/pages/admin/ConfigPages").then(m => ({ default: m.AdminSeo })));
+const AdminFirebase        = lazy(() => import("@/pages/admin/ConfigPages").then(m => ({ default: m.AdminFirebase })));
+const AdminSecurity        = lazy(() => import("@/pages/admin/ConfigPages").then(m => ({ default: m.AdminSecurity })));
+const AdminMaintenance     = lazy(() => import("@/pages/admin/ConfigPages").then(m => ({ default: m.AdminMaintenance })));
+const AdminPaymentGateways = lazy(() => import("@/pages/admin/ConfigPages").then(m => ({ default: m.AdminPaymentGateways })));
+const AdminSocial          = lazy(() => import("@/pages/admin/ConfigPages").then(m => ({ default: m.AdminSocial })));
+const AdminContactInfo     = lazy(() => import("@/pages/admin/ConfigPages").then(m => ({ default: m.AdminContactInfo })));
+const AdminAds             = lazy(() => import("@/pages/admin/ConfigPages").then(m => ({ default: m.AdminAds })));
+const AdminLegal           = lazy(() => import("@/pages/admin/ConfigPages").then(m => ({ default: m.AdminLegal })));
 
 /**
  * On native platforms (Capacitor), the WebView may restore the last visited
