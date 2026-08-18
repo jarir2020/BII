@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { useAds } from "../contexts/AdsContext";
+import { hideAdMobBanner, showAdMobBanner } from "../lib/admob";
 
 /**
  * AdBanner — drop-in Google AdSense unit.
@@ -56,12 +57,29 @@ function loadAdSenseScript(publisherId) {
 }
 
 export default function AdBanner({ slot, format = "responsive", className = "" }) {
-  const { publisherId, adUnits, slotEnabled, adsEnabled, isLoaded } = useAds();
+  const { platform, publisherId, admob, adUnits, slotEnabled, adsEnabled, isLoaded } = useAds();
   const insRef  = useRef(null);
   const pushed  = useRef(false);
 
+  // Native Android/iOS uses the AdMob SDK. Keep one persistent bottom banner
+  // owned by the layout footer instead of injecting web AdSense markup into a
+  // native WebView.
   useEffect(() => {
-    if (!publisherId || !adsEnabled || !isLoaded || pushed.current) return;
+    if (
+      platform !== "app" ||
+      slot !== "footer-banner" ||
+      !admob?.bannerUnit ||
+      !adsEnabled ||
+      !isLoaded ||
+      slotEnabled?.[slot] === false
+    ) return undefined;
+
+    showAdMobBanner(admob.bannerUnit).catch(() => {});
+    return () => { hideAdMobBanner().catch(() => {}); };
+  }, [admob?.bannerUnit, adsEnabled, isLoaded, platform, slot, slotEnabled]);
+
+  useEffect(() => {
+    if (platform !== "web" || !publisherId || !adsEnabled || !isLoaded || pushed.current) return;
     if (!insRef.current) return;
     let cancelled = false;
     const run = async () => {
@@ -89,7 +107,7 @@ export default function AdBanner({ slot, format = "responsive", className = "" }
       cancelled = true;
       if (typeof cleanup === "function") cleanup();
     };
-  }, [publisherId, adsEnabled, isLoaded]);
+  }, [platform, publisherId, adsEnabled, isLoaded]);
 
   const adUnitId = adUnits[slot] || "";
   const adStyle  = FORMAT_STYLES[format] || FORMAT_STYLES.responsive;
@@ -101,6 +119,9 @@ export default function AdBanner({ slot, format = "responsive", className = "" }
       <div className={`overflow-hidden text-center my-3 ${className}`} style={{ minHeight: phHeight }} />
     );
   }
+
+  // AdMob renders through the native SDK and must not render AdSense markup.
+  if (platform === "app") return null;
 
   // Ads disabled globally — render nothing
   if (!adsEnabled) return null;

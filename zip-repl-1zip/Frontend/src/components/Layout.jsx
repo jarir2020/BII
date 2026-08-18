@@ -359,7 +359,7 @@ export default function Layout() {
         </div>
 
         {/* Footer ad banner */}
-        {showSiteAds && <AdBanner slot="footer-banner" format="horizontal" className="mt-4" />}
+        {(showSiteAds || isNative) && <AdBanner slot="footer-banner" format="horizontal" className="mt-4" />}
       </footer>
     </div>
   );

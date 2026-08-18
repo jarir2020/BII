@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { api } from "../lib/api";
 
 /**
- * AdsContext — loads platform-aware AdSense configuration.
+ * AdsContext — loads platform-aware AdSense/AdMob configuration.
  *
  * Detects whether running in Capacitor native app or web browser,
  * then loads the appropriate publisher ID and slot config.
@@ -17,6 +17,7 @@ const AdsContext = createContext({
   platform: "web", // "web" | "app"
   publisherId: "",
   adUnits: {},
+  admob: {},
   slotEnabled: {},
   adsEnabled: false,
   isLoaded: false,
@@ -29,6 +30,7 @@ export function AdsProvider({ children }) {
     platform: "web",
     publisherId: "",
     adUnits: {},
+    admob: {},
     slotEnabled: {},
     adsEnabled: false,
     isLoaded: false,
@@ -61,9 +63,15 @@ export function AdsProvider({ children }) {
           "";
 
         // Use platform-specific enabled flag
-        const adsEnabled =
-          !!(d[`enabled_${platform}`] || d[`ads_enabled_${platform}`]) &&
-          !!publisherId;
+        const admob = {
+          appId: d.admob_app_id || "",
+          bannerUnit: d.admob_banner_unit || "",
+          interstitialUnit: d.admob_interstitial_unit || "",
+          rewardedUnit: d.admob_rewarded_unit || "",
+          nativeUnit: d.admob_native_unit || "",
+        };
+        const platformEnabled = !!(d[`enabled_${platform}`] || d[`ads_enabled_${platform}`]);
+        const adsEnabled = platformEnabled && (platform === "app" ? !!admob.bannerUnit : !!publisherId);
 
         // Build per-slot enabled flags from nested {web, app} structure
         // Falls back to old flat format for backwards compatibility
@@ -196,6 +204,7 @@ export function AdsProvider({ children }) {
         setCfg({
           platform,
           publisherId,
+          admob,
           adsEnabled,
           adUnits,
           slotEnabled,

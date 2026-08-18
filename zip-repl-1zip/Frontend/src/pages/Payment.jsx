@@ -4,6 +4,7 @@ import { CheckCircle, Wallet, Copy, Checks, ArrowRight, Info, ClockCountdown, Se
 import { useLang } from "../contexts/LangContext";
 import { useAds } from "../contexts/AdsContext";
 import { api } from "../lib/api";
+import { showAdMobInterstitial } from "../lib/admob";
 import { toast } from "sonner";
 import AdBanner from "../components/AdBanner";
 import BottomBanner from "../components/BottomBanner";
@@ -199,7 +200,7 @@ export function PaymentSuccess() {
   const txnId = sp.get("txn") || "";
   const method = sp.get("method") || "bkash";
 
-  const { platform, loadRewardAds, rewardAds } = useAds();
+  const { platform, admob, isLoaded: adsLoaded, loadRewardAds, rewardAds } = useAds();
   const [showAd, setShowAd] = useState(false);
   const [course, setCourse] = useState(null);
   const [settings, setSettings] = useState({});
@@ -211,7 +212,11 @@ export function PaymentSuccess() {
     // Show full-screen interstitial ad on native platform (app only)
     const isNative = typeof window !== "undefined" && window.Capacitor?.isNativePlatform
       ? window.Capacitor.isNativePlatform() : false;
-    if (isNative && platform === "app") {
+    if (isNative && platform === "app" && adsLoaded) {
+      if (admob?.interstitialUnit) {
+        showAdMobInterstitial(admob.interstitialUnit).catch(() => {});
+        return;
+      }
       loadRewardAds("app").then((ads) => {
         if (ads.length > 0) {
           const ad = ads[Math.floor(Math.random() * ads.length)];
@@ -219,7 +224,7 @@ export function PaymentSuccess() {
         }
       });
     }
-  }, [courseId, platform, loadRewardAds]);
+  }, [admob?.interstitialUnit, adsLoaded, courseId, platform, loadRewardAds]);
 
   const steps = [
     {

@@ -101,12 +101,22 @@ class ConfigsController extends ApiController
             'publisher_app' => $adsData['publisher_app'] ?? '',
             'enabled_web'   => (bool) ($adsData['enabled_web'] ?? false),
             'enabled_app'   => (bool) ($adsData['enabled_app'] ?? false),
+            'admob_app_id'            => $adsData['admob_app_id'] ?? '',
+            'admob_banner_unit'      => $adsData['admob_banner_unit'] ?? '',
+            'admob_interstitial_unit' => $adsData['admob_interstitial_unit'] ?? '',
+            'admob_rewarded_unit'    => $adsData['admob_rewarded_unit'] ?? '',
+            'admob_native_unit'      => $adsData['admob_native_unit'] ?? '',
             'slots'         => $adsData['slots'] ?? [],
         ];
 
         // Only write if there's actual content
         $hasContent = !empty($clientSafe['publisher_web'])
                    || !empty($clientSafe['publisher_app'])
+                   || !empty($clientSafe['admob_app_id'])
+                   || !empty($clientSafe['admob_banner_unit'])
+                   || !empty($clientSafe['admob_interstitial_unit'])
+                   || !empty($clientSafe['admob_rewarded_unit'])
+                   || !empty($clientSafe['admob_native_unit'])
                    || !empty($clientSafe['slots']);
 
         if ($hasContent) {
@@ -133,6 +143,11 @@ class ConfigsController extends ApiController
             'publisher_app' => $web['publisher_app'] ?? $admin['publisher_app'] ?? '',
             'enabled_web'   => $enabledWeb,
             'enabled_app'   => $web['enabled_app']   ?? $admin['enabled_app']   ?? false,
+            'admob_app_id'             => $web['admob_app_id']             ?? $admin['admob_app_id']             ?? '',
+            'admob_banner_unit'       => $web['admob_banner_unit']       ?? $admin['admob_banner_unit']       ?? '',
+            'admob_interstitial_unit' => $web['admob_interstitial_unit'] ?? $admin['admob_interstitial_unit'] ?? '',
+            'admob_rewarded_unit'     => $web['admob_rewarded_unit']     ?? $admin['admob_rewarded_unit']     ?? '',
+            'admob_native_unit'       => $web['admob_native_unit']       ?? $admin['admob_native_unit']       ?? '',
             'slots'         => $web['slots']         ?? $admin['slots']         ?? [],
             // Flat keys that frontend AdsContext reads
             'adsense_publisher_id' => $publisherWeb,

@@ -171,7 +171,7 @@ function getAdSlots(pick) {
     { group: pick("কোর্স ও কন্টেন্ট","Course & Content") },
     { key: "courses",         label: pick("কোর্স তালিকা প্েজ","Course List Page"),       desc: "কোর্স তালিকার উপরে",                      icon: "📚", unitKey: "ad_unit_courses"         },
     { key: "in_content",      label: pick("কোর্স বিবরণ","Course Description"),          desc: "কোর্স কেনার আগে বিবরণের নিচে",           icon: "📄", unitKey: "ad_unit_in_content"      },
-    { key: "lesson_between",  label: pick("কোর্সের ভেতরে (সেকশনের মাঝে)","Inside Course (Between Sections)"), desc: "লাইভ ক্লাস ও ভিডিও সেকশনের মাঝখানে", icon: "🎓", unitKey: "ad_unit_lesson_between"  },
+    { key: "courses-bottom",   label: pick("আমাদের কোর্সসমূহ","Our Courses"),                         desc: "আমাদের কোর্সসমূহ পেজের নিচে ব্যানার",          icon: "🎓", unitKey: "ad_unit_courses_bottom" },
     { key: "videos",          label: pick("ভিডিও প্েজ","Video Page"),                    desc: "ভিডিও তালিকার উপরে",                      icon: "🎬", unitKey: "ad_unit_videos"          },
     // ── পেমেন্ট ও কেনাকাটা ──────────────────────────────────────
     { group: pick("পেমেন্ট ও কেনাকাটা","Payment & Shop") },
@@ -332,7 +332,7 @@ export function AdminAds() {
             <div className="font-semibold text-[var(--bii-text)] flex items-center gap-2">
               <span className="text-lg">📱</span> অ্যাপ (App)
             </div>
-            <div className="text-xs text-[var(--bii-text-soft)]">Android অ্যাপে সব বিস্তৃপ্ত চালু/বন্ধ</div>
+            <div className="text-xs text-[var(--bii-text-soft)]">Android অ্যাপে AdMob বিজ্ঞাপন চালু/বন্ধ</div>
           </div>
           <div className="flex items-center gap-2">
             <span className={`text-sm font-semibold ${appOn ? "text-emerald-700" : "text-gray-400"}`}>
@@ -360,12 +360,12 @@ export function AdminAds() {
             />
           </div>
           <div>
-            <div className="text-xs uppercase tracking-widest text-[var(--bii-text-soft)] mb-1">📱 App Publisher ID</div>
+            <div className="text-xs uppercase tracking-widest text-[var(--bii-text-soft)] mb-1">📱 App AdMob App ID</div>
             <input
               className="bii-input font-mono text-sm"
-              placeholder="ca-pub-XXXXXXXXXXXXXXXX (অপশনাল)"
-              value={cfg.publisher_app || cfg.adsense_publisher_app || ""}
-              onChange={(e) => set("publisher_app", e.target.value)}
+              placeholder="ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX"
+              value={cfg.admob_app_id || ""}
+              onChange={(e) => set("admob_app_id", e.target.value)}
             />
           </div>
         </div>
@@ -407,7 +407,9 @@ export function AdminAds() {
       {/* ── AdMob section ── */}
       <div className="bii-card p-5 space-y-3">
         <div className="font-semibold text-[var(--bii-text)]">AdMob (Android অ্যাপ)</div>
-        <div className="text-xs text-[var(--bii-text-soft)]">ভবিষ্যতে অ্যান্ড্রয়েড অ্যাপের জন্য</div>
+        <div className="text-xs text-[var(--bii-text-soft)]">
+          Android অ্যাপে ব্যানার, ইন্টারস্টিশিয়াল ও Rewarded বিজ্ঞাপনের Unit ID দিন। App ID-টি native Android build-এর manifest-এও সেট করতে হবে।
+        </div>
         {[
           { key: "admob_app_id",            label: "App ID",            ph: "ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX" },
           { key: "admob_banner_unit",       label: "Banner Unit ID",    ph: "ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX" },

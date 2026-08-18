@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { MagnifyingGlass, Books, Star, BookOpen, ArrowRight, Funnel, SquaresFour, List, FilePdf, FileHtml, File } from "@phosphor-icons/react";
 import { api, imgUrl } from "../lib/api";
+import { showAdMobInterstitial } from "../lib/admob";
 import { useLang } from "../contexts/LangContext";
 import { useAds } from "../contexts/AdsContext";
 import AdBanner from "../components/AdBanner";
@@ -103,7 +104,7 @@ const LIBRARY_FIRST_AD_KEY = "bii_library_first_ad_shown";
 export default function Library() {
   const { pick } = useLang();
   const navigate = useNavigate();
-  const { platform, loadRewardAds, rewardAds } = useAds();
+  const { platform, admob, isLoaded: adsLoaded, loadRewardAds, rewardAds } = useAds();
   const [books, setBooks]         = useState([]);
   const [cats, setCats]           = useState([]);
   const [cat, setCat]             = useState("all");
@@ -123,10 +124,10 @@ export default function Library() {
     // Pre-load reward ads for first-click interstitial (native platform only)
     const isNative = typeof window !== "undefined" && window.Capacitor?.isNativePlatform
       ? window.Capacitor.isNativePlatform() : false;
-    if (isNative && platform === "app") {
+    if (isNative && platform === "app" && adsLoaded && !admob?.interstitialUnit) {
       loadRewardAds("app");
     }
-  }, []);
+  }, [admob?.interstitialUnit, adsLoaded, loadRewardAds, platform]);
 
   const load = useCallback((catVal, searchVal, pageVal) => {
     setLoading(true);
@@ -148,7 +149,7 @@ export default function Library() {
   const handleSearch = e => { e.preventDefault(); setQ(search); setPage(0); };
 
   // First-click interstitial: show ad before navigating to book (native only, once)
-  const handleBookClick = (bookId) => {
+  const handleBookClick = async (bookId) => {
     const alreadyShown = localStorage.getItem(LIBRARY_FIRST_AD_KEY);
     if (alreadyShown) {
       navigate(`/library/${bookId}`);
@@ -156,7 +157,16 @@ export default function Library() {
     }
     const isNative = typeof window !== "undefined" && window.Capacitor?.isNativePlatform
       ? window.Capacitor.isNativePlatform() : false;
-    if (!isNative || platform !== "app" || rewardAds.length === 0) {
+    if (!isNative || platform !== "app") {
+      navigate(`/library/${bookId}`);
+      return;
+    }
+    if (admob?.interstitialUnit) {
+      await showAdMobInterstitial(admob.interstitialUnit).catch(() => {});
+      navigate(`/library/${bookId}`);
+      return;
+    }
+    if (rewardAds.length === 0) {
       navigate(`/library/${bookId}`);
       return;
     }
