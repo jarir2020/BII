@@ -52,6 +52,7 @@ function request(url, options = {}) {
 export const api = {
   get: (url, options) => request(url, { ...options, method: "GET" }),
   post: (url, body, options) => request(url, { ...options, method: "POST", body: JSON.stringify(body) }),
+  put: (url, body, options) => request(url, { ...options, method: "PUT", body: JSON.stringify(body) }),
   delete: (url, options) => request(url, { ...options, method: "DELETE" }),
 };
 
