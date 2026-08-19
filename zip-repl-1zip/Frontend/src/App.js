@@ -473,7 +473,9 @@ export default function App() {
                     <Route path="payment-gateways" element={<AdminPaymentGateways />} />
                     <Route path="revenue" element={<AdminRevenue />} />
                     <Route path="promo-codes" element={<AdminPromoCodes />} />
-                    <Route path="reward-zone" element={<AdminRewardZone />} />
+                    <Route path="video-earnings" element={<AdminRewardZone />} />
+                    {/* Keep old bookmarks working after the admin menu rename. */}
+                    <Route path="reward-zone" element={<Navigate to="/admin/video-earnings" replace />} />
                     <Route path="ads" element={<AdminAds />} />
 
                     <Route path="homepage" element={<AdminHomepage />} />

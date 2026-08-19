@@ -250,6 +250,7 @@ export default function Home() {
   const [reviews, setReviews]     = useState([]);
   const [social, setSocial]       = useState({});
   const [settings, setSettings]   = useState({});
+  const [rewardZoneEnabled, setRewardZoneEnabled] = useState(true);
 
   useEffect(() => {
     api.get("/winner_reviews").then((r) => {
@@ -258,6 +259,9 @@ export default function Home() {
     }).catch(() => {});
     api.get("/configs/social_links").then((r) => setSocial(r.data || {})).catch(() => {});
     api.get("/settings").then((r) => setSettings(r.data || {})).catch(() => {});
+    api.get("/rewards/daily-stats")
+      .then((r) => setRewardZoneEnabled(r.data?.reward_zone_enabled !== false))
+      .catch(() => {});
   }, []);
 
   const mergedSocial = {
@@ -281,6 +285,8 @@ export default function Home() {
     { to: "/contact", label: t("menuContact"), icon: <PhoneCall size={36} weight="duotone" />, testid: "menu-contact" },
     { to: "/complaint", label: t("menuComplaint"), icon: <Question size={36} weight="duotone" />, testid: "menu-complaint" },
   ];
+
+  const visibleMenu = menu.filter((m) => m.to !== "/reward-zone" || rewardZoneEnabled);
 
   return (
     <div className="space-y-5 pb-16 sm:pb-24" data-testid="home-page">
@@ -316,7 +322,7 @@ export default function Home() {
           {pick("মেনু", "Menu")}
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5">
-          {menu.map((m, i) => (
+          {visibleMenu.map((m, i) => (
             <div key={m.to} className="bii-stagger bii-stagger-1" style={{ animationDelay: `${i * 50}ms` }}>
               <Link
                 to={m.to}

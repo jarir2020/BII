@@ -111,7 +111,7 @@ function SettingsTab() {
         <div className="flex items-center justify-between">
           <div>
             <div className="font-semibold text-[var(--bii-text)]">
-              রিওয়ার্ড জোন চালু / বন্ধ
+              ভিডিও দেখে ইনকাম চালু / বন্ধ
             </div>
             <div className="text-xs text-[var(--bii-text-soft)]">
               বন্ধ করলে হোম মেনু থেকে অপশনটি লুকানো থাকবে
@@ -1140,9 +1140,9 @@ function CashoutTab() {
 // Tab definitions
 // ══════════════════════════════════════════════════════════════════════════════
 const TABS = [
-  { id: "settings", label: "সেটিংস",       icon: Gear       },
+  { id: "settings", label: "ইনকাম সেটিংস", icon: Gear       },
   { id: "cashout",  label: "ক্যাশআউট",     icon: Money      },
-  { id: "ads",      label: "ভিডিও যোগ",    icon: FilmSlate  },
+  { id: "ads",      label: "ভিডিও বিজ্ঞাপন", icon: FilmSlate  },
   { id: "promo",    label: "প্রমো কোড",     icon: SealPercent },
 ];
 
@@ -1162,10 +1162,10 @@ export default function AdminRewardZone() {
         </div>
         <div>
           <h2 className="font-heading text-2xl text-[var(--bii-emerald)]">
-            {pick("রিওয়ার্ড জোন", "Reward Zone")}
+            {pick("ভিডিও দেখে ইনকাম করুন", "Watch Videos & Earnings")}
           </h2>
           <p className="text-sm text-[var(--bii-text-soft)] mt-0.5">
-            স্টুডেন্টরা ভিডিও দেখে কয়েন ইনকাম করবে এবং সরাসরি bKash/Nagad-এ টাকা তুলতে পারবে।
+            ভিডিও প্রতি কয়েন, কয়েন-থেকে-টাকার হিসাব, বিজ্ঞাপন এবং ক্যাশআউট রিকোয়েস্ট এখান থেকেই পরিচালনা করুন।
           </p>
         </div>
       </div>

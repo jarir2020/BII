@@ -4,7 +4,7 @@ import {
   Trophy, ClockCounterClockwise, ArrowRight, Warning,
   Star, Fire, FilmSlate, YoutubeLogo, Image as ImageIcon,
   VideoCamera, ArrowClockwise, Medal, Crown, Eye,
-  Money, Clock, CheckFat, XCircle, Spinner,
+  Money, Clock, CheckFat, XCircle, Spinner, DotsThreeVertical,
 } from "@phosphor-icons/react";
 import { api, formatApiError } from "../lib/api";
 import { useAds } from "../contexts/AdsContext";
@@ -297,6 +297,7 @@ export default function RewardZone() {
   const { adsEnabled } = useAds();
   const { t, pick } = useLang();
   const [tab, setTab] = useState("watch"); // "watch" | "cashout" | "leaderboard" | "history"
+  const [moreOpen, setMoreOpen] = useState(false);
 
   const [stats,     setStats]     = useState(null);
   const [ads,       setAds]       = useState([]);
@@ -435,22 +436,50 @@ export default function RewardZone() {
       </div>
 
       {/* ── Tabs ── */}
-      <div className="flex bg-[var(--bii-cream)] rounded-2xl p-1 gap-1">
+      <div className="relative flex bg-[var(--bii-cream)] rounded-2xl p-1 gap-1">
         {[
-          { id: "watch",       label: t("watchVideosTab"),  icon: <PlayCircle size={15} weight="fill" /> },
-          { id: "cashout",     label: t("cashout"),         icon: <Money      size={15} weight="fill" /> },
-          { id: "leaderboard", label: t("rankingLabel"),    icon: <Trophy     size={15} weight="fill" /> },
-          { id: "history",     label: t("historyLabel"),    icon: <Clock      size={15} weight="fill" /> },
-        ].map((t) => (
-          <button key={t.id} onClick={() => setTab(t.id)}
+          { id: "watch",       label: t("watchVideosTab"), icon: <PlayCircle size={15} weight="fill" /> },
+          { id: "leaderboard", label: t("rankingLabel"),   icon: <Trophy     size={15} weight="fill" /> },
+          { id: "history",     label: t("historyLabel"),   icon: <Clock      size={15} weight="fill" /> },
+        ].map((item) => (
+          <button key={item.id} onClick={() => { setTab(item.id); setMoreOpen(false); }}
             className={`flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-[11px] font-semibold transition-all ${
-              tab === t.id
+              tab === item.id
                 ? "bg-white text-[var(--bii-emerald)] shadow-sm"
                 : "text-[var(--bii-text-soft)] hover:text-[var(--bii-text)]"
             }`}>
-            {t.icon}{t.label}
+            {item.icon}{item.label}
           </button>
         ))}
+        <button
+          type="button"
+          onClick={() => setMoreOpen((open) => !open)}
+          aria-label={pick("আরও অপশন", "More options")}
+          aria-expanded={moreOpen}
+          className={`w-11 flex items-center justify-center rounded-xl transition-all ${
+            tab === "cashout" || moreOpen
+              ? "bg-white text-[var(--bii-emerald)] shadow-sm"
+              : "text-[var(--bii-text-soft)] hover:text-[var(--bii-text)]"
+          }`}
+        >
+          <DotsThreeVertical size={21} weight="bold" />
+        </button>
+        {moreOpen && (
+          <div className="absolute right-1 top-full mt-2 z-20 min-w-44 rounded-xl border border-[var(--bii-border)] bg-white p-1.5 shadow-xl">
+            <button
+              type="button"
+              onClick={() => { setTab("cashout"); setMoreOpen(false); }}
+              className={`w-full flex items-center gap-2 rounded-lg px-3 py-2.5 text-left text-xs font-semibold transition ${
+                tab === "cashout"
+                  ? "bg-emerald-50 text-[var(--bii-emerald)]"
+                  : "text-[var(--bii-text)] hover:bg-[var(--bii-cream)]"
+              }`}
+            >
+              <Money size={16} weight="fill" />
+              {t("cashout")}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ══ Tab: Watch ══ */}
@@ -582,7 +611,7 @@ export default function RewardZone() {
               {[
                 { icon: "🎬", title: pick("ভিডিও দেখুন", "Watch Videos"),     desc: pick(`প্রতিটি ভিডিও দেখলে ${coinsPerAd} কয়েন পাবেন — কোনো লিমিট নেই!`, `Earn ${coinsPerAd} coins per video — no limit!`) },
                 { icon: "🪙", title: pick("কয়েন জমান", "Earn Coins"),       desc: pick(`১০ কয়েন = ৳১ — যত বেশি কয়েন তত বেশি টাকা`, `10 coins = ৳1 — more coins, more money`) },
-                { icon: "💵", title: pick("টাকা তুলুন", "Withdraw Cash"),   desc: pick(`ক্যাশআউট ট্যাবে গিয়ে bKash/Nagad/Rocket-এ টাকা নিন`, `Go to Cashout tab and withdraw to bKash/Nagad/Rocket`) },
+                { icon: "💵", title: pick("টাকা তুলুন", "Withdraw Cash"),   desc: pick(`থ্রি-ডট মেনু থেকে ক্যাশআউট করে bKash/Nagad/Rocket-এ টাকা নিন`, `Open the three-dot menu to cash out to bKash/Nagad/Rocket`) },
                 { icon: "♾️", title: pick("কোনো সীমা নেই", "No Limit"),     desc: pick("যত খুশি ভিডিও দেখুন, যত ইচ্ছা ইনকাম করুন", "Watch as many videos as you want, earn unlimited") },
               ].map((s, i) => (
                 <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-[var(--bii-cream)]">

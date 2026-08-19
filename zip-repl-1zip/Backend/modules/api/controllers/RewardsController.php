@@ -16,6 +16,7 @@ class RewardsController extends ApiController
     {
         $d = $this->configValue('reward_zone');
         return array_merge([
+            'reward_zone_enabled' => true,
             'coins_per_ad' => 5,
             'ad_watch_cooldown_seconds' => 30,
             'max_ads_per_day' => 0,
@@ -63,6 +64,7 @@ class RewardsController extends ApiController
 
         $unlimited = ($maxPerDay === 0);
         return $this->json([
+            'reward_zone_enabled' => (bool) $cfg['reward_zone_enabled'],
             'coins' => $balance,
             'today_count' => $todayCount,
             'max_per_day' => $maxPerDay,
@@ -80,6 +82,9 @@ class RewardsController extends ApiController
     {
         $user = $this->user();
         $cfg = $this->cfg();
+        if (!(bool) $cfg['reward_zone_enabled']) {
+            $this->badRequest('ভিডিও দেখে ইনকাম সিস্টেমটি বর্তমানে বন্ধ আছে');
+        }
         $coinsPerAd = (int) $cfg['coins_per_ad'];
         $cooldownSecs = (int) $cfg['ad_watch_cooldown_seconds'];
         $maxPerDay = (int) $cfg['max_ads_per_day'];
@@ -172,6 +177,9 @@ class RewardsController extends ApiController
         $user = $this->user();
         $body = Yii::$app->request->post();
         $cfg = $this->cfg();
+        if (!(bool) $cfg['reward_zone_enabled']) {
+            $this->badRequest('ক্যাশআউট সিস্টেমটি বর্তমানে বন্ধ আছে');
+        }
         $coinsPerTaka = (int) $cfg['coins_per_taka'];
         $minCoins = (int) $cfg['min_cashout_coins'];
 

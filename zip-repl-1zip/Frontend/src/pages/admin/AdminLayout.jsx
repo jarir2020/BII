@@ -67,7 +67,9 @@ export default function AdminLayout() {
       { to: "/admin/promo-codes", icon: SealPercent, label: pick("প্রমো কোড","Promo Codes") },
       { to: "/admin/revenue", icon: ChartBar, label: pick("রেভিনিউ এনালিটিক্স","Revenue Analytics") },
       { to: "/admin/ads", icon: ImageSquare, label: pick("বিজ্ঞাপন (AdSense/AdMob)","Ads (AdSense/AdMob)") },
-      { to: "/admin/reward-zone", icon: Gift, label: pick("রিওয়ার্ড জোন সেটিংস","Reward Zone Settings") },
+    ]},
+    { title: pick("রিওয়ার্ড ও ইনকাম","Rewards & Earnings"), items: [
+      { to: "/admin/video-earnings", icon: Gift, label: pick("ভিডিও দেখে ইনকাম করুন","Watch Videos & Earnings") },
     ]},
     { title: pick("ডিজাইন ও সাইট","Design & Site"), items: [
       { to: "/admin/homepage", icon: HomeIcon, label: pick("হোমপেজ","Homepage") },
