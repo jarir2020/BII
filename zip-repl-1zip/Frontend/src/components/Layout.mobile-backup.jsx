@@ -34,6 +34,8 @@ export default function Layout() {
   const { lang, setLang, t }          = useLang();
   const navigate                      = useNavigate();
   const location                      = useLocation();
+  const showSiteAds                   = location.pathname !== "/" && location.pathname !== "/home";
+  const showMobileSidebar             = !!user && location.pathname !== "/";
 
   const closeSidebar = () => setOpenSidebar(false);
 
@@ -41,6 +43,12 @@ export default function Layout() {
     api.get("/configs/social_links").then((r) => setSocial(r.data || {})).catch(() => {});
     api.get("/settings").then((r) => setSettings(r.data || {})).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!showMobileSidebar) {
+      setOpenSidebar(false);
+    }
+  }, [showMobileSidebar]);
 
   // Merge settings facebook/youtube into social
   const mergedSocial = {
@@ -69,7 +77,7 @@ export default function Layout() {
           <button
             data-testid="open-sidebar-btn"
             onClick={() => setOpenSidebar(true)}
-            className="p-2 rounded-lg hover:bg-white/10 active:scale-95 transition"
+            className={`${showMobileSidebar ? "inline-flex" : "hidden sm:inline-flex"} p-2 rounded-lg hover:bg-white/10 active:scale-95 transition`}
             aria-label="open menu"
           >
             <List size={26} weight="bold" />
@@ -77,7 +85,7 @@ export default function Layout() {
 
           <Link to={user ? "/home" : "/"} className="flex items-center gap-2 flex-1 min-w-0" data-testid="brand-home-link">
             <BrandLogo size={36} />
-            <div className="min-w-0">
+            <div className="hidden sm:block min-w-0">
               <div className="font-heading text-base sm:text-lg leading-tight truncate">
                 {lang === "bn" ? "বাঙালি ইসলামিক ইনস্টিটিউট" : "Bengali Islamic Institute"}
               </div>
@@ -97,10 +105,48 @@ export default function Layout() {
             <span className="hidden sm:inline">{lang === "bn" ? "EN" : "বাং"}</span>
           </button>
 
+          {!user && (
+            <div className="hidden sm:flex items-center gap-2">
+              <Link
+                to="/login"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition text-sm"
+              >
+                <SignIn size={16} weight="bold" />
+                <span>{t("login")}</span>
+              </Link>
+              <Link
+                to="/register"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--bii-gold)] text-[var(--bii-emerald)] hover:opacity-95 transition text-sm font-semibold"
+              >
+                <UserPlus size={16} weight="bold" />
+                <span>{t("register")}</span>
+              </Link>
+            </div>
+          )}
+
+          {!user && (
+            <div className="sm:hidden flex items-center gap-2">
+              <Link
+                to="/login"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition text-sm"
+              >
+                <SignIn size={16} weight="bold" />
+                <span>{t("login")}</span>
+              </Link>
+              <Link
+                to="/register"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--bii-gold)] text-[var(--bii-emerald)] hover:opacity-95 transition text-sm font-semibold"
+              >
+                <UserPlus size={16} weight="bold" />
+                <span>{t("register")}</span>
+              </Link>
+            </div>
+          )}
+
           {!isNative && (
             <a
               href="/api/download/app"
-              className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition flex items-center gap-1.5 text-sm"
+              className="hidden sm:flex px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition items-center gap-1.5 text-sm"
               title={lang === "bn" ? "অ্যাপ ডাউনলোড" : "Download APP"}
             >
               <Download size={18} weight="bold" />
@@ -122,11 +168,11 @@ export default function Layout() {
       </header>
 
       {/* Header ad banner */}
-      <AdBanner slot="header-banner" format="horizontal" className="max-w-5xl mx-auto" />
+      {showSiteAds && <AdBanner slot="header-banner" format="horizontal" className="max-w-5xl mx-auto" />}
 
       {/* SIDEBAR */}
       {openSidebar && (
-        <>
+        <div className={showMobileSidebar ? "" : "hidden sm:block"}>
           <div
             data-testid="sidebar-backdrop"
             onClick={closeSidebar}
@@ -136,7 +182,6 @@ export default function Layout() {
             data-testid="sidebar-drawer"
             className="fixed top-0 left-0 z-50 h-full w-[300px] bg-white shadow-2xl border-r border-[var(--bii-border)] flex flex-col transition-transform duration-300 ease-in-out"
           >
-            >
               <div className="bg-[var(--bii-emerald)] text-white p-5 relative">
                 <div className="islamic-pattern absolute inset-0 opacity-25" />
                 <div className="relative flex items-center gap-3">
@@ -229,7 +274,7 @@ export default function Layout() {
                 © {new Date().getFullYear()} {t("appName")}
               </div>
           </aside>
-        </>
+        </div>
       )}
 
       {/* MAIN */}
@@ -314,7 +359,7 @@ export default function Layout() {
         </div>
 
         {/* Footer ad banner */}
-        <AdBanner slot="footer-banner" format="horizontal" className="mt-4" />
+        {(showSiteAds || isNative) && <AdBanner slot="footer-banner" format="horizontal" className="mt-4" />}
       </footer>
     </div>
   );
