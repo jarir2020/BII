@@ -193,7 +193,7 @@ export default function Welcome() {
             <div
               key={i}
               ref={(el) => { cardRefs.current[i] = el; }}
-              className="bii-card p-6 opacity-0 translate-y-3 transition-all duration-400 ease-out"
+              className="bii-card p-6 transition-all duration-400 ease-out"
             >
               <div className="text-[var(--bii-emerald)] mb-3">{f.icon}</div>
               <h3 className="font-heading text-lg text-[var(--bii-emerald)]">{f.title}</h3>
