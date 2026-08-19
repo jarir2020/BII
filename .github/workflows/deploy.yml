@@ -67,10 +67,12 @@ jobs:
           lftp -u "$FTP_USER","$FTP_PASS" -p "$FTP_PORT" "$FTP_HOST" \
             -e "set ftp:ssl-allow yes; set ssl:verify-certificate no; \
                 mirror -R --parallel=4 \
+                --exclude-glob 'index.html' \
                 --exclude-glob '.well-known' --exclude-glob '.well-known/**' \
                 --exclude-glob '.git' --exclude-glob '.env' --exclude-glob '.env/**' \
                 --exclude-glob 'uploads' --exclude-glob 'uploads/**' \
-                deploy/_staging/ $FTP_TARGET ; quit"
+                deploy/_staging/ $FTP_TARGET ; \
+                put deploy/_staging/index.html -o $FTP_TARGET/index.html ; quit"
         shell: bash
 
   build-apk:
