@@ -343,30 +343,24 @@ export function AdminAds() {
         </div>
       </div>
 
-      {/* ── Publisher IDs ── */}
-      <div className="bii-card p-5 space-y-3">
-        <div className="font-semibold text-[var(--bii-text)]">Publisher ID (AdSense)</div>
-        <div className="text-xs text-[var(--bii-text-soft)]">
-          Google AdSense অ্যাকাউন্ট থেকে পাবেন। যেনম: <code className="bg-gray-100 rounded px-1">ca-pub-1234567890123456</code>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <div className="text-xs uppercase tracking-widest text-[var(--bii-text-soft)] mb-1">🌐 Web Publisher ID</div>
-            <input
-              className="bii-input font-mono text-sm"
-              placeholder="ca-pub-XXXXXXXXXXXXXXXX"
-              value={cfg.publisher_web || cfg.adsense_publisher_web || cfg.adsense_publisher_id || ""}
-              onChange={(e) => set("publisher_web", e.target.value)}
-            />
+      {/* ── Website ad account ── */}
+      <div className="bii-card p-5 space-y-3 border-l-4 border-[var(--bii-emerald)]">
+        <div>
+          <div className="font-semibold text-[var(--bii-text)]">🌐 Website Ad Account — Google AdSense</div>
+          <div className="text-xs text-[var(--bii-text-soft)] mt-1 leading-relaxed">
+            This account is used only for advertisements displayed on the website in a browser. It is separate from the Android app AdMob account below.
           </div>
-          <div>
-            <div className="text-xs uppercase tracking-widest text-[var(--bii-text-soft)] mb-1">📱 App AdMob App ID</div>
-            <input
-              className="bii-input font-mono text-sm"
-              placeholder="ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX"
-              value={cfg.admob_app_id || ""}
-              onChange={(e) => set("admob_app_id", e.target.value)}
-            />
+        </div>
+        <div>
+          <div className="text-xs uppercase tracking-widest text-[var(--bii-text-soft)] mb-1">Website Publisher ID</div>
+          <input
+            className="bii-input font-mono text-sm"
+            placeholder="ca-pub-XXXXXXXXXXXXXXXX"
+            value={cfg.publisher_web || cfg.adsense_publisher_web || cfg.adsense_publisher_id || ""}
+            onChange={(e) => set("publisher_web", e.target.value)}
+          />
+          <div className="text-[10px] text-[var(--bii-text-soft)] mt-1">
+            Get this from Google AdSense → Account → Publisher ID. Example: <code className="bg-gray-100 rounded px-1">ca-pub-1234567890123456</code>
           </div>
         </div>
       </div>
@@ -404,11 +398,13 @@ export function AdminAds() {
         )}
       </div>
 
-      {/* ── AdMob section ── */}
-      <div className="bii-card p-5 space-y-3">
-        <div className="font-semibold text-[var(--bii-text)]">AdMob (Android অ্যাপ)</div>
-        <div className="text-xs text-[var(--bii-text-soft)]">
-          Android অ্যাপে ব্যানার, ইন্টারস্টিশিয়াল ও Rewarded বিজ্ঞাপনের Unit ID দিন। App ID-টি native Android build-এর manifest-এও সেট করতে হবে।
+      {/* ── App ad account ── */}
+      <div className="bii-card p-5 space-y-3 border-l-4 border-[var(--bii-gold)]">
+        <div>
+          <div className="font-semibold text-[var(--bii-text)]">📱 App Ad Account — Google AdMob</div>
+          <div className="text-xs text-[var(--bii-text-soft)] mt-1 leading-relaxed">
+            This account is used only by the Android app through the AdMob SDK. Do not enter the website AdSense Publisher ID here. The App ID and each ad unit must come from the same AdMob app.
+          </div>
         </div>
         {[
           { key: "admob_app_id",            label: "App ID",            ph: "ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX" },
@@ -423,6 +419,9 @@ export function AdminAds() {
               value={cfg[f.key] || ""} onChange={(e) => set(f.key, e.target.value)} />
           </div>
         ))}
+        <div className="text-[10px] text-[var(--bii-text-soft)] pt-1 leading-relaxed">
+          App ID and ad unit IDs are available in Google AdMob → Apps → your Android app. Website AdSense settings do not control these app ads.
+        </div>
       </div>
 
       {/* ── Save ── */}
