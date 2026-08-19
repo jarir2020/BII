@@ -296,7 +296,11 @@ export function AdminAds() {
     set("slots", { ...rawSlots, [key]: next });
   };
   const rawAdUnits = cfg.ad_units || {};
-  const unitVal = (unitKey, platform) => rawAdUnits[unitKey]?.[platform] || cfg[unitKey] || "";
+  const unitVal = (unitKey, platform) => (
+    Object.prototype.hasOwnProperty.call(rawAdUnits, unitKey)
+      ? rawAdUnits[unitKey]?.[platform] || ""
+      : cfg[unitKey] || ""
+  );
   const setUnitVal = (unitKey, platform, value) => {
     const previous = rawAdUnits[unitKey] || {};
     set("ad_units", { ...rawAdUnits, [unitKey]: { ...previous, [platform]: value } });

@@ -168,7 +168,11 @@ export function AdsProvider({ children }) {
         // Build platform-specific ad unit map. New configs store separate
         // website/app IDs under ad_units; legacy flat IDs remain fallback-only.
         const rawAdUnits = d.ad_units || {};
-        const unit = (key) => rawAdUnits[key]?.[platform] || d[key] || "";
+        const unit = (key) => (
+          Object.prototype.hasOwnProperty.call(rawAdUnits, key)
+            ? rawAdUnits[key]?.[platform] || ""
+            : d[key] || ""
+        );
         const adUnits = {
           "header-banner": unit("ad_unit_header"),
           "in-content": unit("ad_unit_in_content"),
