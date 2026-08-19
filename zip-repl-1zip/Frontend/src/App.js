@@ -190,10 +190,12 @@ function ForegroundPushBridge() {
         if (!active || Notification.permission !== "granted") return;
         const title = payload?.notification?.title || payload?.data?.title_en || "BII";
         const body = payload?.notification?.body || payload?.data?.body_en || "";
+        const image = payload?.notification?.image || payload?.data?.image || undefined;
         try {
           const notification = new Notification(title, {
             body,
             icon: "/logo192.png",
+            image,
             tag: "bii-foreground-push",
           });
           notification.onclick = () => {

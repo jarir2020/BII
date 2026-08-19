@@ -40,7 +40,7 @@ async function initFirebase() {
         || payload.data?.body_bn
         || payload.data?.body_en
         || '';
-      const image = payload.notification?.image || null;
+      const image = payload.notification?.image || payload.data?.image || null;
       const clickUrl = payload.data?.click_action
         || payload.fcmOptions?.link
         || '/';

@@ -109,6 +109,13 @@ class FcmService
         $imageUrl = (string) ($notif['image_url'] ?? '');
         $clickAction = (string) ($notif['click_action'] ?? '/');
 
+        // FCM requires a publicly reachable absolute URL for notification images.
+        $fullImageUrl = $imageUrl;
+        if ($imageUrl !== '' && str_starts_with($imageUrl, '/')) {
+            $host = Yii::$app->request->hostInfo ?? 'https://bengaliislamicinstitute.com';
+            $fullImageUrl = rtrim($host, '/') . $imageUrl;
+        }
+
         $sent = 0;
         $failed = 0;
         $errors = [];
@@ -133,13 +140,8 @@ class FcmService
             ];
 
             // Image
-            if ($imageUrl !== '') {
-                $fullUrl = $imageUrl;
-                if (str_starts_with($imageUrl, '/')) {
-                    $host = Yii::$app->request->hostInfo ?? 'https://bengaliislamicinstitute.com';
-                    $fullUrl = $host . $imageUrl;
-                }
-                $message['notification']['image'] = $fullUrl;
+            if ($fullImageUrl !== '') {
+                $message['notification']['image'] = $fullImageUrl;
             }
 
             // Data payload (always sent — web + android read from this)
@@ -149,6 +151,7 @@ class FcmService
                 'title_en' => $notif['title_en'] ?? '',
                 'body_bn' => $notif['body_bn'] ?? '',
                 'body_en' => $notif['body_en'] ?? '',
+                'image' => $fullImageUrl,
             ];
 
             // Android config
@@ -156,10 +159,15 @@ class FcmService
                 $message['android'] = [
                     'priority' => 'high',
                     'notification' => [
+                        'title' => $title,
+                        'body' => $body,
                         'click_action' => 'OPEN_ACTIVITY',
                         'sound' => 'default',
                     ],
                 ];
+                if ($fullImageUrl !== '') {
+                    $message['android']['notification']['image'] = $fullImageUrl;
+                }
             }
 
             // Webpush config
@@ -167,12 +175,17 @@ class FcmService
                 $message['webpush'] = [
                     'headers' => ['TTL' => '86400'],
                     'notification' => [
+                        'title' => $title,
+                        'body' => $body,
                         'icon' => '/logo192.png',
                         'badge' => '/logo192.png',
                         'requireInteraction' => true,
                         'tag' => 'bii-push',
                     ],
                 ];
+                if ($fullImageUrl !== '') {
+                    $message['webpush']['notification']['image'] = $fullImageUrl;
+                }
             }
 
             try {

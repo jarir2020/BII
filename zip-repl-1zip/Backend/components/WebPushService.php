@@ -76,11 +76,16 @@ class WebPushService
         // Build the payload
         $title = $notif['title_bn'] ?: ($notif['title_en'] ?: 'BII');
         $body = $notif['body_bn'] ?: ($notif['body_en'] ?: '');
+        $imageUrl = (string) ($notif['image_url'] ?? '');
+        if ($imageUrl !== '' && str_starts_with($imageUrl, '/')) {
+            $host = Yii::$app->request->hostInfo ?? 'https://bengaliislamicinstitute.com';
+            $imageUrl = rtrim($host, '/') . $imageUrl;
+        }
         $payload = json_encode([
             'title' => $title,
             'body' => $body,
             'icon' => '/logo192.png',
-            'image' => $notif['image_url'] ?? '',
+            'image' => $imageUrl,
             'click_action' => $notif['click_action'] ?? '/',
             'title_bn' => $notif['title_bn'] ?? '',
             'title_en' => $notif['title_en'] ?? '',
