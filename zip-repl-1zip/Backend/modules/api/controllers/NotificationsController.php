@@ -335,7 +335,11 @@ class NotificationsController extends ApiController
         if (preg_match('/^course:(.+)$/', $target, $m)) {
             $courseId = $m[1];
             return $db->createCommand(
-                $base . ' WHERE user_id IN (SELECT user_id FROM enrollments WHERE course_id = :cid) LIMIT 1000',
+                $base . ' WHERE user_id IN (
+                    SELECT user_id FROM enrollments
+                    WHERE course_id = :cid
+                      AND payment_status IN ("success", "paid", "completed", "free")
+                ) LIMIT 1000',
                 [':cid' => $courseId]
             )->queryAll();
         }

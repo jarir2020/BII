@@ -251,7 +251,7 @@ class FcmService
                 'SELECT dt.id, dt.token, dt.user_id, dt.platform
                  FROM device_tokens dt
                  INNER JOIN enrollments e ON e.user_id = dt.user_id
-                 WHERE e.course_id = :cid AND e.payment_status IN ("paid","completed","free")',
+                 WHERE e.course_id = :cid AND e.payment_status IN ("success","paid","completed","free")',
                 [':cid' => $courseId]
             )->queryAll();
         }

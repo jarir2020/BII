@@ -41,7 +41,9 @@ class LiveClassesController extends CrudController
     {
         $user = $this->user();
         $courseIds = Yii::$app->db->createCommand(
-            'SELECT course_id FROM enrollments WHERE user_id = :uid',
+            'SELECT course_id FROM enrollments
+             WHERE user_id = :uid
+               AND payment_status IN ("success", "paid", "completed", "free")',
             [':uid' => $user['id']]
         )->queryColumn();
 
