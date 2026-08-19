@@ -291,6 +291,16 @@ export default function ShopOrder() {
                   {stateProduct.description || stateProduct.description_bn}
                 </p>
               )}
+              {stateProduct.video_url && (
+                <a
+                  href={stateProduct.video_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--bii-emerald)] hover:underline mt-1"
+                >
+                  ▶ ভিডিও দেখুন / Watch video
+                </a>
+              )}
               <div className="flex items-baseline gap-2 mt-2">
                 <span className="text-2xl font-bold text-[var(--bii-emerald)]">{fmt(price)}</span>
                 {disc > 0 && (

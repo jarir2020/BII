@@ -122,6 +122,7 @@ export default function CrudResource({ resource, title, fields, listColumns, idF
 }
 
 function MultiImageUpload({ value, onChange, label, max = 4 }) {
+  const { pick } = useLang();
   // value is an array of URLs (up to `max`)
   const imgs = Array.isArray(value) ? value : (value ? [value] : []);
   const slots = Array.from({ length: max }, (_, i) => imgs[i] || "");

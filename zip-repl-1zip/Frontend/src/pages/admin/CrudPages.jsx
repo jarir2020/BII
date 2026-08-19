@@ -155,7 +155,9 @@ export const AdminProducts = () => (
     { name: "discount_price", label: "ডিসকাউন্ট মূল্য (৳) — ছাড়ের পর দাম", type: "number" },
     { name: "stock", label: "স্টক (০ = আনলিমিটেড)", type: "number" },
     { name: "description", label: "বিবরণ", type: "textarea" },
-    { name: "image", label: "প্রোডাক্ট ছবি", type: "image" },
+    { name: "image", label: "প্রধান/কভার ছবি (ঐচ্ছিক)", type: "image" },
+    { name: "images", label: "প্রোডাক্টের ছবি", type: "images", max: 5 },
+    { name: "video_url", label: "প্রোডাক্ট ভিডিও লিংক (YouTube/Direct)", type: "url", placeholder: "https://..." },
     { name: "is_active", label: "সক্রিয়", type: "checkbox" },
     { name: "is_featured", label: "ফিচার্ড", type: "checkbox" },
   ]} listColumns={["name_bn", "category"]} />

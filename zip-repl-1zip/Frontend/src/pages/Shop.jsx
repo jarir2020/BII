@@ -672,6 +672,16 @@ function ProductModal({ product, onClose, onAddCart, user, onImageClick }) {
               </p>
             </div>
           )}
+          {product.video_url && (
+            <a
+              href={product.video_url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--bii-emerald)] hover:underline"
+            >
+              ▶ {pick("প্রোডাক্ট ভিডিও দেখুন", "Watch product video")}
+            </a>
+          )}
         </div>
 
         {/* Footer */}
