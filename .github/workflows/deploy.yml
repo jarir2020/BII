@@ -76,18 +76,6 @@ jobs:
                 put deploy/_staging/index.html -o $FTP_TARGET/index.html ; quit"
         shell: bash
 
-      - name: Run database migrations
-        run: |
-          if [ -z "$MIGRATE_SECRET" ]; then
-            echo "MIGRATE_SECRET GitHub Secret is not configured."
-            exit 1
-          fi
-          curl --fail-with-body --silent --show-error --max-time 120 \
-            -X POST \
-            -H "X-Migrate-Secret: $MIGRATE_SECRET" \
-            https://www.bengaliislamicinstitute.com/api/admin/migrate
-        shell: bash
-
   build-apk:
     name: Build Android APK
     runs-on: ubuntu-latest
