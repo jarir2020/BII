@@ -338,8 +338,8 @@ class NotificationsController extends ApiController
                 $base . ' WHERE user_id IN (
                     SELECT user_id FROM enrollments
                     WHERE course_id = :cid
-                      AND payment_status IN ("success", "paid", "completed", "free")
-                ) LIMIT 1000',
+                      AND payment_status IN ("success", "paid", "completed", "approved")
+                ) ORDER BY created_at DESC LIMIT 1000',
                 [':cid' => $courseId]
             )->queryAll();
         }

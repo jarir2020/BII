@@ -40,20 +40,19 @@ class LiveClassesController extends CrudController
     public function actionMy(): \yii\web\Response
     {
         $user = $this->user();
-        $courseIds = Yii::$app->db->createCommand(
-            'SELECT course_id FROM enrollments
-             WHERE user_id = :uid
-               AND payment_status IN ("success", "paid", "completed", "free")',
-            [':uid' => $user['id']]
-        )->queryColumn();
-
-        if ($courseIds === []) {
-            return $this->json([]);
-        }
-
         $rows = Yii::$app->db->createCommand(
-            'SELECT * FROM live_classes WHERE course_id IN (' . implode(',', array_fill(0, count($courseIds), '?')) . ') ORDER BY scheduled_at ASC',
-            $this->inParams($courseIds)
+            'SELECT lc.*
+             FROM live_classes lc
+             WHERE COALESCE(lc.is_free, 0) = 1
+                OR EXISTS (
+                    SELECT 1
+                    FROM enrollments e
+                    WHERE e.user_id = :uid
+                      AND e.course_id = lc.course_id
+                      AND e.payment_status IN ("success", "paid", "completed", "approved")
+                )
+             ORDER BY lc.scheduled_at ASC',
+            [':uid' => $user['id']]
         )->queryAll();
 
         return $this->json(array_map(fn ($r) => $this->toDoc($r), $rows));

@@ -248,16 +248,17 @@ class FcmService
         if (preg_match('/^course:(.+)$/', $target, $m)) {
             $courseId = $m[1];
             return $db->createCommand(
-                'SELECT dt.id, dt.token, dt.user_id, dt.platform
+                'SELECT DISTINCT dt.id, dt.token, dt.user_id, dt.platform
                  FROM device_tokens dt
                  INNER JOIN enrollments e ON e.user_id = dt.user_id
-                 WHERE e.course_id = :cid AND e.payment_status IN ("success","paid","completed","free")',
+                 WHERE e.course_id = :cid
+                   AND e.payment_status IN ("success","paid","completed","approved")',
                 [':cid' => $courseId]
             )->queryAll();
         }
 
-        // Fallback: all
-        return $db->createCommand('SELECT id, token, user_id, platform FROM device_tokens')->queryAll();
+        // Never broaden an unrecognised target into a broadcast.
+        return [];
     }
 
     /**

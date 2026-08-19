@@ -326,6 +326,55 @@ final class NotificationsControllerTest extends ApiControllerTestCase
         $this->assertSame('course-123', $data['target_course_id']);
     }
 
+    public function testCoursePushTargetsOnlyPaidEnrollmentDevices(): void
+    {
+        $paidUserId = $this->createTestUser('student', 'paid-target@example.com');
+        $freeUserId = $this->createTestUser('student', 'free-target@example.com');
+        $pendingUserId = $this->createTestUser('student', 'pending-target@example.com');
+        $courseId = 'target-course';
+
+        foreach ([
+            [$paidUserId, 'success', 'paid-token'],
+            [$freeUserId, 'free', 'free-token'],
+            [$pendingUserId, 'pending', 'pending-token'],
+        ] as [$userId, $status, $token]) {
+            Yii::$app->db->createCommand()->insert('enrollments', [
+                'id' => Uuid::v4(),
+                'user_id' => $userId,
+                'course_id' => $courseId,
+                'enrolled_at' => Time::now(),
+                'payment_status' => $status,
+            ])->execute();
+            Yii::$app->db->createCommand()->insert('device_tokens', [
+                'id' => Uuid::v4(),
+                'user_id' => $userId,
+                'token' => $token,
+                'device_type' => 'web',
+                'platform' => 'web',
+                'created_at' => Time::now(),
+            ])->execute();
+            Yii::$app->db->createCommand()->insert('web_push_subscriptions', [
+                'id' => Uuid::v4(),
+                'user_id' => $userId,
+                'endpoint' => 'https://push.example/' . $token,
+                'p256dh' => 'p256dh-' . $token,
+                'auth' => 'auth-' . $token,
+                'created_at' => Time::now(),
+            ])->execute();
+        }
+
+        $fcmResolver = new \ReflectionMethod(\app\components\FcmService::class, 'resolveTargets');
+        $fcmResolver->setAccessible(true);
+        $fcmTokens = $fcmResolver->invoke(null, 'course:' . $courseId);
+
+        $webResolver = new \ReflectionMethod(\app\modules\api\controllers\NotificationsController::class, 'resolveWebPushTargets');
+        $webResolver->setAccessible(true);
+        $webSubscriptions = $webResolver->invoke(null, 'course:' . $courseId);
+
+        $this->assertSame(['paid-token'], array_column($fcmTokens, 'token'));
+        $this->assertSame(['https://push.example/paid-token'], array_column($webSubscriptions, 'endpoint'));
+    }
+
     public function testPushScheduledSetsStatus(): void
     {
         $adminId = $this->createAdminUser();
