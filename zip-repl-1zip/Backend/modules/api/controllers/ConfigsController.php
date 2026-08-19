@@ -107,6 +107,7 @@ class ConfigsController extends ApiController
             'admob_rewarded_unit'    => $adsData['admob_rewarded_unit'] ?? '',
             'admob_native_unit'      => $adsData['admob_native_unit'] ?? '',
             'slots'         => $adsData['slots'] ?? [],
+            'ad_units'      => $adsData['ad_units'] ?? [],
         ];
 
         // Only write if there's actual content
@@ -117,7 +118,8 @@ class ConfigsController extends ApiController
                    || !empty($clientSafe['admob_interstitial_unit'])
                    || !empty($clientSafe['admob_rewarded_unit'])
                    || !empty($clientSafe['admob_native_unit'])
-                   || !empty($clientSafe['slots']);
+                   || !empty($clientSafe['slots'])
+                   || !empty($clientSafe['ad_units']);
 
         if ($hasContent) {
             $this->writeConfig('ads-web', $clientSafe);
@@ -149,6 +151,7 @@ class ConfigsController extends ApiController
             'admob_rewarded_unit'     => $web['admob_rewarded_unit']     ?? $admin['admob_rewarded_unit']     ?? '',
             'admob_native_unit'       => $web['admob_native_unit']       ?? $admin['admob_native_unit']       ?? '',
             'slots'         => $web['slots']         ?? $admin['slots']         ?? [],
+            'ad_units'      => $web['ad_units']      ?? $admin['ad_units']      ?? [],
             // Flat keys that frontend AdsContext reads
             'adsense_publisher_id' => $publisherWeb,
             'ads_enabled'          => $enabledWeb,

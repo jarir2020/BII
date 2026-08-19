@@ -193,7 +193,7 @@ function getAdSlots(pick) {
   ];
 }
 
-function AdSlotCard({ slot, webEnabled, appEnabled, unitId, onWebToggle, onAppToggle, onUnitChange }) {
+function AdSlotCard({ slot, webEnabled, appEnabled, webUnitId, appUnitId, onWebToggle, onAppToggle, onWebUnitChange, onAppUnitChange }) {
   const anyEnabled = !!webEnabled || !!appEnabled;
   return (
     <div className={`rounded-xl border transition-all ${
@@ -219,15 +219,31 @@ function AdSlotCard({ slot, webEnabled, appEnabled, unitId, onWebToggle, onAppTo
         />
       </div>
       {anyEnabled && (
-        <div className="px-4 pb-3 pt-0">
-          <input
-            className="bii-input text-xs font-mono"
-            placeholder={`Ad Unit ID — যেনম: 1234567890`}
-            value={unitId}
-            onChange={(e) => onUnitChange(e.target.value)}
-          />
+        <div className="px-4 pb-3 pt-0 space-y-2">
+          {webEnabled && (
+            <div>
+              <div className="text-[10px] uppercase tracking-widest text-[var(--bii-emerald)] mb-1">🌐 Website Ad Unit ID</div>
+              <input
+                className="bii-input text-xs font-mono"
+                placeholder="Website AdSense Unit ID"
+                value={webUnitId}
+                onChange={(e) => onWebUnitChange(e.target.value)}
+              />
+            </div>
+          )}
+          {appEnabled && (
+            <div>
+              <div className="text-[10px] uppercase tracking-widest text-[var(--bii-gold)] mb-1">📱 App Ad Unit ID</div>
+              <input
+                className="bii-input text-xs font-mono"
+                placeholder="App AdMob Unit ID"
+                value={appUnitId}
+                onChange={(e) => onAppUnitChange(e.target.value)}
+              />
+            </div>
+          )}
           <div className="text-[10px] text-[var(--bii-text-soft)] mt-1">
-            Google AdSense → বিজ্ঞাপন ইউনিট → এই স্লটের জন্য Unit ID
+            Website and App IDs are separate. Enter each ID from its own ad platform.
           </div>
         </div>
       )}
@@ -279,7 +295,12 @@ export function AdminAds() {
       : { web: slotWebEnabled(key), app: val };
     set("slots", { ...rawSlots, [key]: next });
   };
-  const unitVal = (unitKey) => cfg[unitKey] || "";
+  const rawAdUnits = cfg.ad_units || {};
+  const unitVal = (unitKey, platform) => rawAdUnits[unitKey]?.[platform] || cfg[unitKey] || "";
+  const setUnitVal = (unitKey, platform, value) => {
+    const previous = rawAdUnits[unitKey] || {};
+    set("ad_units", { ...rawAdUnits, [unitKey]: { ...previous, [platform]: value } });
+  };
 
   const save = async () => {
     setErr(""); setOk(""); setSaving(true);
@@ -389,10 +410,12 @@ export function AdminAds() {
               slot={slot}
               webEnabled={slotWebEnabled(slot.key)}
               appEnabled={slotAppEnabled(slot.key)}
-              unitId={unitVal(slot.unitKey)}
+              webUnitId={unitVal(slot.unitKey, "web")}
+              appUnitId={unitVal(slot.unitKey, "app")}
               onWebToggle={(v) => toggleSlotWeb(slot.key, v)}
               onAppToggle={(v) => toggleSlotApp(slot.key, v)}
-              onUnitChange={(v) => set(slot.unitKey, v)}
+              onWebUnitChange={(v) => setUnitVal(slot.unitKey, "web", v)}
+              onAppUnitChange={(v) => setUnitVal(slot.unitKey, "app", v)}
             />
           )
         )}
