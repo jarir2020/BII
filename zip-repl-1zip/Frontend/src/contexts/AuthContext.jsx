@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { api, setToken, formatApiError } from "../lib/api";
-import { requestFCMToken } from "../lib/firebase";
+import { getPushPlatform, requestFCMToken } from "../lib/firebase";
 
 const AuthContext = createContext(null);
 export const useAuth = () => useContext(AuthContext);
@@ -16,7 +16,7 @@ async function tryRegisterFCMToken() {
     if (Notification.permission !== "granted") return; // NotificationPrompt handles the rest
     const token = await requestFCMToken();
     if (token) {
-      await api.post("/notifications/register-device", { token, platform: "web" });
+      await api.post("/notifications/register-device", { token, platform: getPushPlatform() });
     }
   } catch {
     // Non-critical — never block login

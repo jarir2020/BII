@@ -16,7 +16,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Bell, X, ShieldCheck, ArrowRight } from "@phosphor-icons/react";
 import { api } from "../lib/api";
-import { requestFCMToken } from "../lib/firebase";
+import { getPushPlatform, requestFCMToken } from "../lib/firebase";
 import { useLang } from "../contexts/LangContext";
 
 const LS_GRANTED = "bii_notif_granted";
@@ -26,7 +26,7 @@ async function silentRegister() {
   try {
     const token = await requestFCMToken();
     if (token) {
-      await api.post("/notifications/register-device", { token, platform: "web" });
+      await api.post("/notifications/register-device", { token, platform: getPushPlatform() });
       localStorage.setItem(LS_GRANTED, "true");
     }
   } catch { /* non-critical */ }
@@ -85,7 +85,7 @@ export default function NotificationPrompt({ user }) {
           ));
           return;
         }
-        await api.post("/notifications/register-device", { token, platform: "web" });
+        await api.post("/notifications/register-device", { token, platform: getPushPlatform() });
         localStorage.setItem(LS_GRANTED, "true");
         dismiss();
       } else {

@@ -155,7 +155,7 @@ class FcmService
             ];
 
             // Android config
-            if (in_array($platform, ['android', ''], true)) {
+            if (in_array($platform, ['android', 'app', ''], true)) {
                 $message['android'] = [
                     'priority' => 'high',
                     'notification' => [

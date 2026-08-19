@@ -158,6 +158,13 @@ export async function requestFCMToken() {
   }
 }
 
+// The same token-registration platform value must be sent with the token.
+// Native Capacitor tokens use Android/iOS FCM payload rules; browser tokens
+// use Web Push rules.
+export function getPushPlatform() {
+  return isNativePlatform() ? "android" : "web";
+}
+
 /**
  * Listen for foreground messages (app is open).
  * Returns an unsubscribe function.
