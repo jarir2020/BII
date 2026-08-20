@@ -7,7 +7,7 @@ import { useLang } from "../contexts/LangContext";
  *   fields: [{ name, label, type, placeholder }]
  */
 export default function ConfigEditor({ configKey, title, description, fields }) {
-  const { pick } = useLang();
+  const { pick: selectText } = useLang();
   const [data, setData] = useState(null);
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
@@ -19,7 +19,7 @@ export default function ConfigEditor({ configKey, title, description, fields }) 
       .catch(() => setData({}));
   }, [configKey]);
 
-  if (!data) return <div className="text-center py-6 text-[var(--bii-text-soft)]">{pick("লোড হচ্ছে...", "Loading...")}</div>;
+  if (!data) return <div className="text-center py-6 text-[var(--bii-text-soft)]">{selectText("লোড হচ্ছে...", "Loading...")}</div>;
 
   const set = (k, v) => setData({ ...data, [k]: v });
 
@@ -27,7 +27,7 @@ export default function ConfigEditor({ configKey, title, description, fields }) 
     setErr(""); setOk(""); setSaving(true);
     try {
       await api.put(`/configs/${configKey}`, data);
-      setOk(pick("সফলভাবে সংরক্ষিত হয়েছে", "Saved successfully"));
+      setOk(selectText("সফলভাবে সংরক্ষিত হয়েছে", "Saved successfully"));
       setTimeout(() => setOk(""), 2500);
     } catch (e) { setErr(formatApiError(e)); } finally { setSaving(false); }
   };
@@ -45,7 +45,7 @@ export default function ConfigEditor({ configKey, title, description, fields }) 
         {err && <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-2">{err}</div>}
         {ok && <div className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg p-2">{ok}</div>}
         <button data-testid={`cfg-${configKey}-save`} onClick={save} disabled={saving} className="bii-btn-primary w-full">
-          {saving ? pick("সংরক্ষণ হচ্ছে...", "Saving...") : pick("সংরক্ষণ করুন", "Save")}
+          {saving ? selectText("সংরক্ষণ হচ্ছে...", "Saving...") : selectText("সংরক্ষণ করুন", "Save")}
         </button>
       </div>
     </div>
@@ -53,6 +53,7 @@ export default function ConfigEditor({ configKey, title, description, fields }) 
 }
 
 function Renderer({ field, value, onChange, testid }) {
+  const { pick: selectText } = useLang();
   const { name, label, type = "text", placeholder, options } = field;
   if (type === "heading") {
     return (
@@ -82,7 +83,7 @@ function Renderer({ field, value, onChange, testid }) {
       <div>
         <div className="text-xs uppercase tracking-widest text-[var(--bii-text-soft)] mb-1">{label}</div>
         <select data-testid={testid} className="bii-input" value={value || ""} onChange={(e) => onChange(e.target.value)}>
-          <option value="">{pick("— বাছাই —", "— Select —")}</option>
+          <option value="">{selectText("— বাছাই —", "— Select —")}</option>
           {(options || []).map((o) => (
             <option key={typeof o === "string" ? o : o.value} value={typeof o === "string" ? o : o.value}>
               {typeof o === "string" ? o : o.label}
