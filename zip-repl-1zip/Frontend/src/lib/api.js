@@ -22,16 +22,31 @@ function authHeaders() {
   return t ? { Authorization: `Bearer ${t}` } : {};
 }
 
+function isFormDataBody(body) {
+  return typeof FormData !== "undefined" && body instanceof FormData;
+}
+
 function request(url, options = {}) {
   const fullUrl = url.startsWith("http") ? url : `${API}${url}`;
+  const multipart = isFormDataBody(options.body);
+  const headers = {
+    ...(multipart ? {} : { "Content-Type": "application/json" }),
+    ...authHeaders(),
+    ...(options.headers || {}),
+  };
+
+  // Let the browser add the multipart boundary. A manually supplied
+  // Content-Type without that boundary makes PHP see an empty $_FILES array.
+  if (multipart) {
+    Object.keys(headers).forEach((key) => {
+      if (key.toLowerCase() === "content-type") delete headers[key];
+    });
+  }
+
   return fetch(fullUrl, {
     ...options,
     credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...authHeaders(),
-      ...(options.headers || {}),
-    },
+    headers,
   }).then(async (res) => {
     const text = await res.text();
     if (!res.ok) {
@@ -51,8 +66,16 @@ function request(url, options = {}) {
 
 export const api = {
   get: (url, options) => request(url, { ...options, method: "GET" }),
-  post: (url, body, options) => request(url, { ...options, method: "POST", body: JSON.stringify(body) }),
-  put: (url, body, options) => request(url, { ...options, method: "PUT", body: JSON.stringify(body) }),
+  post: (url, body, options) => request(url, {
+    ...options,
+    method: "POST",
+    body: isFormDataBody(body) ? body : JSON.stringify(body),
+  }),
+  put: (url, body, options) => request(url, {
+    ...options,
+    method: "PUT",
+    body: isFormDataBody(body) ? body : JSON.stringify(body),
+  }),
   delete: (url, options) => request(url, { ...options, method: "DELETE" }),
 };
 

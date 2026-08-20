@@ -40,9 +40,7 @@ export default function FileUpload({ value, onChange, label, testid, accept }) {
     try {
       const fd = new FormData();
       fd.append("file", f);
-      const { data } = await api.post("/library/upload", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const { data } = await api.post("/library/upload", fd);
       onChange({ url: data.url, file_type: data.file_type, file_size: data.file_size });
     } catch (e2) {
       setErr(formatApiError(e2));

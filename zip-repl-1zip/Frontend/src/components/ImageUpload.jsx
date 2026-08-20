@@ -30,9 +30,7 @@ export default function ImageUpload({ value, onChange, label, testid }) {
     try {
       const fd = new FormData();
       fd.append("file", f);
-      const { data } = await api.post("/upload", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const { data } = await api.post("/upload", fd);
       onChange(data.url);
     } catch (e2) { setErr(formatApiError(e2)); }
     finally { setBusy(false); if (fileRef.current) fileRef.current.value = ""; }
