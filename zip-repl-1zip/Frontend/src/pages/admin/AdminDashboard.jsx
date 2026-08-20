@@ -27,7 +27,7 @@ const tiles = [
 ];
 
 export default function AdminDashboard() {
-  const { pick } = useLang();
+  const { pick: selectText } = useLang();
   const [a, setA]           = useState({});
   const [courses, setCourses]       = useState([]);
   const [enrollments, setEnrollments] = useState([]);
@@ -59,8 +59,8 @@ export default function AdminDashboard() {
   return (
     <div data-testid="admin-dashboard" className="space-y-8">
       <div>
-        <h1 className="font-heading text-3xl text-[var(--bii-emerald)]">{pick("অ্যাডমিন ড্যাশবোর্ড","Admin Dashboard")}</h1>
-        <p className="text-sm text-[var(--bii-text-soft)]">{pick("সারসংক্ষেপ","Overview")}</p>
+        <h1 className="font-heading text-3xl text-[var(--bii-emerald)]">{selectText("অ্যাডমিন ড্যাশবোর্ড","Admin Dashboard")}</h1>
+        <p className="text-sm text-[var(--bii-text-soft)]">{selectText("সারসংক্ষেপ","Overview")}</p>
       </div>
 
       {/* ── Top stat tiles ── */}
@@ -161,7 +161,7 @@ export default function AdminDashboard() {
                           ? "bg-blue-500 text-white"
                           : "bg-[var(--bii-gold)] text-yellow-900"
                       }`}>
-                        {c.is_free || c.price === 0 ? pick("ফ্রি","Free") : `৳${c.price}`}
+                        {c.is_free || c.price === 0 ? selectText("ফ্রি","Free") : `৳${c.price}`}
                       </span>
                     </div>
                   </div>
@@ -169,7 +169,7 @@ export default function AdminDashboard() {
                   {/* Body */}
                   <div className="p-4">
                     <div className="font-heading text-base text-[var(--bii-text)] leading-snug line-clamp-2">
-                      {c.title_bn || c.title_en || pick("অজানা কোর্স","Unknown Course")}
+                      {c.title_bn || c.title_en || selectText("অজানা কোর্স","Unknown Course")}
                     </div>
                     {c.instructor && (
                       <div className="text-xs text-[var(--bii-text-soft)] mt-0.5">{c.instructor}</div>
