@@ -15,7 +15,11 @@ async function initFirebase() {
     const resp = await fetch('/api/configs/firebase-web');
     if (!resp.ok) return;
     const cfg = await resp.json();
-    if (!cfg.api_key || !cfg.messaging_sender_id) return;
+    const firebaseWebEnabled = cfg.firebase_web_enabled === true
+      || cfg.firebase_web_enabled === 1
+      || cfg.firebase_web_enabled === '1'
+      || cfg.firebase_web_enabled === 'true';
+    if (!firebaseWebEnabled || !cfg.api_key || !cfg.messaging_sender_id) return;
 
     firebase.initializeApp({
       apiKey:            cfg.api_key,

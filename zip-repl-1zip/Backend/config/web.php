@@ -212,6 +212,9 @@ $config = [
                 'api/payments/requests' => 'api/payments/requests',
                 'api/payments/sslcommerz/<action:(init|ipn|success|fail|cancel)>' => 'api/sslcommerz/<action>',
 
+                // ── Public uploaded files ───────────────────────────────
+                'GET api/files/<filename:[^/]+>' => 'api/files/view',
+
                 // ── Generic api module routing ───────────────────────────
                 'api/<controller>/<action>/<id:[^/]+>' => 'api/<controller>/<action>',
                 'api/<controller>/<action>' => 'api/<controller>/<action>',

@@ -62,8 +62,9 @@ export const AdminSeo = () => (
 
 export const AdminFirebase = () => (
   <ConfigEditor configKey="firebase" title="Firebase কনফিগারেশন"
-    description="Push Notification / Firebase Cloud Messaging কনফিগ। (প্রযোগ পরবর্তী আপডেটে)"
+    description="Firebase Web Push ঐচ্ছিক। সঠিক Web app API key দেওয়ার পরই এটি চালু করুন; বন্ধ থাকলে VAPID Web Push ব্যবহার হবে।"
     fields={[
+      { name: "firebase_web_enabled", label: "Enable Firebase Web Push", type: "checkbox" },
       { name: "api_key", label: "Firebase API Key" },
       { name: "auth_domain", label: "Auth Domain" },
       { name: "project_id", label: "Project ID" },

@@ -73,6 +73,12 @@ class ConfigsController extends ApiController
             'messaging_sender_id' => $firebaseData['messaging_sender_id'] ?? '',
             'app_id'              => $firebaseData['app_id'] ?? '',
             'vapid_key'           => $firebaseData['vapid_key'] ?? '',
+            // Web Firebase is opt-in. VAPID-only Web Push remains the safe
+            // fallback when the stored Firebase key is missing or invalid.
+            'firebase_web_enabled' => filter_var(
+                $firebaseData['firebase_web_enabled'] ?? false,
+                FILTER_VALIDATE_BOOLEAN
+            ),
         ];
 
         // Only write if there's actual content (avoid overwriting with empty)

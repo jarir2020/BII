@@ -36,12 +36,30 @@ class FilesController extends ApiController
     public function actionView(string $filename): void
     {
         // Security: reject paths with directory traversal
-        if ($filename === '' || str_contains($filename, '..') || str_contains($filename, '/') || str_contains($filename, '\\')) {
+        if ($filename === ''
+            || !preg_match('/^[A-Za-z0-9._-]+$/', $filename)
+            || str_contains($filename, '..')
+            || str_contains($filename, '/')
+            || str_contains($filename, '\\')) {
             Yii::$app->response->setStatusCode(400)->send();
             return;
         }
 
-        $path = Yii::getAlias('@webroot') . '/uploads/' . $filename;
+        $uploads = Yii::getAlias('@webroot') . '/uploads/';
+        $path = $uploads . $filename;
+
+        // Legacy upload URLs contain only the UUID. New Yii uploads are
+        // stored as UUID.extension, so resolve the safe known extensions.
+        if (!is_file($path) && preg_match('/^[0-9a-f-]{36}$/i', $filename)) {
+            foreach (array_keys(self::MIME) as $extension) {
+                $candidate = $uploads . $filename . '.' . $extension;
+                if (is_file($candidate)) {
+                    $path = $candidate;
+                    break;
+                }
+            }
+        }
+
         if (!is_file($path)) {
             Yii::$app->response->setStatusCode(404)->send();
             return;

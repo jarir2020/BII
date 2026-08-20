@@ -47,6 +47,11 @@ class UploadController extends ApiController
             $this->badRequest('Upload failed: ' . $e->getMessage());
         }
 
-        return $this->json(['url' => '/uploads/' . $name]);
+        return $this->json([
+            'id' => $fileId,
+            'url' => '/api/files/' . $fileId,
+            'filename' => $file->name,
+            'content_type' => self::MIME[$ext],
+        ]);
     }
 }

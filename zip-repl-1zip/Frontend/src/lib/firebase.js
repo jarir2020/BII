@@ -14,6 +14,13 @@ let _app       = null;
 let _messaging = null;
 let _config    = null;
 
+function isFirebaseWebEnabled(cfg) {
+  return cfg?.firebase_web_enabled === true
+    || cfg?.firebase_web_enabled === 1
+    || cfg?.firebase_web_enabled === '1'
+    || cfg?.firebase_web_enabled === 'true';
+}
+
 async function fetchConfig() {
   if (_config) return _config;
   try {
@@ -28,7 +35,7 @@ async function fetchConfig() {
 async function getFirebaseApp() {
   if (_app) return _app;
   const cfg = await fetchConfig();
-  if (!cfg.api_key || !cfg.messaging_sender_id) return null;
+  if (!isFirebaseWebEnabled(cfg) || !cfg.api_key || !cfg.messaging_sender_id) return null;
   _app = getApps().length ? getApp() : initializeApp({
     apiKey:            cfg.api_key,
     authDomain:        cfg.auth_domain,
@@ -132,26 +139,27 @@ export async function requestFCMToken() {
 
     const cfg = await fetchConfig();
 
-    // If Firebase has a vapid_key, use Firebase Web Push
-    if (cfg.api_key && cfg.vapid_key) {
-      const app = await getFirebaseApp();
-      if (!app) {
-        return null;
-      }
+    // Firebase Web Push is opt-in. If its stored API key is invalid, fall
+    // back to our own VAPID implementation instead of breaking registration.
+    if (isFirebaseWebEnabled(cfg) && cfg.api_key && cfg.vapid_key) {
+      try {
+        const app = await getFirebaseApp();
+        if (app) {
+          if (!_messaging) _messaging = getMessaging(app);
 
-      if (!_messaging) _messaging = getMessaging(app);
-
-      const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-      const token = await getToken(_messaging, {
-        vapidKey:                    cfg.vapid_key,
-        serviceWorkerRegistration:   swReg,
-      });
-      if (!token) {
+          const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+          const token = await getToken(_messaging, {
+            vapidKey:                  cfg.vapid_key,
+            serviceWorkerRegistration: swReg,
+          });
+          if (token) return token;
+        }
+      } catch (err) {
+        console.warn('[BII] Firebase Web Push unavailable; using VAPID-only push.', err?.message || err);
       }
-      return token || null;
     }
 
-    // No Firebase config — use VAPID-only mode (our own Web Push)
+    // Firebase is disabled, not configured, or unavailable — use VAPID-only.
     return await requestVapidOnlyToken();
   } catch (err) {
     return null;
@@ -171,6 +179,8 @@ export function getPushPlatform() {
  */
 export async function onForegroundMessage(callback) {
   try {
+    const cfg = await fetchConfig();
+    if (!isFirebaseWebEnabled(cfg)) return () => {};
     const app = await getFirebaseApp();
     if (!app) return () => {};
     if (!_messaging) _messaging = getMessaging(app);
