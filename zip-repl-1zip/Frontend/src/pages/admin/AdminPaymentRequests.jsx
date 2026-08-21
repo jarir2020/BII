@@ -92,6 +92,20 @@ export default function AdminPaymentRequests() {
     } finally { setWorking(null); }
   };
 
+  const completeCourse = async (id) => {
+    if (!window.confirm("এই শিক্ষার্থীর কোর্স সম্পন্ন হিসেবে চিহ্নিত করবেন? এরপর এই কোর্সের পেইড লাইভ ক্লাস আর দেখানো হবে না।")) return;
+    const workId = `${id}:complete`;
+    setWorking(workId);
+    try {
+      await api.put(`/payments/requests/${id}/complete`);
+      toast.success("✅ কোর্স সম্পন্ন করা হয়েছে — শিক্ষার্থীকে নোটিফিকেশন পাঠানো হয়েছে");
+      load(true);
+      if (detailItem?.id === id) setDetailItem(null);
+    } catch (e) {
+      toast.error(e?.response?.data?.detail || "কোর্স সম্পন্ন করা যায়নি");
+    } finally { setWorking(null); }
+  };
+
   const toggleExpand = (id) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
   /* ── export CSV ── */
@@ -171,6 +185,9 @@ export default function AdminPaymentRequests() {
                 <Section title="প্রসেসিং তথ্য">
                   <Row label="প্রসেস করেছেন" val={detailItem.processed_by || "—"} />
                   <Row label="প্রসেসের সময়"  val={detailItem.processed_at ? new Date(detailItem.processed_at).toLocaleString("bn-BD") : "—"} />
+                  {detailItem.enrollment_status === "course_completed" && (
+                    <Row label="কোর্সের অবস্থা" val={<span className="font-semibold text-amber-700">কোর্স সম্পন্ন</span>} />
+                  )}
                   {detailItem.status === "rejected" && detailItem.reject_reason && (
                     <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-sm text-red-700">
                       <span className="font-medium">বাতিলের কারণ:</span> {detailItem.reject_reason}
@@ -198,6 +215,18 @@ export default function AdminPaymentRequests() {
                 >
                   <XCircle size={18} weight="fill" />
                   বাতিল করুন
+                </button>
+              </div>
+            )}
+            {detailItem.status === "approved" && detailItem.enrollment_status !== "course_completed" && (
+              <div className="px-5 pb-5">
+                <button
+                  disabled={working === `${detailItem.id}:complete`}
+                  onClick={() => completeCourse(detailItem.id)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-600 text-white text-sm font-medium hover:bg-amber-700 transition disabled:opacity-60 shadow"
+                >
+                  <CheckSquare size={18} weight="fill" />
+                  {working === `${detailItem.id}:complete` ? "প্রসেস হচ্ছে…" : "কোর্স সম্পন্ন করুন"}
                 </button>
               </div>
             )}
@@ -339,6 +368,11 @@ export default function AdminPaymentRequests() {
                           <CalendarBlank size={11} />
                           {pick("তারিখ:", "Date:")} {new Date(it.submitted_at).toLocaleString("bn-BD")}
                         </span>
+                        {it.enrollment_status === "course_completed" && (
+                          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border border-amber-300 bg-amber-50 text-amber-800 font-medium">
+                            <CheckSquare size={11} weight="fill" /> কোর্স সম্পন্ন
+                          </span>
+                        )}
                       </div>
 
                       {/* Course title */}
@@ -402,10 +436,25 @@ export default function AdminPaymentRequests() {
                         </>
                       )}
                       {it.status === "approved" && (
-                        <span className="flex items-center gap-1 text-xs text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-lg">
-                          <CheckSquare size={13} weight="fill" />
-                          কোর্সে যুক্ত হয়েছে
-                        </span>
+                        it.enrollment_status === "course_completed" ? (
+                          <span className="flex items-center gap-1 text-xs text-amber-800 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-lg">
+                            <CheckSquare size={13} weight="fill" /> কোর্স সম্পন্ন হয়েছে
+                          </span>
+                        ) : (
+                          <>
+                            <span className="flex items-center gap-1 text-xs text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-lg">
+                              <CheckSquare size={13} weight="fill" /> কোর্সে যুক্ত হয়েছে
+                            </span>
+                            <button
+                              disabled={working === `${it.id}:complete`}
+                              onClick={() => completeCourse(it.id)}
+                              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm bg-amber-600 text-white hover:bg-amber-700 transition disabled:opacity-60 font-medium shadow-sm w-full justify-center"
+                            >
+                              <CheckSquare size={15} weight="fill" />
+                              {working === `${it.id}:complete` ? "প্রসেস হচ্ছে…" : "কোর্স সম্পন্ন করুন"}
+                            </button>
+                          </>
+                        )
                       )}
 
                       {/* Detail + expand buttons */}

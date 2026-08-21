@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Clock, CheckCircle, XCircle, ArrowRight } from "@phosphor-icons/react";
+import { Clock, CheckCircle, XCircle, ArrowRight, SealCheck } from "@phosphor-icons/react";
 import { useLang } from "../contexts/LangContext";
 import { api, imgUrl } from "../lib/api";
 import { useAuth } from "../contexts/AuthContext";
@@ -52,6 +52,8 @@ export default function MyCourses() {
   const rejectedReqs = requests.filter(
     (r) => r.status === "rejected" && !enrolledIds.has(r.course_id)
   );
+  const activeCourses = courses.filter((c) => c.enrollment_status !== "course_completed");
+  const completedCourses = courses.filter((c) => c.enrollment_status === "course_completed");
 
   return (
     <div data-testid="my-courses-page" className="space-y-5 pb-16 sm:pb-24">
@@ -92,7 +94,7 @@ export default function MyCourses() {
       {/* ── Enrolled courses ── */}
       {!loading && (
         <section>
-          {courses.length > 0 && (
+          {activeCourses.length > 0 && (
             <h2 className="font-heading text-lg text-[var(--bii-emerald)] mb-3 flex items-center gap-2">
               <CheckCircle size={20} weight="duotone" className="text-green-600" />
               {pick("আমার কোর্সসমূহ", "My Courses")}
@@ -106,39 +108,61 @@ export default function MyCourses() {
               <Link to="/courses" className="bii-btn-primary inline-block">{t("menuOurCourses")}</Link>
             </div>
           )}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {courses.map((c) => (
-              <Link key={c.id} to={`/my-courses/${c.id}`} className="bii-card overflow-hidden group">
-                {c.cover_image && (
-                  <div className="aspect-[16/10] overflow-hidden">
-                    <img
-                      src={imgUrl(c.cover_image)}
-                      alt=""
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => { e.currentTarget.parentElement.style.display = "none"; }}
-                    />
-                  </div>
-                )}
-                <div className="p-4">
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="font-heading text-lg text-[var(--bii-emerald)] leading-snug">
-                      {pick(c.title_bn, c.title_en)}
-                    </h3>
-                    <ArrowRight size={16} className="flex-shrink-0 text-[var(--bii-text-soft)] group-hover:translate-x-1 transition-transform" />
-                  </div>
-                  <div className="text-xs text-[var(--bii-text-soft)] mt-1">{c.instructor}</div>
-                  <div className="mt-2 inline-flex items-center gap-1 text-xs text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
-                    <CheckCircle size={12} weight="fill" />
-                    {t("active")}
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+          {activeCourses.length > 0 && (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {activeCourses.map((c) => <CourseCard key={c.id} course={c} />)}
+            </div>
+          )}
+          {completedCourses.length > 0 && (
+            <div className="mt-6">
+              <h2 className="font-heading text-lg text-amber-700 mb-3 flex items-center gap-2">
+                <SealCheck size={20} weight="duotone" className="text-amber-600" />
+                {pick("সমাপ্ত কোর্সসমূহ", "Completed Courses")}
+              </h2>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {completedCourses.map((c) => <CourseCard key={c.id} course={c} completed />)}
+              </div>
+            </div>
+          )}
         </section>
       )}
       <BottomBanner slot="my-courses-bottom" />
     </div>
+  );
+}
+
+function CourseCard({ course, completed = false }) {
+  const { t, pick } = useLang();
+  return (
+    <Link to={`/my-courses/${course.id}`} className={`bii-card overflow-hidden group ${completed ? "opacity-90" : ""}`}>
+      {course.cover_image && (
+        <div className="aspect-[16/10] overflow-hidden">
+          <img
+            src={imgUrl(course.cover_image)}
+            alt=""
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={(e) => { e.currentTarget.parentElement.style.display = "none"; }}
+          />
+        </div>
+      )}
+      <div className="p-4">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="font-heading text-lg text-[var(--bii-emerald)] leading-snug">
+            {pick(course.title_bn, course.title_en)}
+          </h3>
+          <ArrowRight size={16} className="flex-shrink-0 text-[var(--bii-text-soft)] group-hover:translate-x-1 transition-transform" />
+        </div>
+        <div className="text-xs text-[var(--bii-text-soft)] mt-1">{course.instructor}</div>
+        <div className={`mt-2 inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ${
+          completed
+            ? "text-amber-700 bg-amber-50 border border-amber-200"
+            : "text-green-700 bg-green-50 border border-green-200"
+        }`}>
+          {completed ? <SealCheck size={12} weight="fill" /> : <CheckCircle size={12} weight="fill" />}
+          {completed ? pick("কোর্স সম্পন্ন", "Course completed") : t("active")}
+        </div>
+      </div>
+    </Link>
   );
 }
 

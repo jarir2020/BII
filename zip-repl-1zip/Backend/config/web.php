@@ -207,6 +207,7 @@ $config = [
                 'api/admin/ads-settings' => 'api/configs/view',
                 'api/payments/requests/<pid>/quick-approve' => 'api/payments/quick-approve',
                 'api/payments/requests/<pid>/quick-reject' => 'api/payments/quick-reject',
+                'api/payments/requests/<pid>/complete' => 'api/payments/complete',
                 'api/payments/requests/<pid>/approve' => 'api/payments/approve',
                 'api/payments/requests/<pid>/reject' => 'api/payments/reject',
                 'api/payments/requests' => 'api/payments/requests',

@@ -37,7 +37,17 @@ class NotificationsController extends ApiController
             Yii::$app->db->createCommand()->insert('notifications', $doc)->execute();
             return $this->json($doc);
         }
-        $rows = Yii::$app->db->createCommand('SELECT * FROM notifications ORDER BY created_at DESC LIMIT 200')->queryAll();
+        $user = $this->user();
+        if (in_array($user['role'] ?? '', ['admin', 'super_admin'], true)) {
+            $rows = Yii::$app->db->createCommand('SELECT * FROM notifications ORDER BY created_at DESC LIMIT 200')->queryAll();
+        } else {
+            $rows = Yii::$app->db->createCommand(
+                'SELECT * FROM notifications
+                 WHERE user_id = :uid OR user_id = ""
+                 ORDER BY created_at DESC LIMIT 200',
+                [':uid' => $user['id']]
+            )->queryAll();
+        }
         return $this->json($rows);
     }
 

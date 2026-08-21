@@ -82,15 +82,12 @@ class CoursesController extends ApiController
     public function actionMyCourses(): \yii\web\Response
     {
         $user = $this->user();
-        $courseIds = Yii::$app->db->createCommand(
-            'SELECT course_id FROM enrollments WHERE user_id = :uid', [':uid' => $user['id']]
-        )->queryColumn();
-        if ($courseIds === []) {
-            return $this->json([]);
-        }
         $rows = Yii::$app->db->createCommand(
-            'SELECT * FROM courses WHERE id IN (' . implode(',', array_fill(0, count($courseIds), '?')) . ')',
-            $this->inParams($courseIds)
+            'SELECT c.*, e.payment_status AS enrollment_status
+             FROM courses c
+             INNER JOIN enrollments e ON e.course_id = c.id AND e.user_id = :uid
+             ORDER BY c.created_at DESC',
+            [':uid' => $user['id']]
         )->queryAll();
         return $this->json(array_map(fn ($r) => $this->toDoc($r), $rows));
     }

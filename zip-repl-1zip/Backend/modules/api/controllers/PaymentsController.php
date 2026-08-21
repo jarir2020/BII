@@ -80,8 +80,59 @@ class PaymentsController extends ApiController
     public function actionRequests(): \yii\web\Response
     {
         $this->requireAdmin();
-        $rows = Yii::$app->db->createCommand('SELECT * FROM payment_requests ORDER BY submitted_at DESC LIMIT 200')->queryAll();
+        $rows = Yii::$app->db->createCommand(
+            'SELECT p.*, e.payment_status AS enrollment_status
+             FROM payment_requests p
+             LEFT JOIN enrollments e ON e.user_id = p.user_id AND e.course_id = p.course_id
+             ORDER BY p.submitted_at DESC LIMIT 200'
+        )->queryAll();
         return $this->json(array_map(fn ($r) => $this->reqDoc($r), $rows));
+    }
+
+    /** PUT /api/payments/requests/{pid}/complete — end a student's course access to paid live classes. */
+    public function actionComplete(): \yii\web\Response
+    {
+        $this->requireAdmin();
+        $pid = (string) Yii::$app->request->get('pid', '');
+        $req = $this->findRequest($pid);
+        if ($req === null) {
+            $this->notFound('পেমেন্ট রিকোয়েস্ট পাওয়া যায়নি');
+        }
+        if ($req['status'] !== 'approved') {
+            $this->badRequest('অনুমোদিত পেমেন্টের কোর্সই সম্পন্ন করা যাবে');
+        }
+
+        $enrollment = Yii::$app->db->createCommand(
+            'SELECT id, payment_status FROM enrollments WHERE user_id = :u AND course_id = :c ORDER BY enrolled_at DESC LIMIT 1',
+            [':u' => $req['user_id'], ':c' => $req['course_id']]
+        )->queryOne();
+        if ($enrollment === false) {
+            $this->notFound('এই শিক্ষার্থীর এনরোলমেন্ট পাওয়া যায়নি');
+        }
+        if ($enrollment['payment_status'] === 'course_completed') {
+            return $this->json(['ok' => true, 'already_completed' => true, 'enrollment_status' => 'course_completed']);
+        }
+
+        Yii::$app->db->createCommand()->update('enrollments', [
+            'payment_status' => 'course_completed',
+        ], ['id' => $enrollment['id']])->execute();
+
+        Yii::$app->db->createCommand()->insert('notifications', [
+            'id' => Uuid::v4(),
+            'user_id' => $req['user_id'],
+            'title_bn' => 'কোর্স সম্পন্ন হয়েছে',
+            'title_en' => 'Course completed',
+            'body_bn' => 'আপনার "' . (string) $req['course_title'] . '" কোর্সটি সম্পন্ন হয়েছে। এই কোর্সের লাইভ ক্লাস আর দেখানো হবে না। ফ্রি লাইভ ক্লাসগুলো আপনি দেখতে পারবেন।',
+            'body_en' => 'Your "' . (string) $req['course_title'] . '" course has been completed. Live classes for this course will no longer be shown, but free live classes remain available to you.',
+            'read' => 0,
+            'created_at' => $this->now(),
+        ])->execute();
+
+        return $this->json([
+            'ok' => true,
+            'already_completed' => false,
+            'enrollment_status' => 'course_completed',
+        ]);
     }
 
     /** PUT /api/payments/requests/{pid}/approve */
