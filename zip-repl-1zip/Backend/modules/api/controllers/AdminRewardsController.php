@@ -18,6 +18,9 @@ class AdminRewardsController extends ApiController
         $this->requireAdmin();
         if (Yii::$app->request->isPut || Yii::$app->request->isPatch) {
             $body = Yii::$app->request->post();
+            if (array_key_exists('watch_duration_seconds', $body)) {
+                $body['watch_duration_seconds'] = max(1, min(3600, (int) $body['watch_duration_seconds']));
+            }
             $this->writeConfig('reward_zone', $body);
             return $this->json(['ok' => true]);
         }

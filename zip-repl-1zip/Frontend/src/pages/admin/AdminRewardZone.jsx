@@ -60,6 +60,7 @@ function SettingsTab() {
     promo_discount_value: 50,
     reward_zone_enabled: true,
     ad_watch_cooldown_seconds: 30,
+    watch_duration_seconds: 15,
     max_ads_per_day: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -145,6 +146,13 @@ function SettingsTab() {
               min: 0,
             },
             {
+              key: "watch_duration_seconds",
+              label: "সর্বনিম্ন ভিডিও দেখার সময় (সেকেন্ড)",
+              hint: "৬০ সেকেন্ড = ১ মিনিট; স্টুডেন্টকে অন্তত এতক্ষণ দেখতে হবে",
+              min: 1,
+              max: 3600,
+            },
+            {
               key: "max_ads_per_day",
               label: "দৈনিক সীমা (0 = অসীমিত)",
               hint: "0 দিলে কোনো সীমা থাকবে না",
@@ -168,7 +176,7 @@ function SettingsTab() {
               hint: "প্রমো কোড পেতে কত কয়েন লাগবে",
               min: 1,
             },
-          ].map(({ key, label, hint, min }) => (
+          ].map(({ key, label, hint, min, max }) => (
             <div key={key}>
               <label className="block text-xs font-medium mb-1 text-[var(--bii-text-soft)]">
                 {label}
@@ -177,6 +185,7 @@ function SettingsTab() {
                 className="bii-input"
                 type="number"
                 min={min}
+                max={max}
                 value={form[key]}
                 onChange={(e) =>
                   set(key, parseInt(e.target.value) ?? min)

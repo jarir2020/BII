@@ -19,6 +19,7 @@ class RewardsController extends ApiController
             'reward_zone_enabled' => true,
             'coins_per_ad' => 5,
             'ad_watch_cooldown_seconds' => 30,
+            'watch_duration_seconds' => 15,
             'max_ads_per_day' => 0,
             'coins_per_taka' => 10,
             'min_cashout_coins' => 100,
@@ -42,6 +43,7 @@ class RewardsController extends ApiController
         $user = $this->user();
         $cfg = $this->cfg();
         $maxPerDay = (int) $cfg['max_ads_per_day'];
+        $watchDuration = max(1, min(3600, (int) $cfg['watch_duration_seconds']));
 
         $todayStart = gmdate('Y-m-d\T00:00:00');
         $todayCount = (int) Yii::$app->db->createCommand(
@@ -71,6 +73,7 @@ class RewardsController extends ApiController
             'unlimited' => $unlimited,
             'daily_remaining' => $unlimited ? 999999 : max(0, $maxPerDay - $todayCount),
             'cooldown_remaining' => $cooldownRemaining,
+            'watch_duration_seconds' => $watchDuration,
             'coins_per_ad' => (int) $cfg['coins_per_ad'],
             'coins_per_taka' => (int) $cfg['coins_per_taka'],
             'min_cashout_coins' => (int) $cfg['min_cashout_coins'],

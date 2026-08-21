@@ -341,7 +341,8 @@ export default function RewardZone() {
 
   const canClaim   = cooldown <= 0;
   const currentAd  = ads.length > 0 ? ads[adIdx % ads.length] : null;
-  const adDuration = currentAd?.duration_seconds ?? 15;
+  const minimumWatchDuration = stats?.watch_duration_seconds ?? 15;
+  const adDuration = Math.max(1, Number(minimumWatchDuration), Number(currentAd?.duration_seconds ?? 0));
 
   const startAd = () => { if (!canClaim) return; setWatching(true); setAdDone(false); };
 
@@ -546,7 +547,7 @@ export default function RewardZone() {
                       )
                     }
                     <div className="flex-1 text-sm text-[var(--bii-text-soft)]">
-                      {adDone ? "নিচের বাটনে ক্লিক করে কয়েন নিন।" : "ভিডিও শেষ হলে কয়েন নিন বাটন সক্রিয় হবে।"}
+                      {adDone ? "নিচের বাটনে ক্লিক করে কয়েন নিন।" : "নির্ধারিত সময় শেষ হলে কয়েন নিন বাটন সক্রিয় হবে।"}
                     </div>
                   </div>
                   <div className="flex gap-3">
@@ -575,7 +576,7 @@ export default function RewardZone() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-xs font-semibold text-[var(--bii-text)] truncate">{currentAd.title}</div>
-                        <div className="text-xs text-[var(--bii-text-soft)]">⏱ {BN(currentAd.duration_seconds)} সেকেন্ড</div>
+                        <div className="text-xs text-[var(--bii-text-soft)]">⏱ {BN(adDuration)} সেকেন্ড দেখতে হবে</div>
                       </div>
                     </div>
                   )}
