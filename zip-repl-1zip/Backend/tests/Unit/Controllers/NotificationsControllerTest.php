@@ -83,6 +83,7 @@ final class NotificationsControllerTest extends ApiControllerTestCase
             'body_bn' => 'আগামীকাল পরীক্ষা',
             'body_en' => 'Exam tomorrow',
             'user_id' => '',
+            'image_url' => '/uploads/exam.jpg',
         ];
 
         $result = $controller->actionIndex();
@@ -90,6 +91,7 @@ final class NotificationsControllerTest extends ApiControllerTestCase
 
         $this->assertSame(' পরীক্ষার সময়সূচী', $data['title_bn']);
         $this->assertSame('Exam Schedule', $data['title_en']);
+        $this->assertSame('/uploads/exam.jpg', $data['image_url']);
         $this->assertSame(0, (int) $data['read']);
         $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T/', $data['created_at']);
     }
@@ -300,7 +302,7 @@ final class NotificationsControllerTest extends ApiControllerTestCase
             'body_bn' => 'শরতী পরীক্ষা',
             'body_en' => 'Midterm exam',
             'target' => 'all',
-            'image_url' => '',
+            'image_url' => '/uploads/push.jpg',
             'click_action' => '/',
         ];
 
@@ -309,8 +311,16 @@ final class NotificationsControllerTest extends ApiControllerTestCase
 
         $this->assertSame('পুশ টেস্ট', $data['title_bn']);
         $this->assertSame('all', $data['target']);
+        $this->assertSame('/uploads/push.jpg', $data['image_url']);
         $this->assertContains($data['status'], ['pending', 'failed']);
         $this->assertSame(0, (int) $data['sent_count']);
+
+        $inApp = Yii::$app->db->createCommand(
+            'SELECT * FROM notifications WHERE user_id = "" AND title_en = :title',
+            [':title' => 'Push Test']
+        )->queryOne();
+        $this->assertNotFalse($inApp);
+        $this->assertSame('/uploads/push.jpg', $inApp['image_url']);
     }
 
     public function testPushParsesUserTarget(): void

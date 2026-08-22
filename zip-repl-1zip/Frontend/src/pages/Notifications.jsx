@@ -64,8 +64,8 @@ export default function Notifications() {
 
           <input className="bii-input" placeholder="বাংলা শিরোনাম *" value={form.title_bn} onChange={(e) => setForm({ ...form, title_bn: e.target.value })} required />
           <input className="bii-input" placeholder="English title (optional)" value={form.title_en} onChange={(e) => setForm({ ...form, title_en: e.target.value })} />
-          <textarea className="bii-input min-h-[80px]" placeholder="বাংলা বার্তা" value={form.body_bn} onChange={(e) => setForm({ ...form, body_bn: e.target.value })} />
-          <textarea className="bii-input min-h-[60px]" placeholder="English message (optional)" value={form.body_en} onChange={(e) => setForm({ ...form, body_en: e.target.value })} />
+          <textarea className="bii-input min-h-[80px]" placeholder="বাংলা বিবরণ" value={form.body_bn} onChange={(e) => setForm({ ...form, body_bn: e.target.value })} />
+          <textarea className="bii-input min-h-[60px]" placeholder="English description (optional)" value={form.body_en} onChange={(e) => setForm({ ...form, body_en: e.target.value })} />
 
           <div>
             <label className="block text-sm font-medium mb-1.5"><ImageIcon size={14} className="inline mr-1" /> ব্যানার ছবি</label>

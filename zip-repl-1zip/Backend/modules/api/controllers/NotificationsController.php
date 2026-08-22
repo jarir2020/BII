@@ -6,6 +6,7 @@ namespace app\modules\api\controllers;
 
 use app\components\FcmService;
 use app\components\WebPushService;
+use app\helpers\NotificationStore;
 use app\helpers\Uuid;
 use Throwable;
 use Yii;
@@ -31,10 +32,11 @@ class NotificationsController extends ApiController
                 'title_en' => (string) ($b['title_en'] ?? ''),
                 'body_bn' => (string) ($b['body_bn'] ?? ''),
                 'body_en' => (string) ($b['body_en'] ?? ''),
+                'image_url' => (string) ($b['image_url'] ?? ''),
                 'read' => 0,
                 'created_at' => $this->now(),
             ];
-            Yii::$app->db->createCommand()->insert('notifications', $doc)->execute();
+            $doc = NotificationStore::insert($doc);
             return $this->json($doc);
         }
         $user = $this->user();
@@ -181,6 +183,7 @@ class NotificationsController extends ApiController
                     'error' => $doc['error'],
                     'sent_at' => $doc['sent_at'],
                 ], ['id' => $doc['id']])->execute();
+                $this->storeInAppNotification($doc);
             }
 
             return $this->json($doc);
@@ -255,6 +258,7 @@ class NotificationsController extends ApiController
                 'error' => $result['error'] ?: null,
                 'sent_at' => $now,
             ], ['id' => $row['id']])->execute();
+            $this->storeInAppNotification($row);
             $processed++;
         }
 
@@ -320,6 +324,48 @@ class NotificationsController extends ApiController
             'failed' => $totalFailed,
             'error' => implode('; ', $errors),
         ];
+    }
+
+    /** Store the same admin-sent notification in the in-app feed. */
+    private function storeInAppNotification(array $push): void
+    {
+        try {
+            foreach ($this->resolveInAppRecipients((string) ($push['target'] ?? 'all')) as $userId) {
+                NotificationStore::insert([
+                    'id' => Uuid::v4(),
+                    'user_id' => $userId,
+                    'title_bn' => (string) ($push['title_bn'] ?? ''),
+                    'title_en' => (string) ($push['title_en'] ?? ''),
+                    'body_bn' => (string) ($push['body_bn'] ?? ''),
+                    'body_en' => (string) ($push['body_en'] ?? ''),
+                    'image_url' => (string) ($push['image_url'] ?? ''),
+                    'read' => 0,
+                    'created_at' => $this->now(),
+                ]);
+            }
+        } catch (Throwable $e) {
+            Yii::warning('In-app notification copy skipped: ' . $e->getMessage(), __METHOD__);
+        }
+    }
+
+    /** @return string[] */
+    private function resolveInAppRecipients(string $target): array
+    {
+        if ($target === 'all') {
+            return [''];
+        }
+        if (preg_match('/^user:(.+)$/', $target, $m)) {
+            return [$m[1]];
+        }
+        if (preg_match('/^course:(.+)$/', $target, $m)) {
+            return array_map('strval', Yii::$app->db->createCommand(
+                'SELECT DISTINCT user_id FROM enrollments
+                 WHERE course_id = :cid
+                   AND payment_status IN ("success", "paid", "completed", "approved")',
+                [':cid' => $m[1]]
+            )->queryColumn());
+        }
+        return [];
     }
 
     /**

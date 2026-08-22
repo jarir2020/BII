@@ -18,7 +18,7 @@ class PaymentsControllerTest extends ApiControllerTestCase
     {
         $studentId = $this->createTestUser('student', 'student@example.com');
         $adminId = $this->createAdminUser('admin@example.com');
-        $courseId = $this->createTestCourse(['title_bn' => '', 'title_en' => 'Paid Course']);
+        $courseId = $this->createTestCourse(['title_bn' => '', 'title_en' => 'Paid Course', 'cover_image' => '/uploads/course.jpg']);
         $this->authenticateAs($studentId);
         Yii::$app->set('cache', ['class' => \yii\caching\ArrayCache::class]);
         $this->setMethod('POST');
@@ -38,13 +38,14 @@ class PaymentsControllerTest extends ApiControllerTestCase
         )->queryOne();
         $this->assertNotFalse($notification);
         $this->assertStringContainsString('Paid Course', $notification['body_en']);
+        $this->assertSame('/uploads/course.jpg', $notification['image_url']);
     }
 
     public function testApprovingPaymentNotifiesStudent(): void
     {
         $studentId = $this->createTestUser('student', 'student@example.com');
         $adminId = $this->createAdminUser('admin@example.com');
-        $courseId = $this->createTestCourse(['title_bn' => '', 'title_en' => 'Paid Course']);
+        $courseId = $this->createTestCourse(['title_bn' => '', 'title_en' => 'Paid Course', 'cover_image' => '/uploads/course.jpg']);
         $paymentId = $this->insertPaymentRequest($studentId, $courseId);
         $this->authenticateAs($adminId, 'admin');
         $this->setMethod('PUT');
@@ -66,7 +67,7 @@ class PaymentsControllerTest extends ApiControllerTestCase
     {
         $studentId = $this->createTestUser('student', 'student@example.com');
         $adminId = $this->createAdminUser('admin@example.com');
-        $courseId = $this->createTestCourse(['title_bn' => '', 'title_en' => 'Paid Course']);
+        $courseId = $this->createTestCourse(['title_bn' => '', 'title_en' => 'Paid Course', 'cover_image' => '/uploads/course.jpg']);
         $paymentId = $this->insertPaymentRequest($studentId, $courseId, 'approved');
         Yii::$app->db->createCommand()->insert('enrollments', [
             'id' => Uuid::v4(),
@@ -89,6 +90,11 @@ class PaymentsControllerTest extends ApiControllerTestCase
             'SELECT COUNT(*) FROM notifications WHERE user_id = :uid AND title_en = :title',
             [':uid' => $studentId, ':title' => 'Course completed']
         )->queryScalar());
+        $studentNotification = Yii::$app->db->createCommand(
+            'SELECT image_url FROM notifications WHERE user_id = :uid AND title_en = :title',
+            [':uid' => $studentId, ':title' => 'Course completed']
+        )->queryOne();
+        $this->assertSame('/uploads/course.jpg', $studentNotification['image_url']);
         $this->assertSame(1, (int) Yii::$app->db->createCommand(
             'SELECT COUNT(*) FROM notifications WHERE user_id = :uid AND title_en = :title',
             [':uid' => $adminId, ':title' => 'Course marked complete']

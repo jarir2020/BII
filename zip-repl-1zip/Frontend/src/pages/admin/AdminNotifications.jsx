@@ -235,16 +235,16 @@ export default function AdminNotifications() {
 
             {/* Body */}
             <div>
-              <label className="block text-sm font-medium mb-1.5">💬 {pick("বার্তা", "Message")}</label>
+              <label className="block text-sm font-medium mb-1.5">💬 {pick("বিবরণ", "Description")}</label>
               <textarea
                 className="bii-input min-h-[80px]"
-                placeholder="বাংলা বার্তা"
+                placeholder="বাংলা বিবরণ"
                 value={form.body_bn}
                 onChange={(e) => setForm({ ...form, body_bn: e.target.value })}
               />
               <textarea
                 className="bii-input min-h-[60px] mt-2"
-                placeholder="English message (optional)"
+                placeholder="English description (optional)"
                 value={form.body_en}
                 onChange={(e) => setForm({ ...form, body_en: e.target.value })}
               />
@@ -611,10 +611,20 @@ export default function AdminNotifications() {
 
           <div className="space-y-3">
             {events.map((n) => (
-              <div key={n.id} className="bii-card p-4" data-testid={`notif-event-${n.id}`}>
-                <h3 className="font-heading text-base text-[var(--bii-emerald)]">{pick(n.title_bn, n.title_en)}</h3>
-                <p className="text-sm text-[var(--bii-text-soft)] mt-1">{pick(n.body_bn, n.body_en)}</p>
-                <div className="text-xs text-[var(--bii-text-soft)] mt-2">{new Date(n.created_at).toLocaleString()}</div>
+              <div key={n.id} className="bii-card p-4 flex gap-4 items-start" data-testid={`notif-event-${n.id}`}>
+                {n.image_url && (
+                  <img
+                    src={imgUrl(n.image_url)}
+                    alt=""
+                    className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+                    onError={(e) => { e.currentTarget.style.display = "none"; }}
+                  />
+                )}
+                <div className="min-w-0">
+                  <h3 className="font-heading text-base text-[var(--bii-emerald)]">{pick(n.title_bn, n.title_en)}</h3>
+                  <p className="text-sm text-[var(--bii-text-soft)] mt-1">{pick(n.body_bn, n.body_en)}</p>
+                  <div className="text-xs text-[var(--bii-text-soft)] mt-2">{new Date(n.created_at).toLocaleString()}</div>
+                </div>
               </div>
             ))}
           </div>

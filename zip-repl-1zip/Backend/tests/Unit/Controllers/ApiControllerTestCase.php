@@ -576,6 +576,7 @@ abstract class ApiControllerTestCase extends \PHPUnit\Framework\TestCase
             'title_en'  => 'VARCHAR(255) NOT NULL DEFAULT \'\'',
             'body_bn'   => 'TEXT',
             'body_en'   => 'TEXT',
+            'image_url' => 'VARCHAR(512) NOT NULL DEFAULT \'\'',
             'read'      => 'TINYINT(1) NOT NULL DEFAULT 0',
             'created_at'=> 'VARCHAR(40)',
         ])->execute();
