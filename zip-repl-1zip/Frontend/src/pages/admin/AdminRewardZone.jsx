@@ -3,7 +3,7 @@ import { useLang } from "../../contexts/LangContext";
 import {
   Gift, Coins, PlayCircle, PlusCircle, PencilSimple, Trash,
   ToggleLeft, ToggleRight, SealPercent, ArrowRight, CheckCircle,
-  VideoCamera, Image as ImageIcon, YoutubeLogo, Warning, X, FloppyDisk,
+  Warning, X, FloppyDisk,
   Gear, FilmSlate, Sparkle, Eye, Link as LinkIcon,
   Money, Clock, CheckFat, XCircle,
 } from "@phosphor-icons/react";
@@ -12,6 +12,16 @@ import { toast } from "sonner";
 
 // ── Bengali numerals ──────────────────────────────────────────────────────────
 const BN = (n) => String(Math.floor(n ?? 0)).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[d]);
+const MAX_DURATION_SECONDS = 86400;
+
+function durationLabel(seconds) {
+  const total = Math.max(1, Math.round(Number(seconds) || 0));
+  const minutes = Math.floor(total / 60);
+  const remainder = total % 60;
+  if (!minutes) return `${BN(total)} সে.`;
+  if (!remainder) return `${BN(minutes)} মি.`;
+  return `${BN(minutes)} মি. ${BN(remainder)} সে.`;
+}
 
 // ── Toggle switch ─────────────────────────────────────────────────────────────
 function Toggle({ checked, onChange }) {
@@ -38,13 +48,43 @@ function Toggle({ checked, onChange }) {
   );
 }
 
-// ── YouTube ID extractor ──────────────────────────────────────────────────────
-function ytId(url) {
-  if (!url) return null;
-  const m = url.match(
-    /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/
+function DurationField({ value, onChange }) {
+  const [unit, setUnit] = useState("seconds");
+  const multiplier = unit === "minutes" ? 60 : 1;
+  const numericValue = Number(value);
+  const displayValue = value === "" || Number.isNaN(numericValue)
+    ? ""
+    : numericValue / multiplier;
+
+  return (
+    <div className="flex gap-2">
+      <input
+        className="bii-input min-w-0 flex-1"
+        type="number"
+        min={unit === "minutes" ? "0.01" : "1"}
+        max={unit === "minutes" ? MAX_DURATION_SECONDS / 60 : MAX_DURATION_SECONDS}
+        step={unit === "minutes" ? "0.01" : "1"}
+        value={displayValue}
+        onChange={(e) => {
+          if (e.target.value === "") {
+            onChange("");
+            return;
+          }
+          const next = Number(e.target.value);
+          onChange(Number.isFinite(next) ? Math.round(next * multiplier) : "");
+        }}
+      />
+      <select
+        className="bii-input w-28"
+        value={unit}
+        onChange={(e) => setUnit(e.target.value)}
+        aria-label="সময়ের একক"
+      >
+        <option value="seconds">সেকেন্ড</option>
+        <option value="minutes">মিনিট</option>
+      </select>
+    </div>
   );
-  return m ? m[1] : null;
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -147,10 +187,9 @@ function SettingsTab() {
             },
             {
               key: "watch_duration_seconds",
-              label: "সর্বনিম্ন ভিডিও দেখার সময় (সেকেন্ড)",
-              hint: "৬০ সেকেন্ড = ১ মিনিট; স্টুডেন্টকে অন্তত এতক্ষণ দেখতে হবে",
+              label: "সর্বনিম্ন ভিডিও দেখার সময়",
+              hint: "সেকেন্ড বা মিনিট বেছে দিন; স্টুডেন্টকে অন্তত এতক্ষণ দেখতে হবে",
               min: 1,
-              max: 3600,
             },
             {
               key: "max_ads_per_day",
@@ -181,16 +220,23 @@ function SettingsTab() {
               <label className="block text-xs font-medium mb-1 text-[var(--bii-text-soft)]">
                 {label}
               </label>
-              <input
-                className="bii-input"
-                type="number"
-                min={min}
-                max={max}
-                value={form[key]}
-                onChange={(e) =>
-                  set(key, parseInt(e.target.value) ?? min)
-                }
-              />
+              {key === "watch_duration_seconds" ? (
+                <DurationField
+                  value={form[key]}
+                  onChange={(value) => set(key, value)}
+                />
+              ) : (
+                <input
+                  className="bii-input"
+                  type="number"
+                  min={min}
+                  max={max}
+                  value={form[key]}
+                  onChange={(e) =>
+                    set(key, e.target.value === "" ? "" : Number(e.target.value))
+                  }
+                />
+              )}
               <p className="text-xs text-[var(--bii-text-soft)] mt-1">
                 {hint}
               </p>
@@ -278,20 +324,9 @@ function SettingsTab() {
 // Tab 2 — Ad Management
 // ══════════════════════════════════════════════════════════════════════════════
 
-const AD_TYPE_LABELS = {
-  image: "ছবি বিজ্ঞাপন",
-  video: "ভিডিও ফাইল",
-  youtube: "YouTube ভিডিও",
-};
-const AD_TYPE_ICONS = {
-  image: ImageIcon,
-  video: VideoCamera,
-  youtube: YoutubeLogo,
-};
-
 const BLANK_AD = {
   title: "",
-  ad_type: "youtube",
+  ad_type: "link",
   media_url: "",
   thumbnail_url: "",
   duration_seconds: 15,
@@ -319,10 +354,13 @@ function AdForm({ initial, onSave, onCancel }) {
     try {
       const payload = {
         title: form.title.trim(),
-        ad_type: form.ad_type,
+        ad_type: "link",
         media_url: form.media_url.trim(),
-        thumbnail_url: form.thumbnail_url.trim(),
-        duration_seconds: Number(form.duration_seconds) || 15,
+        thumbnail_url: "",
+        duration_seconds: Math.max(
+          1,
+          Math.min(MAX_DURATION_SECONDS, Math.round(Number(form.duration_seconds) || 15))
+        ),
         is_active: !!form.is_active,
         order: Number(form.order) || 0,
         description: form.description.trim(),
@@ -332,15 +370,6 @@ function AdForm({ initial, onSave, onCancel }) {
       setSaving(false);
     }
   };
-
-  const ytPreviewId = form.ad_type === "youtube" ? ytId(form.media_url) : null;
-
-  const urlPlaceholder =
-    form.ad_type === "youtube"
-      ? "https://www.youtube.com/watch?v=XXXXXXXXXXX"
-      : form.ad_type === "video"
-      ? "https://example.com/video.mp4"
-      : "https://example.com/banner.jpg";
 
   return (
     <div className="bii-card border-2 border-[var(--bii-emerald)]/30 p-5 space-y-4">
@@ -362,50 +391,24 @@ function AdForm({ initial, onSave, onCancel }) {
         />
       </div>
 
-      {/* Type + Duration */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-semibold mb-1 text-[var(--bii-text-soft)]">
-            বিজ্ঞাপনের ধরন
-          </label>
-          <select
-            className="bii-input"
-            value={form.ad_type}
-            onChange={(e) => {
-              set("ad_type", e.target.value);
-              set("media_url", "");
-            }}
-          >
-            <option value="youtube">🎬 YouTube ভিডিও</option>
-            <option value="video">📹 ভিডিও ফাইল (MP4)</option>
-            <option value="image">🖼️ ছবি বিজ্ঞাপন</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-semibold mb-1 text-[var(--bii-text-soft)]">
-            দেখার সময় (সেকেন্ড)
-          </label>
-          <input
-            className="bii-input"
-            type="number"
-            min="5"
-            max="300"
-            value={form.duration_seconds}
-            onChange={(e) =>
-              set("duration_seconds", parseInt(e.target.value) || 15)
-            }
-          />
-        </div>
+      {/* Duration */}
+      <div>
+        <label className="block text-xs font-semibold mb-1 text-[var(--bii-text-soft)]">
+          দেখার সময়
+        </label>
+        <DurationField
+          value={form.duration_seconds}
+          onChange={(value) => set("duration_seconds", value)}
+        />
+        <p className="text-[11px] text-[var(--bii-text-soft)] mt-1">
+          ১ মিনিট = ৬০ সেকেন্ড (সর্বোচ্চ ২৪ ঘণ্টা)
+        </p>
       </div>
 
       {/* URL */}
       <div>
         <label className="block text-xs font-semibold mb-1 text-[var(--bii-text-soft)]">
-          {form.ad_type === "youtube"
-            ? "YouTube লিংক"
-            : form.ad_type === "video"
-            ? "ভিডিও URL"
-            : "ছবির URL"}{" "}
+          বিজ্ঞাপন লিংক (যেকোনো URL) {" "}
           <span className="text-red-500">*</span>
         </label>
         <div className="relative">
@@ -415,51 +418,26 @@ function AdForm({ initial, onSave, onCancel }) {
           />
           <input
             className="bii-input pl-8"
-            placeholder={urlPlaceholder}
+            placeholder="https://example.com/your-video-or-page"
             value={form.media_url}
             onChange={(e) => set("media_url", e.target.value)}
           />
         </div>
-
-        {/* YouTube preview */}
-        {ytPreviewId && (
-          <div className="mt-2 rounded-xl overflow-hidden border border-[var(--bii-border)] bg-black aspect-video w-full max-w-sm">
-            <iframe
-              src={`https://www.youtube.com/embed/${ytPreviewId}`}
-              title="preview"
-              className="w-full h-full"
-              allowFullScreen
-            />
-          </div>
-        )}
-
-        {/* Image preview */}
-        {form.ad_type === "image" && form.media_url.trim() && (
-          <div className="mt-2">
-            <img
-              src={form.media_url}
-              alt="preview"
-              className="max-h-40 rounded-xl border border-[var(--bii-border)] object-contain"
-              onError={(e) => (e.target.style.display = "none")}
-            />
-          </div>
+        <p className="mt-1 text-xs text-[var(--bii-text-soft)]">
+          YouTube, সরাসরি ভিডিও, ওয়েবসাইট বা অ্যাকাউন্ট—যেকোনো লিংক দিন। স্টুডেন্ট
+          “ভিডিও দেখুন” চাপলে লিংকটি ফুল স্ক্রিনে খুলবে।
+        </p>
+        {form.media_url.trim() && (
+          <a
+            href={form.media_url.trim()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 flex items-center justify-center gap-2 rounded-xl bg-[var(--bii-emerald)] px-4 py-3 text-sm font-semibold text-white hover:opacity-90"
+          >
+            <LinkIcon size={16} weight="bold" /> লিংকটি পূর্ণস্ক্রিনে খুলে দেখুন
+          </a>
         )}
       </div>
-
-      {/* Thumbnail URL (for video only) */}
-      {form.ad_type === "video" && (
-        <div>
-          <label className="block text-xs font-semibold mb-1 text-[var(--bii-text-soft)]">
-            থাম্বনেইল URL (ঐচ্ছিক)
-          </label>
-          <input
-            className="bii-input"
-            placeholder="https://example.com/thumb.jpg"
-            value={form.thumbnail_url}
-            onChange={(e) => set("thumbnail_url", e.target.value)}
-          />
-        </div>
-      )}
 
       {/* Order + Active */}
       <div className="flex items-center gap-4">
@@ -581,9 +559,9 @@ function AdsTab() {
     try {
       const payload = {
         title: ad.title,
-        ad_type: ad.ad_type,
+        ad_type: "link",
         media_url: ad.media_url,
-        thumbnail_url: ad.thumbnail_url || "",
+        thumbnail_url: "",
         duration_seconds: ad.duration_seconds,
         is_active: !ad.is_active,
         order: ad.order,
@@ -669,8 +647,8 @@ function AdsTab() {
             এখনও কোনো বিজ্ঞাপন নেই
           </p>
           <p className="text-sm text-[var(--bii-text-soft)] max-w-sm mx-auto">
-            "নতুন বিজ্ঞাপন যোগ করুন" বাটনে ক্লিক করে YouTube লিংক, ভিডিও
-            ফাইল বা ছবি যোগ করুন। স্টুডেন্টরা এই বিজ্ঞাপন দেখে কয়েন আয় করবে।
+            "নতুন বিজ্ঞাপন যোগ করুন" বাটনে ক্লিক করে শুধু বিজ্ঞাপনের লিংক দিন। লিংকটি
+            YouTube, ওয়েবসাইট, অ্যাকাউন্ট বা সরাসরি ভিডিও—যেকোনো কিছু হতে পারে।
           </p>
           <button
             onClick={() => setEditing("new")}
@@ -684,11 +662,6 @@ function AdsTab() {
       {/* Ads list */}
       <div className="space-y-3">
         {ads.map((ad) => {
-          const Icon = AD_TYPE_ICONS[ad.ad_type] || ImageIcon;
-          const ytThumb =
-            ad.ad_type === "youtube" && ytId(ad.media_url)
-              ? `https://img.youtube.com/vi/${ytId(ad.media_url)}/mqdefault.jpg`
-              : null;
           return (
             <div
               key={ad.id}
@@ -697,32 +670,9 @@ function AdsTab() {
               }`}
             >
               {/* Thumbnail / icon */}
-              {ytThumb ? (
-                <img
-                  src={ytThumb}
-                  alt=""
-                  className="w-14 h-10 rounded-lg object-cover flex-shrink-0 border border-[var(--bii-border)]"
-                />
-              ) : ad.ad_type === "image" && ad.media_url ? (
-                <img
-                  src={ad.media_url}
-                  alt=""
-                  className="w-14 h-10 rounded-lg object-cover flex-shrink-0 border border-[var(--bii-border)]"
-                  onError={(e) => (e.target.style.display = "none")}
-                />
-              ) : (
-                <div
-                  className={`w-14 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                    ad.ad_type === "youtube"
-                      ? "bg-red-100 text-red-600"
-                      : ad.ad_type === "video"
-                      ? "bg-blue-100 text-blue-600"
-                      : "bg-purple-100 text-purple-600"
-                  }`}
-                >
-                  <Icon size={20} weight="fill" />
-                </div>
-              )}
+              <div className="w-14 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-cyan-100 text-cyan-600">
+                <LinkIcon size={20} weight="bold" />
+              </div>
 
               {/* Info */}
               <div className="flex-1 min-w-0">
@@ -731,10 +681,10 @@ function AdsTab() {
                 </div>
                 <div className="flex flex-wrap gap-2 mt-1">
                   <span className="text-xs text-[var(--bii-text-soft)] bg-gray-100 px-2 py-0.5 rounded-full">
-                    {AD_TYPE_LABELS[ad.ad_type] || ad.ad_type}
+                    বিজ্ঞাপন লিংক
                   </span>
                   <span className="text-xs text-[var(--bii-text-soft)] bg-gray-100 px-2 py-0.5 rounded-full">
-                    ⏱ {BN(ad.duration_seconds)} সে.
+                    ⏱ {durationLabel(ad.duration_seconds)}
                   </span>
                   <span
                     className={`text-xs px-2 py-0.5 rounded-full font-medium ${
@@ -797,8 +747,9 @@ function AdsTab() {
         <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-xs text-blue-700 flex items-start gap-2">
           <Warning size={14} weight="fill" className="mt-0.5 flex-shrink-0" />
           <span>
-            YouTube ভিডিও দিলে স্টুডেন্টরা সরাসরি embed করা ভিডিও দেখবে।
-            ক্রম নম্বর ছোট হলে আগে দেখাবে। সংখ্যা একই হলে যোগের ক্রম অনুযায়ী দেখাবে।
+            এখানে শুধু বিজ্ঞাপনের লিংক দিন। লিংকের ধরন আলাদা করে নির্বাচন করতে হবে না;
+            স্টুডেন্ট “ভিডিও দেখুন” চাপলে পুরো লিংকটি ফুল স্ক্রিনে খুলবে। ক্রম নম্বর ছোট
+            হলে আগে দেখাবে।
           </span>
         </div>
       )}

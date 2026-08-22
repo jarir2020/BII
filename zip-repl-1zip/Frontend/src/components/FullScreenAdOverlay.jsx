@@ -17,14 +17,26 @@ import React, { useEffect, useRef, useState } from "react";
  *   className     — extra classes
  *
  * ad shape: { ad_type, media_url, thumbnail_url, duration_seconds, title }
- * ad_type values: 'youtube' | 'video' | 'image'
+ * ad_type values: 'youtube' | 'video' | 'image' | 'link'
  */
 
-const AD_TYPE_MAP = {
-  youtube: "youtube",
-  video: "video",
-  image: "image",
-};
+function youtubeEmbedUrl(url) {
+  const value = String(url || "").trim();
+  const match = value.match(
+    /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/
+  );
+  return match
+    ? `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&rel=0`
+    : value;
+}
+
+function adLink(url) {
+  const value = String(url || "").trim();
+  if (!value) return "#";
+  if (/^https?:\/\//i.test(value) || value.startsWith("/")) return value;
+  if (value.startsWith("//")) return `https:${value}`;
+  return `https://${value}`;
+}
 
 export default function FullScreenAdOverlay({
   ad,
@@ -41,28 +53,34 @@ export default function FullScreenAdOverlay({
   const timerRef = useRef(null);
   const startRef = useRef(Date.now());
 
-  const duration = ad?.duration_seconds || 15;
+  const duration = Math.max(1, Number(ad?.duration_seconds) || 15);
   const adType = ad?.ad_type || "video";
   const mediaUrl = ad?.media_url || "";
+  const youtubeSrc = youtubeEmbedUrl(mediaUrl);
+  const isYoutube = youtubeSrc !== mediaUrl;
+  const isDirectVideo = adType === "video" || /\.(mp4|webm|ogg)(?:[?#]|$)/i.test(mediaUrl);
+  const isImage = adType === "image" || /\.(jpe?g|png|gif|webp|svg)(?:[?#]|$)/i.test(mediaUrl);
 
   useEffect(() => {
     startRef.current = Date.now();
+    let completionTimeout;
     timerRef.current = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startRef.current) / 1000);
       setElapsed(elapsed);
-      if (!canSkip && elapsed >= minDuration) {
-        setCanSkip(true);
-      }
+      if (elapsed >= minDuration) setCanSkip(true);
       if (elapsed >= duration) {
         clearInterval(timerRef.current);
         setFinished(true);
         setCanSkip(true);
-        setTimeout(onComplete, 500);
+        completionTimeout = setTimeout(onComplete, 500);
       }
     }, 500);
 
-    return () => clearInterval(timerRef.current);
-  }, []);
+    return () => {
+      clearInterval(timerRef.current);
+      clearTimeout(completionTimeout);
+    };
+  }, [duration, minDuration, onComplete]);
 
   const handleSkip = () => {
     clearInterval(timerRef.current);
@@ -82,17 +100,17 @@ export default function FullScreenAdOverlay({
     >
       {/* Video/Image content */}
       <div className="relative w-full h-full flex items-center justify-center">
-        {adType === "youtube" && mediaUrl && (
+        {(adType === "youtube" || isYoutube) && mediaUrl && (
           <iframe
-            src={`${mediaUrl}${mediaUrl.includes("?") ? "&" : "?"}autoplay=1&mute=1`}
+            src={youtubeSrc}
             className="w-full h-full"
             frameBorder="0"
-            allow="autoplay; encrypted-media"
+            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
             allowFullScreen
             title={title}
           />
         )}
-        {adType === "video" && mediaUrl && (
+        {isDirectVideo && mediaUrl && !isYoutube && (
           <video
             src={mediaUrl}
             autoPlay
@@ -101,12 +119,31 @@ export default function FullScreenAdOverlay({
             className="w-full h-full object-contain"
           />
         )}
-        {adType === "image" && (
+        {isImage && mediaUrl && !isYoutube && !isDirectVideo && (
           <img
             src={mediaUrl}
             alt={title}
             className="w-full h-full object-contain"
           />
+        )}
+        {adType === "link" && mediaUrl && !isYoutube && !isDirectVideo && !isImage && (
+          <div className="relative h-full w-full">
+            <iframe
+              src={adLink(mediaUrl)}
+              className="h-full w-full border-0"
+              title={title}
+              allow="fullscreen"
+              allowFullScreen
+            />
+            <a
+              href={adLink(mediaUrl)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute left-1/2 top-4 -translate-x-1/2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-black shadow-lg"
+            >
+              লিংকটি পূর্ণস্ক্রিনে খুলুন ↗
+            </a>
+          </div>
         )}
       </div>
 

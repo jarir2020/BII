@@ -3,7 +3,7 @@ import {
   Gift, PlayCircle, CheckCircle, CopySimple,
   Trophy, ClockCounterClockwise, ArrowRight, Warning,
   Star, Fire, FilmSlate, YoutubeLogo, Image as ImageIcon,
-  VideoCamera, ArrowClockwise, Medal, Crown, Eye,
+  VideoCamera, ArrowClockwise, Medal, Crown, Eye, Link as LinkIcon,
   Money, Clock, CheckFat, XCircle, Spinner, DotsThreeVertical,
 } from "@phosphor-icons/react";
 import { api, formatApiError } from "../lib/api";
@@ -11,6 +11,7 @@ import { useAds } from "../contexts/AdsContext";
 import { useLang } from "../contexts/LangContext";
 import AdBanner from "../components/AdBanner";
 import BottomBanner from "../components/BottomBanner";
+import FullScreenAdOverlay from "../components/FullScreenAdOverlay";
 import { toast } from "sonner";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -20,6 +21,14 @@ function ytId(url) {
   if (!url) return null;
   const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
   return m ? m[1] : null;
+}
+
+function adLink(url) {
+  const value = String(url || "").trim();
+  if (!value) return "#";
+  if (/^https?:\/\//i.test(value) || value.startsWith("/")) return value;
+  if (value.startsWith("//")) return `https:${value}`;
+  return `https://${value}`;
 }
 
 // ── Circular Countdown ──────────────────────────────────────────────────────
@@ -97,6 +106,33 @@ function AdPlayer({ ad, adsEnabled }) {
       <div className="rounded-2xl overflow-hidden border border-[var(--bii-border)] bg-[var(--bii-cream)] flex items-center justify-center min-h-[160px]">
         <img src={ad.media_url} alt={ad.title} className="max-w-full max-h-64 object-contain rounded-xl" />
       </div>
+    );
+  }
+  if (ad && ad.ad_type === "link") {
+    return (
+      <a
+        href={adLink(ad.media_url)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="relative block aspect-video w-full overflow-hidden rounded-2xl border border-[var(--bii-border)] bg-gradient-to-br from-[var(--bii-emerald)] to-teal-700 text-white"
+        aria-label={`${ad.title} — পূর্ণস্ক্রিনে খুলুন`}
+      >
+        {ad.thumbnail_url ? (
+          <img
+            src={ad.thumbnail_url}
+            alt={ad.title}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+            <LinkIcon size={48} weight="duotone" />
+            <span className="text-sm font-semibold">ওয়েব লিংক খুলুন</span>
+          </div>
+        )}
+        <span className="absolute inset-x-0 bottom-0 bg-black/65 px-4 py-3 text-center text-sm font-semibold">
+          লিংকে ক্লিক করে পূর্ণস্ক্রিনে খুলুন ↗
+        </span>
+      </a>
     );
   }
   return (
@@ -304,6 +340,7 @@ export default function RewardZone() {
   const [adIdx,     setAdIdx]     = useState(0);
   const [loading,   setLoading]   = useState(true);
   const [watching,  setWatching]  = useState(false);
+  const [fullScreenAd, setFullScreenAd] = useState(false);
   const [adDone,    setAdDone]    = useState(false);
   const [claiming,  setClaiming]  = useState(false);
   const [cooldown,  setCooldown]  = useState(0);
@@ -344,19 +381,29 @@ export default function RewardZone() {
   const minimumWatchDuration = stats?.watch_duration_seconds ?? 15;
   const adDuration = Math.max(1, Number(minimumWatchDuration), Number(currentAd?.duration_seconds ?? 0));
 
-  const startAd = () => { if (!canClaim) return; setWatching(true); setAdDone(false); };
+  const startAd = () => {
+    if (!canClaim || !currentAd) return;
+    setWatching(true);
+    setAdDone(false);
+    setFullScreenAd(true);
+  };
+
+  const finishFullScreenAd = useCallback(() => {
+    setFullScreenAd(false);
+    setAdDone(true);
+  }, []);
 
   const claimCoins = async () => {
     setClaiming(true);
     try {
       const r = await api.post("/rewards/watch-ad");
       toast.success(`🎉 ${BN(r.data.coins_earned)} কয়েন পেয়েছেন!`);
-      setWatching(false); setAdDone(false); setCooldown(30);
+      setWatching(false); setFullScreenAd(false); setAdDone(false); setCooldown(30);
       setAdIdx((i) => i + 1);
       await loadAll();
     } catch (e) {
       toast.error(formatApiError(e));
-      setWatching(false);
+      setWatching(false); setFullScreenAd(false);
     } finally { setClaiming(false); }
   };
 
@@ -403,6 +450,16 @@ export default function RewardZone() {
 
   return (
     <div className="max-w-lg mx-auto space-y-4 pb-16 sm:pb-24">
+
+      {fullScreenAd && currentAd && (
+        <FullScreenAdOverlay
+          ad={{ ...currentAd, duration_seconds: adDuration }}
+          onComplete={finishFullScreenAd}
+          title={currentAd.title || "বিজ্ঞাপন"}
+          skipLabel="দেখা শেষ করুন"
+          minDuration={adDuration}
+        />
+      )}
 
       {/* ── Hero ── */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[var(--bii-emerald)] via-emerald-600 to-teal-700 text-white px-6 pt-8 pb-6 text-center">
@@ -532,6 +589,7 @@ export default function RewardZone() {
                       {currentAd.ad_type === "youtube" && <YoutubeLogo size={14} className="text-red-500" />}
                       {currentAd.ad_type === "video"   && <VideoCamera size={14} className="text-blue-500" />}
                       {currentAd.ad_type === "image"   && <ImageIcon   size={14} className="text-purple-500" />}
+                      {currentAd.ad_type === "link"    && <LinkIcon    size={14} className="text-cyan-500" />}
                       <span className="truncate">{currentAd.title}</span>
                     </div>
                   )}
@@ -551,7 +609,7 @@ export default function RewardZone() {
                     </div>
                   </div>
                   <div className="flex gap-3">
-                    <button onClick={() => { setWatching(false); setAdDone(false); }}
+                    <button onClick={() => { setWatching(false); setFullScreenAd(false); setAdDone(false); }}
                       className="px-4 py-2 rounded-xl border border-[var(--bii-border)] text-sm text-red-500 hover:bg-red-50 transition">
                       বাতিল
                     </button>
@@ -568,10 +626,12 @@ export default function RewardZone() {
                       <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
                         currentAd.ad_type === "youtube" ? "bg-red-100 text-red-600" :
                         currentAd.ad_type === "video"   ? "bg-blue-100 text-blue-600" :
+                        currentAd.ad_type === "link"    ? "bg-cyan-100 text-cyan-600" :
                                                           "bg-purple-100 text-purple-600"
                       }`}>
                         {currentAd.ad_type === "youtube" ? <YoutubeLogo size={18} weight="fill" /> :
                          currentAd.ad_type === "video"   ? <VideoCamera size={18} weight="fill" /> :
+                         currentAd.ad_type === "link"    ? <LinkIcon size={18} weight="bold" /> :
                                                            <ImageIcon   size={18} weight="fill" />}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -583,7 +643,7 @@ export default function RewardZone() {
                   {cooldown > 0
                     ? <CooldownTimer seconds={cooldown} onDone={() => setCooldown(0)} />
                     : null}
-                  <button onClick={startAd} disabled={!canClaim}
+                  <button onClick={startAd} disabled={!canClaim || !currentAd}
                     className={`w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-3 transition-all ${
                       canClaim
                         ? "bg-gradient-to-r from-[var(--bii-emerald)] to-emerald-500 text-white shadow-lg shadow-emerald-200 hover:opacity-90 active:scale-95"

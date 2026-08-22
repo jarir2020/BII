@@ -12,6 +12,8 @@ use Yii;
  */
 class AdminRewardsController extends ApiController
 {
+    private const MAX_DURATION_SECONDS = 86400; // 24 hours; no short ad-specific cap
+
     /** GET (view) / PUT (update) /api/admin/reward-settings */
     public function actionRewardSettings(): \yii\web\Response
     {
@@ -19,7 +21,7 @@ class AdminRewardsController extends ApiController
         if (Yii::$app->request->isPut || Yii::$app->request->isPatch) {
             $body = Yii::$app->request->post();
             if (array_key_exists('watch_duration_seconds', $body)) {
-                $body['watch_duration_seconds'] = max(1, min(3600, (int) $body['watch_duration_seconds']));
+                $body['watch_duration_seconds'] = max(1, min(self::MAX_DURATION_SECONDS, (int) $body['watch_duration_seconds']));
             }
             $this->writeConfig('reward_zone', $body);
             return $this->json(['ok' => true]);
@@ -36,13 +38,17 @@ class AdminRewardsController extends ApiController
             $platform = in_array($b['platform'] ?? '', ['all', 'web', 'app'], true)
                 ? $b['platform']
                 : 'all';
+            $durationSeconds = max(1, min(
+                self::MAX_DURATION_SECONDS,
+                (int) ($b['duration_seconds'] ?? 15)
+            ));
             $doc = [
                 'id' => Uuid::v4(),
                 'title' => (string) ($b['title'] ?? ''),
                 'ad_type' => (string) ($b['ad_type'] ?? ''),
                 'media_url' => (string) ($b['media_url'] ?? ''),
                 'thumbnail_url' => (string) ($b['thumbnail_url'] ?? ''),
-                'duration_seconds' => (int) ($b['duration_seconds'] ?? 15),
+                'duration_seconds' => $durationSeconds,
                 'is_active' => ($b['is_active'] ?? true) ? 1 : 0,
                 'order' => (int) ($b['order'] ?? 0),
                 'description' => (string) ($b['description'] ?? ''),
@@ -70,12 +76,16 @@ class AdminRewardsController extends ApiController
             return $this->json(['ok' => true]);
         }
         $b = $request->post();
+        $durationSeconds = max(1, min(
+            self::MAX_DURATION_SECONDS,
+            (int) ($b['duration_seconds'] ?? $row['duration_seconds'])
+        ));
         $updates = [
             'title' => (string) ($b['title'] ?? $row['title']),
             'ad_type' => (string) ($b['ad_type'] ?? $row['ad_type']),
             'media_url' => (string) ($b['media_url'] ?? $row['media_url']),
             'thumbnail_url' => (string) ($b['thumbnail_url'] ?? $row['thumbnail_url']),
-            'duration_seconds' => (int) ($b['duration_seconds'] ?? $row['duration_seconds']),
+            'duration_seconds' => $durationSeconds,
             'is_active' => ($b['is_active'] ?? $row['is_active']) ? 1 : 0,
             'order' => (int) ($b['order'] ?? $row['order']),
             'description' => (string) ($b['description'] ?? $row['description']),
