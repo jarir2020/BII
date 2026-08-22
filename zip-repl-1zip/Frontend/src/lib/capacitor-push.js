@@ -35,27 +35,49 @@ export async function requestNativePushToken() {
       return null;
     }
 
-    // Register for push notifications
-    await PushNotifications.register();
-
-    // Wait for token (max 10 seconds)
+    // Install listeners before registering. The native plugin can emit the
+    // token immediately, so registering first can miss the event.
     const token = await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        PushNotifications.removeAllListeners();
-        reject(new Error("Push token timeout"));
-      }, 10000);
+      let registrationHandle;
+      let errorHandle;
+      let settled = false;
+      let timeout;
 
-      PushNotifications.addListener("registration", (info) => {
+      const cleanup = () => {
         clearTimeout(timeout);
-        PushNotifications.removeAllListeners();
-        resolve(info.token);
-      });
+        registrationHandle?.remove();
+        errorHandle?.remove();
+      };
 
-      PushNotifications.addListener("registrationError", (err) => {
-        clearTimeout(timeout);
-        PushNotifications.removeAllListeners();
-        reject(err);
-      });
+      const finish = (error, value) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        if (error) reject(error);
+        else resolve(value);
+      };
+
+      timeout = setTimeout(() => finish(new Error("Push token timeout")), 10000);
+
+      (async () => {
+        registrationHandle = await PushNotifications.addListener("registration", (info) => {
+          finish(null, info.token);
+        });
+        if (settled) {
+          registrationHandle.remove();
+          return;
+        }
+
+        errorHandle = await PushNotifications.addListener("registrationError", (err) => {
+          finish(err);
+        });
+        if (settled) {
+          errorHandle.remove();
+          return;
+        }
+
+        await PushNotifications.register();
+      })().catch((error) => finish(error));
     });
 
     return token || null;

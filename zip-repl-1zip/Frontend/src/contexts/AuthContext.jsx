@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { api, setToken, formatApiError } from "../lib/api";
 import { getPushPlatform, requestFCMToken } from "../lib/firebase";
+import { isNativePlatform } from "../lib/capacitor-push";
 
 const AuthContext = createContext(null);
 export const useAuth = () => useContext(AuthContext);
@@ -12,8 +13,12 @@ export const useAuth = () => useContext(AuthContext);
  */
 async function tryRegisterFCMToken() {
   try {
-    if (!("Notification" in window)) return;
-    if (Notification.permission !== "granted") return; // NotificationPrompt handles the rest
+    // Native Capacitor permission is handled by the Push Notifications plugin.
+    // The browser-only checks below would incorrectly skip Android registration.
+    if (!isNativePlatform()) {
+      if (!("Notification" in window)) return;
+      if (Notification.permission !== "granted") return; // NotificationPrompt handles the rest
+    }
     const token = await requestFCMToken();
     if (token) {
       await api.post("/notifications/register-device", { token, platform: getPushPlatform() });
@@ -36,7 +41,11 @@ export function AuthProvider({ children }) {
       if (!authenticatedUser || typeof authenticatedUser !== "object") {
         throw new Error("Invalid authentication response");
       }
-      if (requestId === authRequestId.current) setUser(authenticatedUser);
+      if (requestId === authRequestId.current) {
+        setUser(authenticatedUser);
+        // Re-register an existing session's device token after app startup.
+        tryRegisterFCMToken();
+      }
     } catch (err) {
       // A rejected persisted token must not leave protected pages in a blank state.
       if (requestId !== authRequestId.current) return;

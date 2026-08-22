@@ -224,6 +224,21 @@ class FcmService
     }
 
     /**
+     * Resolve and send to a single logical target, such as user:{id}.
+     * An empty target is deliberately a successful no-op.
+     *
+     * @return array{sent: int, failed: int, errors: string}
+     */
+    public static function sendToTarget(array $notif, string $target): array
+    {
+        $tokens = self::resolveTargets($target);
+        if ($tokens === []) {
+            return ['sent' => 0, 'failed' => 0, 'errors' => ''];
+        }
+        return self::send($notif, $tokens);
+    }
+
+    /**
      * Query device_tokens based on targeting.
      *
      * @param string $target  "all", "user:{uid}", or "course:{cid}"
