@@ -99,18 +99,23 @@ class CoursesController extends ApiController
         $cid = (string) Yii::$app->request->get('cid', '');
 
         $enrolled = Yii::$app->db->createCommand(
-            'SELECT id FROM enrollments WHERE user_id = :u AND course_id = :c',
+            'SELECT id, payment_status FROM enrollments WHERE user_id = :u AND course_id = :c ORDER BY enrolled_at DESC LIMIT 1',
             [':u' => $user['id'], ':c' => $cid]
         )->queryOne();
         if ($enrolled === false) {
             $this->forbidden('এই কোর্সে আপনি ভর্তি নন');
         }
 
-        $live = Yii::$app->db->createCommand('SELECT * FROM live_classes WHERE course_id = :c ORDER BY scheduled_at ASC', [':c' => $cid])->queryAll();
+        $liveQuery = 'SELECT * FROM live_classes WHERE course_id = :c';
+        if (($enrolled['payment_status'] ?? '') === 'course_completed') {
+            $liveQuery .= ' AND COALESCE(is_free, 0) = 1';
+        }
+        $live = Yii::$app->db->createCommand($liveQuery . ' ORDER BY scheduled_at ASC', [':c' => $cid])->queryAll();
         $videos = Yii::$app->db->createCommand('SELECT * FROM videos WHERE course_id = :c ORDER BY created_at DESC', [':c' => $cid])->queryAll();
         $pdfs = $this->safePdfs($cid);
 
         return $this->json([
+            'enrollment_status' => (string) ($enrolled['payment_status'] ?? ''),
             'live_classes' => array_map(fn ($r) => $this->toDoc($r), $live),
             'videos' => array_map(fn ($r) => $this->toDoc($r), $videos),
             'pdfs' => $pdfs,

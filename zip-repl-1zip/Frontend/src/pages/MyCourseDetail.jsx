@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft, VideoCamera, ArrowSquareOut, FilePdf,
   Clock, User, BookOpen, CalendarBlank,
-  GraduationCap, LinkSimple, Info, Play,
+  GraduationCap, LinkSimple, Info, Play, SealCheck,
 } from "@phosphor-icons/react";
 import { useLang } from "../contexts/LangContext";
 import { api, imgUrl } from "../lib/api";
@@ -36,6 +36,10 @@ function youtubeEmbed(url) {
     url.match(/youtube\.com\/watch\?v=([^&]+)/) ||
     url.match(/youtube\.com\/embed\/([^?&]+)/);
   return m ? `https://www.youtube.com/embed/${m[1]}` : null;
+}
+
+function isCompletedEnrollment(status) {
+  return String(status || "").trim().toLowerCase() === "course_completed";
 }
 
 // ── sub-components ────────────────────────────────────────────────────────────
@@ -279,6 +283,7 @@ export default function MyCourseDetail() {
   const liveClasses = content?.live_classes || [];
   const videos = content?.videos || [];
   const pdfs = content?.pdfs || [];
+  const courseCompleted = isCompletedEnrollment(content?.enrollment_status);
   const upcomingLive = liveClasses.filter((l) => isUpcoming(l.scheduled_at));
   const pastLive = liveClasses.filter((l) => !isUpcoming(l.scheduled_at));
 
@@ -320,9 +325,13 @@ export default function MyCourseDetail() {
                 )}
               </div>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 border border-green-200 text-green-700 text-xs font-semibold">
-              <GraduationCap size={15} weight="fill" />
-              ভর্তি হয়েছেন
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold ${
+              courseCompleted
+                ? "bg-amber-50 border border-amber-200 text-amber-700"
+                : "bg-green-50 border border-green-200 text-green-700"
+            }`}>
+              {courseCompleted ? <SealCheck size={15} weight="fill" /> : <GraduationCap size={15} weight="fill" />}
+              {courseCompleted ? "কোর্স সম্পন্ন" : "ভর্তি হয়েছেন"}
             </div>
           </div>
 

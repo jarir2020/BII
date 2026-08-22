@@ -234,6 +234,29 @@ final class CoursesControllerTest extends ApiControllerTestCase
         $this->assertSame('My Course', $data[0]['title_en']);
     }
 
+    public function testMyCoursesReturnsCourseCompletionStatus(): void
+    {
+        $courseId = $this->createTestCourse(['title_en' => 'Completed Course']);
+        $userId = $this->createTestUser();
+        $this->authenticateAs($userId);
+
+        Yii::$app->db->createCommand()->insert('enrollments', [
+            'id' => Uuid::v4(),
+            'user_id' => $userId,
+            'course_id' => $courseId,
+            'enrolled_at' => Time::now(),
+            'payment_status' => 'course_completed',
+            'amount' => 0,
+        ])->execute();
+
+        $controller = new \app\modules\api\controllers\CoursesController('courses', Yii::$app, []);
+        $result = $controller->actionMyCourses();
+        $data = $result->data;
+
+        $this->assertCount(1, $data);
+        $this->assertSame('course_completed', $data[0]['enrollment_status']);
+    }
+
     public function testDeleteCourseRequiresAdmin(): void
     {
         $courseId = $this->createTestCourse();
@@ -364,8 +387,41 @@ final class CoursesControllerTest extends ApiControllerTestCase
         $result = $controller->actionContent();
         $data = $result->data;
 
+        $this->assertSame('free', $data['enrollment_status']);
         $this->assertCount(1, $data['live_classes']);
         $this->assertCount(1, $data['videos']);
         $this->assertSame('https://zoom.us/j/123', $data['live_classes'][0]['join_url']);
+    }
+
+    public function testCompletedEnrollmentContentHidesPaidLiveClasses(): void
+    {
+        $courseId = $this->createTestCourse();
+        $userId = $this->createTestUser();
+        $this->authenticateAs($userId);
+
+        Yii::$app->db->createCommand()->insert('enrollments', [
+            'id' => Uuid::v4(),
+            'user_id' => $userId,
+            'course_id' => $courseId,
+            'enrolled_at' => Time::now(),
+            'payment_status' => 'course_completed',
+            'amount' => 0,
+        ])->execute();
+
+        Yii::$app->db->createCommand()->batchInsert('live_classes', [
+            'id', 'title_bn', 'title_en', 'join_url', 'scheduled_at', 'course_id', 'is_free',
+        ], [
+            [Uuid::v4(), 'পেইড ক্লাস', 'Paid Class', 'https://zoom.us/j/paid', Time::now(), $courseId, 0],
+            [Uuid::v4(), 'ফ্রি ক্লাস', 'Free Class', 'https://zoom.us/j/free', Time::now(), $courseId, 1],
+        ])->execute();
+
+        $controller = new \app\modules\api\controllers\CoursesController('courses', Yii::$app, []);
+        Yii::$app->request->setQueryParams(['cid' => $courseId]);
+        $result = $controller->actionContent();
+        $data = $result->data;
+
+        $this->assertSame('course_completed', $data['enrollment_status']);
+        $this->assertCount(1, $data['live_classes']);
+        $this->assertSame('Free Class', $data['live_classes'][0]['title_en']);
     }
 }
