@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace app\modules\api\controllers;
 
 use app\helpers\Telegram;
+use app\helpers\CourseNotifications;
 use app\helpers\Time;
 use app\helpers\Uuid;
 use Yii;
@@ -148,6 +149,7 @@ class TelegramController extends ApiController
                 'processed_at' => $now,
                 'processed_by' => "@{$by} (Telegram)",
             ], ['id' => $pid])->execute();
+            CourseNotifications::purchaseApproved($req);
             Telegram::api('answerCallbackQuery', [
                 'callback_query_id' => $callbackId,
                 'text' => '✅ অনুমোদন হয়েছে!',

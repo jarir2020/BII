@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace app\modules\api\controllers;
 
 use app\helpers\Uuid;
+use app\helpers\CourseNotifications;
 use GuzzleHttp\Client;
 use Throwable;
 use Yii;
@@ -227,6 +228,7 @@ class SslcommerzController extends ApiController
                     'transaction_id' => $tranId, 'payment_method' => 'sslcommerz',
                 ])->execute();
             }
+            CourseNotifications::purchaseApproved($intent);
         }
 
         // Subscription activation (Phase 6 tables).

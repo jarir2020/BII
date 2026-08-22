@@ -26,6 +26,33 @@ final class NotificationsControllerTest extends ApiControllerTestCase
         $this->assertEmpty($data);
     }
 
+    public function testAdminCanRequestOwnNotificationsOnly(): void
+    {
+        $adminId = $this->createAdminUser('admin@example.com');
+        $studentId = $this->createTestUser('student', 'student@example.com');
+        Yii::$app->db->createCommand()->insert('notifications', [
+            'id' => Uuid::v4(),
+            'user_id' => $adminId,
+            'title_en' => 'Admin event',
+            'created_at' => Time::now(),
+        ])->execute();
+        Yii::$app->db->createCommand()->insert('notifications', [
+            'id' => Uuid::v4(),
+            'user_id' => $studentId,
+            'title_en' => 'Student event',
+            'created_at' => Time::now(),
+        ])->execute();
+        $this->authenticateAs($adminId, 'admin');
+        Yii::$app->request->queryParams = ['mine' => '1'];
+
+        $controller = new \app\modules\api\controllers\NotificationsController('notifications', Yii::$app, []);
+        $result = $controller->actionIndex();
+
+        $this->assertCount(1, $result->data);
+        $this->assertSame($adminId, $result->data[0]['user_id']);
+        $this->assertSame('Admin event', $result->data[0]['title_en']);
+    }
+
     public function testPostCreatesNotificationRequiresAdmin(): void
     {
         $userId = $this->createTestUser('student');

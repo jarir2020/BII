@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace app\modules\api\controllers;
 
 use app\helpers\Telegram;
+use app\helpers\CourseNotifications;
 use app\helpers\Time;
 use app\helpers\Uuid;
 use Yii;
@@ -70,6 +71,8 @@ class PaymentsController extends ApiController
         ];
         Yii::$app->db->createCommand()->insert('payment_requests', $payReq)->execute();
 
+        CourseNotifications::purchaseSubmitted($payReq);
+
         // Notify admins on Telegram when TELEGRAM_BOT_TOKEN + CHAT_ID are set.
         Telegram::notifyPaymentRequest($payReq);
 
@@ -117,16 +120,7 @@ class PaymentsController extends ApiController
             'payment_status' => 'course_completed',
         ], ['id' => $enrollment['id']])->execute();
 
-        Yii::$app->db->createCommand()->insert('notifications', [
-            'id' => Uuid::v4(),
-            'user_id' => $req['user_id'],
-            'title_bn' => 'কোর্স সম্পন্ন হয়েছে',
-            'title_en' => 'Course completed',
-            'body_bn' => 'আপনার "' . (string) $req['course_title'] . '" কোর্সটি সম্পন্ন হয়েছে। এই কোর্সের লাইভ ক্লাস আর দেখানো হবে না। ফ্রি লাইভ ক্লাসগুলো আপনি দেখতে পারবেন।',
-            'body_en' => 'Your "' . (string) $req['course_title'] . '" course has been completed. Live classes for this course will no longer be shown, but free live classes remain available to you.',
-            'read' => 0,
-            'created_at' => $this->now(),
-        ])->execute();
+        CourseNotifications::courseCompleted($req);
 
         return $this->json([
             'ok' => true,
@@ -155,6 +149,8 @@ class PaymentsController extends ApiController
             'processed_at' => $this->now(),
             'processed_by' => $admin['email'],
         ], ['id' => $pid])->execute();
+
+        CourseNotifications::purchaseApproved($req);
 
         return $this->json(['ok' => true]);
     }
@@ -198,6 +194,7 @@ class PaymentsController extends ApiController
         }
         $this->doEnroll($req);
         Yii::$app->db->createCommand()->update('payment_requests', ['status' => 'approved'], ['id' => $pid])->execute();
+        CourseNotifications::purchaseApproved($req);
         return $this->html('<h2>✅ Payment approved — student enrolled.</h2>');
     }
 

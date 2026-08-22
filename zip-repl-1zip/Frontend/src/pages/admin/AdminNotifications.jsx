@@ -68,13 +68,15 @@ function TargetLabel({ target }) {
 /* ─── main component ─────────────────────────────────────────── */
 export default function AdminNotifications() {
   const { pick } = useLang();
-  const [tab, setTab]         = useState("send");   // "send" | "history"
+  const [tab, setTab]         = useState("send");   // "send" | "history" | "events"
   const [form, setForm]       = useState(EMPTY_FORM);
   const [courses, setCourses] = useState([]);
   const [history, setHistory] = useState([]);
+  const [events, setEvents]   = useState([]);
   const [err, setErr]         = useState("");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [eventsLoading, setEventsLoading] = useState(false);
 
   /* ── fetch data ── */
   const loadHistory = useCallback(() => {
@@ -85,10 +87,19 @@ export default function AdminNotifications() {
       .finally(() => setLoading(false));
   }, []);
 
+  const loadEvents = useCallback(() => {
+    setEventsLoading(true);
+    api.get("/notifications?mine=1")
+      .then((r) => setEvents(Array.isArray(r.data) ? r.data : []))
+      .catch(() => toast.error("ইভেন্ট নোটিফিকেশন লোড করা যায়নি"))
+      .finally(() => setEventsLoading(false));
+  }, []);
+
   useEffect(() => {
     api.get("/courses").then((r) => setCourses(Array.isArray(r.data) ? r.data : [])).catch(() => {});
     loadHistory();
-  }, [loadHistory]);
+    loadEvents();
+  }, [loadHistory, loadEvents]);
 
   /* ── derived state ── */
   const targetValue = (() => {
@@ -182,6 +193,7 @@ export default function AdminNotifications() {
         {[
           { key: "send",    label: pick("নোটিফিকেশন পাঠান", "Send Notification"),  icon: PaperPlaneTilt },
           { key: "history", label: `${pick("ইতিহাস", "History")} (${history.length})`, icon: Clock },
+          { key: "events",  label: `${pick("ইভেন্ট", "Events")} (${events.length})`, icon: Bell },
         ].map(({ key, label, icon: Icon }) => (
           <button
             key={key}
@@ -560,6 +572,49 @@ export default function AdminNotifications() {
                     <Trash size={16} />
                   </button>
                 </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════ EVENT NOTIFICATIONS TAB ══════════════ */}
+      {tab === "events" && (
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm text-[var(--bii-text-soft)]">
+              {pick("আপনার ইভেন্ট নোটিফিকেশন", "Your event notifications")}
+            </span>
+            <button
+              onClick={loadEvents}
+              disabled={eventsLoading}
+              className="flex items-center gap-1.5 text-sm text-[var(--bii-emerald)] hover:underline"
+            >
+              <ArrowClockwise size={14} className={eventsLoading ? "animate-spin" : ""} />
+              রিফ্রেশ
+            </button>
+          </div>
+
+          {eventsLoading && (
+            <div className="text-center text-[var(--bii-text-soft)] py-12">
+              <Spinner size={24} className="animate-spin mx-auto mb-2" />
+              লোড হচ্ছে...
+            </div>
+          )}
+
+          {!eventsLoading && events.length === 0 && (
+            <div className="bii-card p-10 text-center">
+              <Bell size={40} weight="duotone" className="text-[var(--bii-text-soft)] mx-auto mb-3" />
+              <p className="text-[var(--bii-text-soft)]">{pick("এখনো কোনো ইভেন্ট নোটিফিকেশন নেই।", "No event notifications yet.")}</p>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            {events.map((n) => (
+              <div key={n.id} className="bii-card p-4" data-testid={`notif-event-${n.id}`}>
+                <h3 className="font-heading text-base text-[var(--bii-emerald)]">{pick(n.title_bn, n.title_en)}</h3>
+                <p className="text-sm text-[var(--bii-text-soft)] mt-1">{pick(n.body_bn, n.body_en)}</p>
+                <div className="text-xs text-[var(--bii-text-soft)] mt-2">{new Date(n.created_at).toLocaleString()}</div>
               </div>
             ))}
           </div>
