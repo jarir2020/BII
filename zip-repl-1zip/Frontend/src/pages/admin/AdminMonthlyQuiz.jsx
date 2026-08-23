@@ -407,7 +407,17 @@ function NotifModal({ quiz, onClose }) {
 
   const send = async (e) => {
     e.preventDefault(); setErr(""); setSending(true);
-    try { await api.post("/notifications", form); setSent(true); }
+    try {
+      // Use the real push endpoint so quiz notices reach the Android system
+      // tray even when the app is closed, while still being saved in-app.
+      await api.post("/push-notifications", {
+        ...form,
+        image_url: "",
+        click_action: "/quiz",
+        target: "all",
+      });
+      setSent(true);
+    }
     catch (e2) { setErr(formatApiError(e2)); }
     finally { setSending(false); }
   };
