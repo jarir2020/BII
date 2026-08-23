@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLang } from "../../contexts/LangContext";
 import {
   Gift, Coins, PlayCircle, PlusCircle, PencilSimple, Trash,
@@ -62,20 +62,32 @@ function durationInputValue(value, unit) {
   return unit === "minutes" ? String(seconds / 60) : String(Math.round(seconds));
 }
 
+function normalizeDurationInput(value) {
+  return String(value).replace(/[০-৯]/g, (digit) => "০১২৩৪৫৬৭৮৯".indexOf(digit));
+}
+
 function DurationField({ value, onChange }) {
   const [unit, setUnit] = useState("seconds");
   const [draft, setDraft] = useState(() => durationInputValue(value, "seconds"));
+  const lastEmittedValue = useRef(value);
   const multiplier = unit === "minutes" ? 60 : 1;
 
   useEffect(() => {
-    setDraft(durationInputValue(value, unit));
+    // Parent state changes caused by this field should not replace the text
+    // currently being entered (especially on mobile number keyboards). Only
+    // sync when the value was changed from outside this component.
+    if (value !== lastEmittedValue.current) {
+      setDraft(durationInputValue(value, unit));
+    }
+    lastEmittedValue.current = value;
   }, [value, unit]);
 
   return (
     <div className="flex gap-2">
       <input
         className="bii-input min-w-0 flex-1"
-        type="number"
+        type="text"
+        inputMode={unit === "minutes" ? "decimal" : "numeric"}
         min={unit === "minutes" ? "0.01" : "1"}
         max={unit === "minutes" ? MAX_DURATION_SECONDS / 60 : MAX_DURATION_SECONDS}
         step={unit === "minutes" ? "0.01" : "1"}
@@ -84,19 +96,29 @@ function DurationField({ value, onChange }) {
           const raw = e.target.value;
           setDraft(raw);
           if (raw === "") {
+            lastEmittedValue.current = "";
             onChange("");
             return;
           }
-          const next = Number(raw);
+          const next = Number(normalizeDurationInput(raw));
           if (Number.isFinite(next) && next > 0) {
-            onChange(Math.max(1, Math.min(MAX_DURATION_SECONDS, Math.round(next * multiplier))));
+            const nextValue = Math.max(
+              1,
+              Math.min(MAX_DURATION_SECONDS, Math.round(next * multiplier))
+            );
+            lastEmittedValue.current = nextValue;
+            onChange(nextValue);
           }
         }}
       />
       <select
         className="bii-input w-28"
         value={unit}
-        onChange={(e) => setUnit(e.target.value)}
+        onChange={(e) => {
+          const nextUnit = e.target.value;
+          setUnit(nextUnit);
+          setDraft(durationInputValue(value, nextUnit));
+        }}
         aria-label="সময়ের একক"
       >
         <option value="seconds">সেকেন্ড</option>
