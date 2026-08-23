@@ -16,8 +16,15 @@ const MAX_DURATION_SECONDS = 86400;
 
 function durationLabel(seconds) {
   const total = Math.max(1, Math.round(Number(seconds) || 0));
+  const hours = Math.floor(total / 3600);
   const minutes = Math.floor(total / 60);
   const remainder = total % 60;
+  if (hours) {
+    const remainingMinutes = Math.floor((total % 3600) / 60);
+    return remainingMinutes
+      ? `${BN(hours)} ঘ. ${BN(remainingMinutes)} মি.`
+      : `${BN(hours)} ঘ.`;
+  }
   if (!minutes) return `${BN(total)} সে.`;
   if (!remainder) return `${BN(minutes)} মি.`;
   return `${BN(minutes)} মি. ${BN(remainder)} সে.`;
@@ -48,13 +55,21 @@ function Toggle({ checked, onChange }) {
   );
 }
 
+function durationInputValue(value, unit) {
+  if (value === "" || value === null || value === undefined) return "";
+  const seconds = Number(value);
+  if (!Number.isFinite(seconds) || seconds <= 0) return "";
+  return unit === "minutes" ? String(seconds / 60) : String(Math.round(seconds));
+}
+
 function DurationField({ value, onChange }) {
   const [unit, setUnit] = useState("seconds");
+  const [draft, setDraft] = useState(() => durationInputValue(value, "seconds"));
   const multiplier = unit === "minutes" ? 60 : 1;
-  const numericValue = Number(value);
-  const displayValue = value === "" || Number.isNaN(numericValue)
-    ? ""
-    : numericValue / multiplier;
+
+  useEffect(() => {
+    setDraft(durationInputValue(value, unit));
+  }, [value, unit]);
 
   return (
     <div className="flex gap-2">
@@ -64,14 +79,18 @@ function DurationField({ value, onChange }) {
         min={unit === "minutes" ? "0.01" : "1"}
         max={unit === "minutes" ? MAX_DURATION_SECONDS / 60 : MAX_DURATION_SECONDS}
         step={unit === "minutes" ? "0.01" : "1"}
-        value={displayValue}
+        value={draft}
         onChange={(e) => {
-          if (e.target.value === "") {
+          const raw = e.target.value;
+          setDraft(raw);
+          if (raw === "") {
             onChange("");
             return;
           }
-          const next = Number(e.target.value);
-          onChange(Number.isFinite(next) ? Math.round(next * multiplier) : "");
+          const next = Number(raw);
+          if (Number.isFinite(next) && next > 0) {
+            onChange(Math.max(1, Math.min(MAX_DURATION_SECONDS, Math.round(next * multiplier))));
+          }
         }}
       />
       <select
@@ -337,7 +356,11 @@ const BLANK_AD = {
 
 // ── Inline form ───────────────────────────────────────────────────────────────
 function AdForm({ initial, onSave, onCancel }) {
-  const [form, setForm] = useState({ ...BLANK_AD, ...initial });
+  const [form, setForm] = useState(() => ({
+    ...BLANK_AD,
+    ...(initial || {}),
+    duration_seconds: initial?.duration_seconds ?? BLANK_AD.duration_seconds,
+  }));
   const [saving, setSaving] = useState(false);
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 

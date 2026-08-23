@@ -16,6 +16,25 @@ import { toast } from "sonner";
 import { useAuth } from "../contexts/AuthContext";
 
 const BN = (n) => String(Math.floor(n ?? 0)).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[d]);
+const MAX_DURATION_SECONDS = 86400;
+
+function normalizeDurationSeconds(value, fallback = 15) {
+  const seconds = Number(value);
+  if (!Number.isFinite(seconds) || seconds <= 0) return fallback;
+  return Math.max(1, Math.min(MAX_DURATION_SECONDS, Math.round(seconds)));
+}
+
+function durationLabel(seconds) {
+  const total = normalizeDurationSeconds(seconds);
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const remainder = total % 60;
+  const parts = [];
+  if (hours) parts.push(`${BN(hours)} ঘণ্টা`);
+  if (minutes) parts.push(`${BN(minutes)} মিনিট`);
+  if (remainder || !parts.length) parts.push(`${BN(remainder)} সেকেন্ড`);
+  return parts.join(" ");
+}
 
 function ytId(url) {
   if (!url) return null;
@@ -378,8 +397,12 @@ export default function RewardZone() {
 
   const canClaim   = cooldown <= 0;
   const currentAd  = ads.length > 0 ? ads[adIdx % ads.length] : null;
-  const minimumWatchDuration = stats?.watch_duration_seconds ?? 15;
-  const adDuration = Math.max(1, Number(minimumWatchDuration), Number(currentAd?.duration_seconds ?? 0));
+  const minimumWatchDuration = normalizeDurationSeconds(stats?.watch_duration_seconds, 15);
+  const selectedAdDuration = normalizeDurationSeconds(
+    currentAd?.duration_seconds,
+    minimumWatchDuration
+  );
+  const adDuration = Math.max(minimumWatchDuration, selectedAdDuration);
 
   const startAd = () => {
     if (!canClaim || !currentAd) return;
@@ -636,7 +659,7 @@ export default function RewardZone() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-xs font-semibold text-[var(--bii-text)] truncate">{currentAd.title}</div>
-                        <div className="text-xs text-[var(--bii-text-soft)]">⏱ {BN(adDuration)} সেকেন্ড দেখতে হবে</div>
+                        <div className="text-xs text-[var(--bii-text-soft)]">⏱ {durationLabel(adDuration)} দেখতে হবে</div>
                       </div>
                     </div>
                   )}

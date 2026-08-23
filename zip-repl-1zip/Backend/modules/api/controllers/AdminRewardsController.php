@@ -219,6 +219,10 @@ class AdminRewardsController extends ApiController
 
     private function adDoc(array $r): array
     {
+        $r['duration_seconds'] = max(1, min(
+            self::MAX_DURATION_SECONDS,
+            (int) ($r['duration_seconds'] ?? 15)
+        ));
         $r['is_active'] = (bool) $r['is_active'];
         return $r;
     }
