@@ -52,8 +52,8 @@ export default function CrudResource({ resource, title, fields, listColumns, idF
   const imgKey = fields.find((f) => f.type === "image")?.name;
 
   return (
-    <div data-testid={`admin-${resource}-page`} className="grid lg:grid-cols-2 gap-5">
-      <form onSubmit={submit} className="bii-card p-5 space-y-3 self-start sticky top-4">
+    <div data-testid={`admin-${resource}-page`} className="grid grid-cols-1 lg:grid-cols-2 gap-5 min-w-0">
+      <form onSubmit={submit} className="bii-card p-5 space-y-3 self-start lg:sticky lg:top-4 min-w-0">
         <h2 className="font-heading text-xl text-[var(--bii-emerald)]">
           {editing ? pick(`${title} সম্পাদনা`, `Edit ${title}`) : pick(`নতুন ${title}`, `New ${title}`)}
         </h2>
@@ -79,11 +79,11 @@ export default function CrudResource({ resource, title, fields, listColumns, idF
         </div>
       </form>
 
-      <div className="space-y-3">
+      <div className="space-y-3 min-w-0">
         <div className="text-sm text-[var(--bii-text-soft)]">{pick("মোট:", "Total:")} {items.length}</div>
         {items.length === 0 && <div className="bii-card p-5 text-center text-[var(--bii-text-soft)] italic">{pick("কোন এন্ট্রি নেই", "No entries")}</div>}
         {items.map((item) => (
-          <div key={item[idField]} className="bii-card p-4 flex flex-col gap-3" data-testid={`${resource}-item-${item[idField]}`}>
+          <div key={item[idField]} className="bii-card p-4 flex flex-col gap-3 min-w-0" data-testid={`${resource}-item-${item[idField]}`}>
             <div className="flex gap-3">
               {imgKey && item[imgKey] && (
                 <img src={imgUrl(item[imgKey])} alt="" className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
