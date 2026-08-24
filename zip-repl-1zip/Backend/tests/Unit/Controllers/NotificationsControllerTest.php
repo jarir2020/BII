@@ -412,6 +412,46 @@ final class NotificationsControllerTest extends ApiControllerTestCase
         $this->assertSame(['https://push.example/paid-token'], array_column($webSubscriptions, 'endpoint'));
     }
 
+    public function testAllWebPushTargetsAreNotTruncated(): void
+    {
+        for ($i = 0; $i < 1001; $i++) {
+            Yii::$app->db->createCommand()->insert('web_push_subscriptions', [
+                'id' => Uuid::v4(),
+                'user_id' => 'user-' . $i,
+                'endpoint' => 'https://push.example/all-' . $i,
+                'p256dh' => 'p256dh-all-' . $i,
+                'auth' => 'auth-all-' . $i,
+                'created_at' => Time::now(),
+            ])->execute();
+        }
+
+        $resolver = new \ReflectionMethod(
+            \app\modules\api\controllers\NotificationsController::class,
+            'resolveWebPushTargets'
+        );
+        $resolver->setAccessible(true);
+        $subscriptions = $resolver->invoke(null, 'all');
+
+        $this->assertCount(1001, $subscriptions);
+    }
+
+    public function testFcmResolverExcludesNativeVapidEndpoints(): void
+    {
+        Yii::$app->db->createCommand()->insert('device_tokens', [
+            'id' => Uuid::v4(),
+            'user_id' => 'vapid-user',
+            'token' => 'https://push.example/vapid-endpoint',
+            'platform' => 'web',
+            'created_at' => Time::now(),
+        ])->execute();
+
+        $resolver = new \ReflectionMethod(\app\components\FcmService::class, 'resolveTargets');
+        $resolver->setAccessible(true);
+        $tokens = $resolver->invoke(null, 'all');
+
+        $this->assertNotContains('https://push.example/vapid-endpoint', array_column($tokens, 'token'));
+    }
+
     public function testPushScheduledSetsStatus(): void
     {
         $adminId = $this->createAdminUser();

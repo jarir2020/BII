@@ -379,13 +379,13 @@ class NotificationsController extends ApiController
         $base = 'SELECT endpoint, p256dh, auth FROM web_push_subscriptions';
 
         if ($target === 'all') {
-            return $db->createCommand($base . ' ORDER BY created_at DESC LIMIT 1000')->queryAll();
+            return $db->createCommand($base . ' ORDER BY created_at DESC')->queryAll();
         }
 
         if (preg_match('/^user:(.+)$/', $target, $m)) {
             $userId = $m[1];
             return $db->createCommand(
-                $base . ' WHERE user_id = :uid LIMIT 50',
+                $base . ' WHERE user_id = :uid ORDER BY created_at DESC',
                 [':uid' => $userId]
             )->queryAll();
         }
@@ -397,7 +397,7 @@ class NotificationsController extends ApiController
                     SELECT user_id FROM enrollments
                     WHERE course_id = :cid
                       AND payment_status IN ("success", "paid", "completed", "approved")
-                ) ORDER BY created_at DESC LIMIT 1000',
+                ) ORDER BY created_at DESC',
                 [':cid' => $courseId]
             )->queryAll();
         }

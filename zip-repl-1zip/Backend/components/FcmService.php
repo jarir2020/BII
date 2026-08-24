@@ -144,8 +144,12 @@ class FcmService
                 $message['notification']['image'] = $fullImageUrl;
             }
 
-            // Data payload (always sent — web + android read from this)
+            // Data payload (always sent — web + android read from this). Keep
+            // canonical title/body keys as well as language-specific keys so
+            // the service worker can render background/data-only pushes.
             $message['data'] = [
+                'title' => $title,
+                'body' => $body,
                 'click_action' => $clickAction,
                 'title_bn' => $notif['title_bn'] ?? '',
                 'title_en' => $notif['title_en'] ?? '',
@@ -249,13 +253,20 @@ class FcmService
         $db = Yii::$app->db;
 
         if ($target === '' || $target === 'all') {
-            return $db->createCommand('SELECT id, token, user_id, platform FROM device_tokens')->queryAll();
+            return $db->createCommand(
+                // Native VAPID endpoints are stored in device_tokens too, but
+                // must be delivered by WebPushService rather than FCM.
+                "SELECT id, token, user_id, platform FROM device_tokens
+                 WHERE token NOT LIKE 'http://%' AND token NOT LIKE 'https://%'"
+            )->queryAll();
         }
 
         if (preg_match('/^user:(.+)$/', $target, $m)) {
             $userId = $m[1];
             return $db->createCommand(
-                'SELECT id, token, user_id, platform FROM device_tokens WHERE user_id = :uid',
+                "SELECT id, token, user_id, platform FROM device_tokens
+                 WHERE user_id = :uid
+                   AND token NOT LIKE 'http://%' AND token NOT LIKE 'https://%'",
                 [':uid' => $userId]
             )->queryAll();
         }
@@ -263,11 +274,12 @@ class FcmService
         if (preg_match('/^course:(.+)$/', $target, $m)) {
             $courseId = $m[1];
             return $db->createCommand(
-                'SELECT DISTINCT dt.id, dt.token, dt.user_id, dt.platform
+                "SELECT DISTINCT dt.id, dt.token, dt.user_id, dt.platform
                  FROM device_tokens dt
                  INNER JOIN enrollments e ON e.user_id = dt.user_id
                  WHERE e.course_id = :cid
-                   AND e.payment_status IN ("success","paid","completed","approved")',
+                   AND e.payment_status IN (\"success\",\"paid\",\"completed\",\"approved\")
+                   AND dt.token NOT LIKE 'http://%' AND dt.token NOT LIKE 'https://%'",
                 [':cid' => $courseId]
             )->queryAll();
         }

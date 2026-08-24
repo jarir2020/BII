@@ -8,6 +8,45 @@ importScripts('https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js
 importScripts('https://www.gstatic.com/firebasejs/10.14.0/firebase-messaging-compat.js');
 
 let isInitialized = false;
+const APP_ICON = new URL('logo192.png', self.registration.scope).href;
+
+function notificationContent(payload) {
+  const notification = payload?.notification || {};
+  const data = payload?.data || payload || {};
+
+  return {
+    title: notification.title
+      || data.title
+      || data.title_bn
+      || data.title_en
+      || 'বাঙালি ইসলামিক ইনস্টিটিউট',
+    body: notification.body
+      || data.body
+      || data.body_bn
+      || data.body_en
+      || '',
+    image: notification.image || data.image || data.image_url || '',
+    clickUrl: data.click_action
+      || data.clickAction
+      || payload?.fcmOptions?.link
+      || '/',
+  };
+}
+
+function notificationOptions(content) {
+  const options = {
+    body: content.body,
+    icon: APP_ICON,
+    badge: APP_ICON,
+    data: { click_action: content.clickUrl },
+    vibrate: [200, 100, 200],
+    requireInteraction: true,
+    tag: 'bii-push',
+    renotify: true,
+  };
+  if (content.image) options.image = content.image;
+  return options;
+}
 
 async function initFirebase() {
   if (isInitialized) return;
@@ -34,32 +73,8 @@ async function initFirebase() {
     const messaging = firebase.messaging();
 
     messaging.onBackgroundMessage((payload) => {
-      // FCM v1 may send data-only payloads (no notification block).
-      // Check both payload.notification and payload.data for title/body.
-      const title = payload.notification?.title
-        || payload.data?.title_bn
-        || payload.data?.title_en
-        || 'বাঙালি ইসলামিক ইনস্টিটিউট';
-      const body = payload.notification?.body
-        || payload.data?.body_bn
-        || payload.data?.body_en
-        || '';
-      const image = payload.notification?.image || payload.data?.image || null;
-      const clickUrl = payload.data?.click_action
-        || payload.fcmOptions?.link
-        || '/';
-
-      self.registration.showNotification(title, {
-        body,
-        icon:             '/logo192.png',
-        badge:            '/logo192.png',
-        image,
-        data:             { click_action: clickUrl },
-        vibrate:          [200, 100, 200],
-        requireInteraction: true,
-        tag:              'bii-push',
-        renotify:         true,
-      });
+      const content = notificationContent(payload);
+      self.registration.showNotification(content.title, notificationOptions(content));
     });
   } catch (err) {
     console.warn('[BII FCM SW] init failed:', err);
@@ -85,29 +100,10 @@ self.addEventListener('push', (event) => {
     }
   }
 
-  const title = data.title
-    || data.title_bn
-    || data.title_en
-    || 'বাঙালি ইসলামিক ইনস্টিটিউট';
-  const body = data.body
-    || data.body_bn
-    || data.body_en
-    || '';
-  const image = data.image || null;
-  const clickUrl = data.click_action || '/';
+  const content = notificationContent(data);
 
   event.waitUntil(
-    self.registration.showNotification(title, {
-      body,
-      icon:               '/logo192.png',
-      badge:              '/logo192.png',
-      image,
-      data:               { click_action: clickUrl },
-      vibrate:            [200, 100, 200],
-      requireInteraction: true,
-      tag:                'bii-push',
-      renotify:           true,
-    })
+    self.registration.showNotification(content.title, notificationOptions(content))
   );
 });
 
