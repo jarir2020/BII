@@ -554,19 +554,20 @@ export default function AdminNotifications() {
                   )}
                 </div>
 
-                <div className="flex flex-col gap-1 flex-shrink-0">
-                  {n.status === "failed" && (
-                    <button
-                      onClick={() => resend(n.id)}
-                      title="পুনরায় পাঠান"
-                      className="text-[var(--bii-emerald)] p-1.5 hover:bg-[var(--bii-cream)] rounded-lg transition"
-                    >
-                      <ArrowUUpLeft size={16} weight="bold" />
-                    </button>
-                  )}
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <button
+                    onClick={() => resend(n.id)}
+                    title="পুনরায় পাঠান"
+                    aria-label="পুনরায় পাঠান"
+                    data-testid={`notif-resend-${n.id}`}
+                    className="text-[var(--bii-emerald)] p-1.5 hover:bg-[var(--bii-cream)] rounded-lg transition"
+                  >
+                    <ArrowUUpLeft size={16} weight="bold" />
+                  </button>
                   <button
                     onClick={() => del(n.id)}
                     title="ডিলিট করুন"
+                    aria-label="ডিলিট করুন"
                     className="text-red-500 p-1.5 hover:bg-red-50 rounded-lg transition"
                   >
                     <Trash size={16} />
