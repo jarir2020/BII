@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useLang } from "../../contexts/LangContext";
 import {
   Gift, Coins, PlayCircle, PlusCircle, PencilSimple, Trash,
@@ -68,41 +68,47 @@ function normalizeDurationInput(value) {
 function DurationField({ value, onChange }) {
   const [unit, setUnit] = useState("seconds");
   const [draft, setDraft] = useState(() => durationInputValue(value, "seconds"));
-  const lastEmittedValue = useRef(value);
+  const [focused, setFocused] = useState(false);
   const multiplier = unit === "minutes" ? 60 : 1;
 
   useEffect(() => {
-    // Parent state changes caused by this field should not replace the text
-    // currently being entered (especially on mobile number keyboards). Only
-    // sync when the value was changed from outside this component.
-    if (value !== lastEmittedValue.current) {
+    // Do not replace the draft while the administrator is typing. This also
+    // keeps the caret stable when the parent form re-renders after each key.
+    if (!focused) {
       setDraft(durationInputValue(value, unit));
     }
-    lastEmittedValue.current = value;
-  }, [value, unit]);
+  }, [value, unit, focused]);
+
+  const handleChange = (e) => {
+    const raw = e.currentTarget.value;
+    setDraft(raw);
+    if (raw === "") {
+      onChange("");
+      return;
+    }
+    const next = Number(normalizeDurationInput(raw));
+    if (Number.isFinite(next) && next > 0) {
+      onChange(Math.round(next * multiplier));
+    }
+  };
 
   return (
     <div className="flex gap-2">
       <input
-        className="bii-input min-w-0 flex-1"
+        className="bii-input min-w-0 flex-1 cursor-text"
         type="text"
         inputMode={unit === "minutes" ? "decimal" : "numeric"}
         value={draft}
-        onChange={(e) => {
-          const raw = e.target.value;
-          setDraft(raw);
-          if (raw === "") {
-            lastEmittedValue.current = "";
-            onChange("");
-            return;
-          }
-          const next = Number(normalizeDurationInput(raw));
-          if (Number.isFinite(next) && next > 0) {
-            const nextValue = Math.round(next * multiplier);
-            lastEmittedValue.current = nextValue;
-            onChange(nextValue);
-          }
+        onFocus={() => setFocused(true)}
+        onBlur={() => {
+          setFocused(false);
+          setDraft(durationInputValue(value, unit));
         }}
+        onChange={handleChange}
+        aria-label="ভিডিও দেখার সময়"
+        autoComplete="off"
+        spellCheck="false"
+        style={{ caretColor: "var(--bii-text)" }}
       />
       <select
         className="bii-input w-28"
