@@ -12,7 +12,6 @@ import { toast } from "sonner";
 
 // ── Bengali numerals ──────────────────────────────────────────────────────────
 const BN = (n) => String(Math.floor(n ?? 0)).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[d]);
-const MAX_DURATION_SECONDS = 86400;
 
 function durationLabel(seconds) {
   const total = Math.max(1, Math.round(Number(seconds) || 0));
@@ -88,9 +87,6 @@ function DurationField({ value, onChange }) {
         className="bii-input min-w-0 flex-1"
         type="text"
         inputMode={unit === "minutes" ? "decimal" : "numeric"}
-        min={unit === "minutes" ? "0.01" : "1"}
-        max={unit === "minutes" ? MAX_DURATION_SECONDS / 60 : MAX_DURATION_SECONDS}
-        step={unit === "minutes" ? "0.01" : "1"}
         value={draft}
         onChange={(e) => {
           const raw = e.target.value;
@@ -102,10 +98,7 @@ function DurationField({ value, onChange }) {
           }
           const next = Number(normalizeDurationInput(raw));
           if (Number.isFinite(next) && next > 0) {
-            const nextValue = Math.max(
-              1,
-              Math.min(MAX_DURATION_SECONDS, Math.round(next * multiplier))
-            );
+            const nextValue = Math.round(next * multiplier);
             lastEmittedValue.current = nextValue;
             onChange(nextValue);
           }
@@ -230,7 +223,6 @@ function SettingsTab() {
               key: "watch_duration_seconds",
               label: "সর্বনিম্ন ভিডিও দেখার সময়",
               hint: "সেকেন্ড বা মিনিট বেছে দিন; স্টুডেন্টকে অন্তত এতক্ষণ দেখতে হবে",
-              min: 1,
             },
             {
               key: "max_ads_per_day",
@@ -395,6 +387,11 @@ function AdForm({ initial, onSave, onCancel }) {
       toast.error("বিজ্ঞাপনের লিংক/URL দিন");
       return;
     }
+    const durationSeconds = Number(form.duration_seconds);
+    if (!Number.isFinite(durationSeconds) || durationSeconds <= 0) {
+      toast.error("সঠিক সেকেন্ডের পরিমাণ দিন");
+      return;
+    }
     setSaving(true);
     try {
       const payload = {
@@ -402,10 +399,7 @@ function AdForm({ initial, onSave, onCancel }) {
         ad_type: "link",
         media_url: form.media_url.trim(),
         thumbnail_url: "",
-        duration_seconds: Math.max(
-          1,
-          Math.min(MAX_DURATION_SECONDS, Math.round(Number(form.duration_seconds) || 15))
-        ),
+        duration_seconds: Math.round(durationSeconds),
         is_active: !!form.is_active,
         order: Number(form.order) || 0,
         description: form.description.trim(),
@@ -446,7 +440,7 @@ function AdForm({ initial, onSave, onCancel }) {
           onChange={(value) => set("duration_seconds", value)}
         />
         <p className="text-[11px] text-[var(--bii-text-soft)] mt-1">
-          ১ মিনিট = ৬০ সেকেন্ড (সর্বোচ্চ ২৪ ঘণ্টা)
+          ১ মিনিট = ৬০ সেকেন্ড
         </p>
       </div>
 

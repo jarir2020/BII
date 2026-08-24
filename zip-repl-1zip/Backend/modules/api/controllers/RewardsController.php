@@ -12,8 +12,6 @@ use Yii;
  */
 class RewardsController extends ApiController
 {
-    private const MAX_DURATION_SECONDS = 86400; // Keep the configurable duration practical but not limited to 15 seconds.
-
     private function cfg(): array
     {
         $d = $this->configValue('reward_zone');
@@ -45,7 +43,7 @@ class RewardsController extends ApiController
         $user = $this->user();
         $cfg = $this->cfg();
         $maxPerDay = (int) $cfg['max_ads_per_day'];
-        $watchDuration = max(1, min(self::MAX_DURATION_SECONDS, (int) $cfg['watch_duration_seconds']));
+        $watchDuration = max(1, (int) $cfg['watch_duration_seconds']);
 
         $todayStart = gmdate('Y-m-d\T00:00:00');
         $todayCount = (int) Yii::$app->db->createCommand(
@@ -399,10 +397,7 @@ class RewardsController extends ApiController
 
     private function adDoc(array $r): array
     {
-        $r['duration_seconds'] = max(1, min(
-            self::MAX_DURATION_SECONDS,
-            (int) ($r['duration_seconds'] ?? 15)
-        ));
+        $r['duration_seconds'] = max(1, (int) ($r['duration_seconds'] ?? 15));
         $r['is_active'] = (bool) $r['is_active'];
         return $r;
     }

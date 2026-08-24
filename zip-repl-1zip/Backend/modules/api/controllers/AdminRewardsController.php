@@ -12,8 +12,6 @@ use Yii;
  */
 class AdminRewardsController extends ApiController
 {
-    private const MAX_DURATION_SECONDS = 86400; // 24 hours; no short ad-specific cap
-
     /** GET (view) / PUT (update) /api/admin/reward-settings */
     public function actionRewardSettings(): \yii\web\Response
     {
@@ -21,7 +19,7 @@ class AdminRewardsController extends ApiController
         if (Yii::$app->request->isPut || Yii::$app->request->isPatch) {
             $body = Yii::$app->request->post();
             if (array_key_exists('watch_duration_seconds', $body)) {
-                $body['watch_duration_seconds'] = max(1, min(self::MAX_DURATION_SECONDS, (int) $body['watch_duration_seconds']));
+                $body['watch_duration_seconds'] = max(1, (int) $body['watch_duration_seconds']);
             }
             $this->writeConfig('reward_zone', $body);
             return $this->json(['ok' => true]);
@@ -38,10 +36,7 @@ class AdminRewardsController extends ApiController
             $platform = in_array($b['platform'] ?? '', ['all', 'web', 'app'], true)
                 ? $b['platform']
                 : 'all';
-            $durationSeconds = max(1, min(
-                self::MAX_DURATION_SECONDS,
-                (int) ($b['duration_seconds'] ?? 15)
-            ));
+            $durationSeconds = max(1, (int) ($b['duration_seconds'] ?? 15));
             $doc = [
                 'id' => Uuid::v4(),
                 'title' => (string) ($b['title'] ?? ''),
@@ -76,10 +71,7 @@ class AdminRewardsController extends ApiController
             return $this->json(['ok' => true]);
         }
         $b = $request->post();
-        $durationSeconds = max(1, min(
-            self::MAX_DURATION_SECONDS,
-            (int) ($b['duration_seconds'] ?? $row['duration_seconds'])
-        ));
+        $durationSeconds = max(1, (int) ($b['duration_seconds'] ?? $row['duration_seconds']));
         $updates = [
             'title' => (string) ($b['title'] ?? $row['title']),
             'ad_type' => (string) ($b['ad_type'] ?? $row['ad_type']),
@@ -219,10 +211,7 @@ class AdminRewardsController extends ApiController
 
     private function adDoc(array $r): array
     {
-        $r['duration_seconds'] = max(1, min(
-            self::MAX_DURATION_SECONDS,
-            (int) ($r['duration_seconds'] ?? 15)
-        ));
+        $r['duration_seconds'] = max(1, (int) ($r['duration_seconds'] ?? 15));
         $r['is_active'] = (bool) $r['is_active'];
         return $r;
     }

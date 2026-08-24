@@ -16,12 +16,11 @@ import { toast } from "sonner";
 import { useAuth } from "../contexts/AuthContext";
 
 const BN = (n) => String(Math.floor(n ?? 0)).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[d]);
-const MAX_DURATION_SECONDS = 86400;
 
 function normalizeDurationSeconds(value, fallback = 15) {
   const seconds = Number(value);
   if (!Number.isFinite(seconds) || seconds <= 0) return fallback;
-  return Math.max(1, Math.min(MAX_DURATION_SECONDS, Math.round(seconds)));
+  return Math.max(1, Math.round(seconds));
 }
 
 function durationLabel(seconds) {
