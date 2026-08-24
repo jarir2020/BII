@@ -95,9 +95,9 @@ function DurationField({ value, onChange }) {
   return (
     <div className="flex gap-2">
       <input
-        className="bii-input min-w-0 flex-1 cursor-text"
-        type="text"
-        inputMode={unit === "minutes" ? "decimal" : "numeric"}
+        className="bii-input"
+        min={unit === "minutes" ? "0.01" : "1"}
+        type="number"
         value={draft}
         onFocus={() => setFocused(true)}
         onBlur={() => {
@@ -105,10 +105,6 @@ function DurationField({ value, onChange }) {
           setDraft(durationInputValue(value, unit));
         }}
         onChange={handleChange}
-        aria-label="ভিডিও দেখার সময়"
-        autoComplete="off"
-        spellCheck="false"
-        style={{ caretColor: "var(--bii-text)" }}
       />
       <select
         className="bii-input w-28"
