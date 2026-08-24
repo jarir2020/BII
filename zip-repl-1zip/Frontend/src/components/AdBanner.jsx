@@ -1,6 +1,10 @@
 import React, { useEffect, useRef } from "react";
 import { useAds } from "../contexts/AdsContext";
 import { hideAdMobBanner, showAdMobBanner } from "../lib/admob";
+import AdsterraBanner from "./AdsterraBanner"; // 2026-08-24: Adsterra units take over listed slots on web
+
+// 2026-08-24: web slots served by Adsterra instead of AdSense
+const ADSTERRA_SLOTS = new Set(["courses-top", "videos-top", "shop-top"]);
 
 /**
  * AdBanner — drop-in Google AdSense unit.
@@ -131,6 +135,11 @@ export default function AdBanner({ slot, format = "responsive", className = "" }
 
   /* ── No publisher ID yet → render nothing ── */
   if (!publisherId) return null;
+
+  // 2026-08-24: Adsterra replaces AdSense on these web slots
+  if (ADSTERRA_SLOTS.has(slot)) {
+    return <AdsterraBanner slot={slot} className={className} />;
+  }
 
   /* ── Publisher ID present → real AdSense unit ── */
   return (

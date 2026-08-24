@@ -25,6 +25,12 @@ const UNITS = {
     width: 320,
     height: 50,
   },
+  // 2026-08-24: rectangle unit for in-content/sidebar placements
+  "in-content": {
+    key: "65667545e57f9a307ac8355a5b4f5fbf",
+    width: 300,
+    height: 250,
+  },
 };
 
 export default function AdsterraBanner({ slot = "footer-banner", className = "" }) {
