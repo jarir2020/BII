@@ -84,7 +84,9 @@ class WebPushService
         $payload = json_encode([
             'title' => $title,
             'body' => $body,
-            'icon' => '/logo192.png',
+            // Firefox may omit the large `image` field from desktop toasts;
+            // use the uploaded image as the icon as a compatible fallback.
+            'icon' => $imageUrl !== '' ? $imageUrl : '/logo192.png',
             'image' => $imageUrl,
             'click_action' => $notif['click_action'] ?? '/',
             'title_bn' => $notif['title_bn'] ?? '',

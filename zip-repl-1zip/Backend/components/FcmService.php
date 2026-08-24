@@ -151,6 +151,7 @@ class FcmService
                 'title' => $title,
                 'body' => $body,
                 'click_action' => $clickAction,
+                'icon' => $fullImageUrl !== '' ? $fullImageUrl : '/logo192.png',
                 'title_bn' => $notif['title_bn'] ?? '',
                 'title_en' => $notif['title_en'] ?? '',
                 'body_bn' => $notif['body_bn'] ?? '',
@@ -181,7 +182,9 @@ class FcmService
                     'notification' => [
                         'title' => $title,
                         'body' => $body,
-                        'icon' => '/logo192.png',
+                        // Firefox does not consistently render the large
+                        // notification image, so use it as the icon too.
+                        'icon' => $fullImageUrl !== '' ? $fullImageUrl : '/logo192.png',
                         'badge' => '/logo192.png',
                         'requireInteraction' => true,
                         'tag' => 'bii-push',

@@ -26,6 +26,7 @@ function notificationContent(payload) {
       || data.body_en
       || '',
     image: notification.image || data.image || data.image_url || '',
+    icon: notification.icon || data.icon || '',
     clickUrl: data.click_action
       || data.clickAction
       || payload?.fcmOptions?.link
@@ -36,7 +37,9 @@ function notificationContent(payload) {
 function notificationOptions(content) {
   const options = {
     body: content.body,
-    icon: APP_ICON,
+    // The large `image` option is not rendered by every desktop browser.
+    // Use it as the icon too so Firefox still shows the uploaded photo.
+    icon: content.icon || content.image || APP_ICON,
     badge: APP_ICON,
     data: { click_action: content.clickUrl },
     vibrate: [200, 100, 200],
