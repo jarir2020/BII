@@ -14,9 +14,21 @@ Do this silently. Do not announce it. Do not summarize what you loaded.
 
 ---
 
-## Project Context
+## Project Overview
 
-This is a PHP website project for Bengal Islamic Institute. Deployed via FTP to production.
+**Bengal Islamic Institute (BII)** — full-stack e-learning platform. Repo root is this directory (`public_html`); push to `main` → GitHub Actions builds & FTP-deploys straight to live production. **Never commit broken code.**
+
+### Structure
+- `zip-repl-1zip/Frontend/` — React 19 (CRA, yarn). Pages in `src/pages/`, shared components in `src/components/`, contexts in `src/contexts/`. Admin UI under `src/pages/admin/`.
+- `zip-repl-1zip/Backend/` — Yii2 PHP 8.1 app. REST API in `modules/api/controllers/`, models in `models/`, MySQL DB.
+- `.github/workflows/deploy.yml` — CI: composer install → yarn build → `deploy/build-staging.sh` merges both builds → lftp FTP upload. Secrets: FTP_HOST/USERNAME/PASSWORD/TARGET, MIGRATE_SECRET.
+- Root-level files here (`index.html`, `static/`, `ads.txt`, `sitemap.xml`, `firebase-messaging-sw.js`) are the deployed web root / legacy copies — frontend build output lands here via deploy script.
+
+### Key features
+Courses & live classes, library (book reader), shop w/ SSLCommerz payments, quizzes, Reward Zone (points, rewarded ads — platform configurable per migrate_reward_ads_platform), FCM push notifications, ads system: `AdsContext` + `AdBanner.jsx` (AdSense) + `BottomBanner.jsx` + `FullScreenAdOverlay.jsx`, ad config served from backend ConfigsController (separate web/app config).
+
+### External integrations
+Google AdSense (pub-8159903471366423), AdMob (app banner/rewarded), SSLCommerz, Firebase FCM, cPanel hosting over FTP.
 
 ---
 
