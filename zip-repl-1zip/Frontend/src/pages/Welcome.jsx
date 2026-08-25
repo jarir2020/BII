@@ -149,9 +149,7 @@ export default function Welcome() {
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full bg-[var(--bii-gold)]/15 blur-3xl" />
           <div className="absolute -bottom-12 -left-12 w-56 h-56 rounded-full bg-white/10 blur-3xl" />
-          <div className="absolute right-6 sm:right-12 bottom-6 sm:bottom-10 opacity-40 scale-90 sm:scale-100">
-            <BrandLogo size={176} />
-          </div>
+          {/* 2026-08-25: watermark logo behind Register button removed per client request */}
         </div>
         <div className="relative px-6 sm:px-12 py-16 sm:py-24 text-white text-center">
           <div className="hero-fade-in">
