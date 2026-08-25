@@ -5,7 +5,7 @@
 
 header('Content-Type: text/plain');
 
-$envFile = is_file(__DIR__ . '/../.env') ? __DIR__ . '/../.env' : __DIR__ . '/.env';
+$envFile = is_file(__DIR__ . '/.env') ? __DIR__ . '/.env' : __DIR__ . '/../.env';
 $creds = ['DB_HOST' => '127.0.0.1', 'DB_NAME' => 'bii_db', 'DB_USER' => '', 'DB_PASS' => ''];
 if (is_file($envFile)) {
     foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
