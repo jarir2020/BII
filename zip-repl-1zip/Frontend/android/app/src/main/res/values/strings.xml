@@ -5,5 +5,5 @@
     <string name="package_name">com.bengaliislamic.institute</string>
     <string name="custom_url_scheme">com.bengaliislamic.institute</string>
     <!-- Google test App ID; replace for the production Android build. -->
-    <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
+    <string name="admob_app_id">ca-app-pub-8159903471366423~3942872132</string>
 </resources>
