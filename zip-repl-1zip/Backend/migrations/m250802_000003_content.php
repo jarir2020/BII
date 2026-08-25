@@ -100,6 +100,8 @@ class m250802_000003_content extends Migration
             'exam_date' => $this->string(16)->notNull()->defaultValue(''),
             'start_time' => $this->string(8)->notNull()->defaultValue(''),
             'end_time' => $this->string(8)->notNull()->defaultValue(''),
+            'start_at' => $this->string(19)->notNull()->defaultValue(''), // 2026-08-24: full datetime window
+            'end_at' => $this->string(19)->notNull()->defaultValue(''),
             'duration_minutes' => $this->integer()->notNull()->defaultValue(30),
             'pass_marks' => $this->integer()->notNull()->defaultValue(0),
             'rules' => $this->text()->null(),

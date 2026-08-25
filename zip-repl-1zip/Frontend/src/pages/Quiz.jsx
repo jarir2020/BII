@@ -12,6 +12,7 @@ import { api, imgUrl } from "../lib/api";
 import { toast } from "sonner";
 import AdBanner from "../components/AdBanner";
 import BottomBanner from "../components/BottomBanner";
+import { quizStart, quizEnd, quizStatus as quizStatusShared } from "../lib/quizWindow"; // 2026-08-24: multi-day quiz windows
 
 // ── Quiz Ad countdown timer ──────────────────────────────────────
 function QuizAdTimer({ onTick, onDone, seconds = 5 }) {
@@ -39,6 +40,14 @@ function fmtDate(iso) {
   } catch { return iso; }
 }
 
+// 2026-08-24: format full datetime "yyyy-mm-dd hh:mm:ss" for multi-day quizzes
+function fmtDateTime(dt) {
+  if (!dt) return "—";
+  const d = new Date(String(dt).replace(" ", "T"));
+  if (isNaN(d)) return dt;
+  return `${fmtDate(String(dt).slice(0, 10))} ${String(dt).slice(11, 16)}`;
+}
+
 function fmtTime(seconds) {
   if (seconds <= 0) return "০০:০০";
   const m = Math.floor(seconds / 60);
@@ -56,12 +65,8 @@ function fmtDuration(seconds) {
 }
 
 function quizStatus(q) {
-  const now = new Date();
-  const start = new Date(q.exam_date + "T" + (q.start_time || "00:00"));
-  const end   = new Date(q.exam_date + "T" + (q.end_time   || "23:59"));
-  if (now < start) return "upcoming";
-  if (now > end)   return "closed";
-  return "active";
+  // 2026-08-24: moved to lib/quizWindow (supports start_at/end_at full datetimes)
+  return quizStatusShared(q);
 }
 
 // ── Countdown ───────────────────────────────────────────────────
@@ -221,8 +226,8 @@ function QuizLanding({ quiz, myResult, leaderboard, user, onStart, allQuizzes, a
   const { t, pick } = useLang();
   const st = quizStatus(quiz);
   const hasSubmitted = !!myResult;
-  const startDT = new Date(quiz.exam_date + "T" + (quiz.start_time || "00:00"));
-  const endDT   = new Date(quiz.exam_date + "T" + (quiz.end_time   || "23:59"));
+  const startDT = quizStart(quiz); // 2026-08-24: supports start_at/end_at
+  const endDT   = quizEnd(quiz);
   const [refreshKey, setRefreshKey] = useState(0);
   const winners = quiz.winners || [];
   const pastQuizzes = allQuizzes.filter((q) => quizStatus(q) === "closed" && q.id !== quiz.id);
@@ -249,7 +254,7 @@ function QuizLanding({ quiz, myResult, leaderboard, user, onStart, allQuizzes, a
           <div className="flex flex-wrap gap-2 mb-5">
             {[
               { icon: <CalendarBlank size={13} />, label: fmtDate(quiz.exam_date) },
-              { icon: <Clock size={13} />, label: `${quiz.start_time} — ${quiz.end_time}` },
+              { icon: <Clock size={13} />, label: quiz.end_at ? `${fmtDateTime(quiz.start_at)} — ${fmtDateTime(quiz.end_at)}` : `${quiz.start_time || "00:00"} — ${quiz.end_time || "23:59"}` },
               { icon: <Timer size={13} />, label: `${quiz.duration_minutes || 30} ${pick("মিনিট", "min")}` },
               { icon: <ListChecks size={13} />, label: `${(quiz.questions || []).length} ${pick("প্রশ্ন", "questions")}` },
             ].map((c, i) => (

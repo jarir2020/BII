@@ -12,6 +12,7 @@ import {
 import { api, imgUrl, formatApiError } from "../../lib/api";
 import ImageUpload from "../../components/ImageUpload";
 import { useLang } from "../../contexts/LangContext";
+import { quizStart, quizEnd, quizStatus as quizStatusShared, toLocalInput } from "../../lib/quizWindow"; // 2026-08-24: multi-day quiz windows
 
 // ── helpers ───────────────────────────────────────────────────
 function pad(n) { return String(n).padStart(2, "0"); }
@@ -28,12 +29,8 @@ function formatDate(iso) {
   catch { return iso; }
 }
 function quizStatus(q) {
-  const now = new Date();
-  const s = new Date(q.exam_date + "T" + (q.start_time || "00:00"));
-  const e = new Date(q.exam_date + "T" + (q.end_time   || "23:59"));
-  if (now < s) return "upcoming";
-  if (now > e) return "closed";
-  return "active";
+  // 2026-08-24: moved to lib/quizWindow (supports start_at/end_at full datetimes)
+  return quizStatusShared(q);
 }
 const STATUS_BADGE = {
   upcoming: { label: "আসন্ন",  cls: "bg-blue-100 text-blue-700 border-blue-200" },
@@ -51,6 +48,8 @@ const EMPTY_QUIZ = {
   title_bn: "", title_en: "",
   exam_date: defaultExamDate(),
   start_time: "10:00", end_time: "23:59",
+  // 2026-08-24: full datetime window (yyyy-mm-dd hh:mm) — quizzes can span days/months
+  start_at: "", end_at: "",
   duration_minutes: 30,
   pass_marks: 5,
   rules: [],
@@ -398,7 +397,8 @@ function NotifModal({ quiz, onClose }) {
   const [form, setForm] = useState({
     title_bn: `📢 মাসিক কুইজ: ${quiz.title_bn}`,
     title_en: quiz.title_en ? `Monthly Quiz: ${quiz.title_en}` : "",
-    body_bn: `${formatDate(quiz.exam_date)} তারিখ ${quiz.start_time} থেকে ${quiz.end_time} পর্যন্ত মাসিক কুইজ। পাশ নম্বর: ${quiz.pass_marks}। সময়: ${quiz.duration_minutes} মিনিট।`,
+    // 2026-08-24: notification text reflects full datetime window when set
+    body_bn: `${formatDate(quiz.exam_date)} ${quiz.start_at ? `(${(quiz.start_at).slice(0, 16)})` : quiz.start_time} থেকে ${quiz.end_at ? `(${(quiz.end_at).slice(0, 16)})` : quiz.end_time} পর্যন্ত মাসিক কুইজ। পাশ নম্বর: ${quiz.pass_marks}। সময়: ${quiz.duration_minutes} মিনিট।`,
     body_en: "",
   });
   const [sending, setSending] = useState(false);
@@ -488,8 +488,14 @@ export default function AdminMonthlyQuiz() {
     }
     setErr(""); setSaving(true);
     try {
-      if (editing) await api.put(`/monthly-quizzes/${editing}`, form);
-      else await api.post("/monthly-quizzes", form);
+      // 2026-08-24: normalize datetime-local ("yyyy-mm-ddThh:mm") → "yyyy-mm-dd hh:mm:ss"
+      const payload = {
+        ...form,
+        start_at: form.start_at ? form.start_at.replace("T", " ") + (form.start_at.length === 16 ? ":00" : "") : "",
+        end_at: form.end_at ? form.end_at.replace("T", " ") + (form.end_at.length === 16 ? ":00" : "") : "",
+      };
+      if (editing) await api.put(`/monthly-quizzes/${editing}`, payload);
+      else await api.post("/monthly-quizzes", payload);
       setForm(EMPTY_QUIZ); setEditing(null); setView("list"); reload();
     } catch (e2) { setErr(formatApiError(e2)); }
     finally { setSaving(false); }
@@ -501,6 +507,7 @@ export default function AdminMonthlyQuiz() {
       title_bn: q.title_bn || "", title_en: q.title_en || "",
       exam_date: q.exam_date || defaultExamDate(),
       start_time: q.start_time || "10:00", end_time: q.end_time || "23:59",
+      start_at: toLocalInput(q.start_at || ""), end_at: toLocalInput(q.end_at || ""), // 2026-08-24
       duration_minutes: q.duration_minutes || 30,
       pass_marks: q.pass_marks || 5,
       rules: q.rules || [],
@@ -600,12 +607,23 @@ export default function AdminMonthlyQuiz() {
                     onChange={(e) => setF("duration_minutes", Number(e.target.value))} />
                 </div>
                 <div>
-                  <label className="block text-xs text-[var(--bii-text-soft)] uppercase tracking-wider mb-1">শুরুর সময়</label>
-                  <input type="time" className="bii-input" value={form.start_time} onChange={(e) => setF("start_time", e.target.value)} required />
+                  {/* 2026-08-24: full datetime window — quizzes can span days/weeks/months */}
+                  <label className="block text-xs text-[var(--bii-text-soft)] uppercase tracking-wider mb-1">শুরুর সময় (তারিখ ও সময়)</label>
+                  <input type="datetime-local" className="bii-input" value={form.start_at} onChange={(e) => setF("start_at", e.target.value)} />
+                  <p className="text-[11px] text-[var(--bii-text-soft)] mt-0.5">ফাঁকা রাখলে তারিখ + শুরুর সময় ব্যবহৃত হবে</p>
                 </div>
                 <div>
-                  <label className="block text-xs text-[var(--bii-text-soft)] uppercase tracking-wider mb-1">শেষ সময়</label>
-                  <input type="time" className="bii-input" value={form.end_time} onChange={(e) => setF("end_time", e.target.value)} required />
+                  <label className="block text-xs text-[var(--bii-text-soft)] uppercase tracking-wider mb-1">শেষ সময় (তারিখ ও সময়)</label>
+                  <input type="datetime-local" className="bii-input" value={form.end_at} onChange={(e) => setF("end_at", e.target.value)} />
+                  <p className="text-[11px] text-[var(--bii-text-soft)] mt-0.5">ফাঁকা রাখলে তারিখ + শেষ সময় ব্যবহৃত হবে</p>
+                </div>
+                <div>
+                  <label className="block text-xs text-[var(--bii-text-soft)] uppercase tracking-wider mb-1">শুরুর সময় (ঐচ্ছিক, পুরনো ফরম্যাট)</label>
+                  <input type="time" className="bii-input" value={form.start_time} onChange={(e) => setF("start_time", e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-xs text-[var(--bii-text-soft)] uppercase tracking-wider mb-1">শেষ সময় (ঐচ্ছিক, পুরনো ফরম্যাট)</label>
+                  <input type="time" className="bii-input" value={form.end_time} onChange={(e) => setF("end_time", e.target.value)} />
                 </div>
                 <div>
                   <label className="block text-xs text-[var(--bii-text-soft)] uppercase tracking-wider mb-1">পাশ নম্বর</label>
@@ -724,7 +742,8 @@ export default function AdminMonthlyQuiz() {
                 <h3 className="font-heading text-base text-[var(--bii-emerald)] leading-snug">{q.title_bn}</h3>
                 <div className="flex flex-wrap gap-2 text-xs text-[var(--bii-text-soft)]">
                   <span className="flex items-center gap-1"><CalendarBlank size={11} /> {formatDate(q.exam_date)}</span>
-                  <span className="flex items-center gap-1"><Clock size={11} /> {q.start_time}–{q.end_time}</span>
+                  {/* 2026-08-24: show full window when start_at/end_at set */}
+                  <span className="flex items-center gap-1"><Clock size={11} /> {q.start_at || q.end_at ? `${(q.start_at || "").slice(0, 16) || q.start_time} → ${(q.end_at || "").slice(0, 16) || q.end_time}` : `${q.start_time}–${q.end_time}`}</span>
                   <span className="flex items-center gap-1"><Timer size={11} /> {q.duration_minutes || 30} মি.</span>
                   <span className="flex items-center gap-1"><ListChecks size={11} /> {totalQ} প্রশ্ন / {totalM} নম্বর</span>
                 </div>

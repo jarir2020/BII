@@ -22,6 +22,8 @@ class MonthlyQuizzesController extends ApiController
     {
         return [
             'title_bn' => '', 'title_en' => '', 'exam_date' => '', 'start_time' => '', 'end_time' => '',
+            // 2026-08-24: full datetimes (yyyy-mm-dd hh:mm:ss) allow quizzes spanning days/months
+            'start_at' => '', 'end_at' => '',
             'duration_minutes' => 30, 'pass_marks' => 0, 'rules' => [],
             'prize_title' => '', 'prize_description' => '', 'prize_image' => '',
             'is_active' => true, 'questions' => [], 'winners' => [],
