@@ -26,13 +26,33 @@ function isFormDataBody(body) {
   return typeof FormData !== "undefined" && body instanceof FormData;
 }
 
+function appendParams(url, params) {
+  if (!params || typeof params !== "object") return url;
+
+  const search = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value == null) return;
+    if (Array.isArray(value)) {
+      value.forEach((item) => search.append(key, String(item)));
+      return;
+    }
+    search.set(key, String(value));
+  });
+
+  const query = search.toString();
+  if (!query) return url;
+  return `${url}${url.includes("?") ? "&" : "?"}${query}`;
+}
+
 function request(url, options = {}) {
-  const fullUrl = url.startsWith("http") ? url : `${API}${url}`;
-  const multipart = isFormDataBody(options.body);
+  const { params, ...fetchOptions } = options || {};
+  const baseUrl = url.startsWith("http") ? url : `${API}${url}`;
+  const fullUrl = appendParams(baseUrl, params);
+  const multipart = isFormDataBody(fetchOptions.body);
   const headers = {
     ...(multipart ? {} : { "Content-Type": "application/json" }),
     ...authHeaders(),
-    ...(options.headers || {}),
+    ...(fetchOptions.headers || {}),
   };
 
   // Let the browser add the multipart boundary. A manually supplied
@@ -44,7 +64,7 @@ function request(url, options = {}) {
   }
 
   return fetch(fullUrl, {
-    ...options,
+    ...fetchOptions,
     credentials: "include",
     headers,
   }).then(async (res) => {

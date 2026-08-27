@@ -18,6 +18,12 @@ class ConfigsController extends ApiController
     private const SENSITIVE = ['firebase', 'security', 'payment_gateways', 'ads'];
     // 'ads-web' is intentionally NOT in SENSITIVE — frontend fetches it publicly
 
+    /** GET/PUT/PATCH /api/admin/ads-settings — legacy alias for /api/configs/ads. */
+    public function actionAdsSettings(): \yii\web\Response
+    {
+        return $this->actionView('ads');
+    }
+
     /** GET (view) / PUT (update) /api/configs/{name} */
     public function actionView(string $name): \yii\web\Response
     {

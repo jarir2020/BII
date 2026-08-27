@@ -57,6 +57,10 @@ $config = [
         '@npm'   => '@vendor/npm-asset',
     ],
     'components' => [
+        'user' => [
+            'identityClass' => \app\models\User::class,
+            'loginUrl' => ['site/login'],
+        ],
         'request' => [
             'class' => \yii\web\Request::class,
             'enableCookieValidation' => true,
@@ -132,6 +136,9 @@ $config = [
                 'api/courses/<id:[0-9a-f-]+>' => 'api/courses/view',
                 'api/videos/<id:[^/]+>' => 'api/videos/view',
                 'api/live-classes/<id:[^/]+>' => 'api/live-classes/view',
+                'api/posts/<id:[^/]+>' => 'api/posts/view',
+                'api/products/<id:[^/]+>' => 'api/products/view',
+                'api/product/<id:[^/]+>' => 'api/product/view',
 
                 'api/monthly-quizzes/<mid>/participants/<uid>/shipping' => 'api/monthly-quizzes/shipping',
                 'api/monthly-quizzes/<mid>/<action:(start|submit|leaderboard|my-result|results|winners)>' => 'api/monthly-quizzes/<action>',
@@ -153,8 +160,13 @@ $config = [
                 'api/admin/migrate' => 'api/migrations/run',
                 'api/admin/maintenance' => 'api/admins/maintenance',
                 'api/telegram/webhook' => 'api/telegram/webhook',
-                'api/admins/<id>' => 'api/admins/delete',
+                'api/admins/<id:[^/]+>' => 'api/admins/view',
                 'api/teachers/<id>' => 'api/teachers/view',
+                'api/orders' => 'api/orders/index',
+                'api/orders/<id:[^/]+>' => 'api/orders/view',
+                'api/media' => 'api/media/index',
+                'api/media/<id:[^/]+>' => 'api/media/delete',
+                'api/login-logs' => 'api/login-logs/index',
 
                 // ── Notifications / push / contact ────────────────────────
                 'api/notifications/register-device' => 'api/notifications/register-device',
@@ -206,7 +218,7 @@ $config = [
                 'api/admin/reward-ads/<id>' => 'api/admin-rewards/reward-ad',
                 'api/admin/reward-ads' => 'api/admin-rewards/reward-ads',
                 'api/admin/reward-settings' => 'api/admin-rewards/reward-settings',
-                'api/admin/ads-settings' => 'api/configs/view',
+                'api/admin/ads-settings' => 'api/configs/ads-settings',
                 'api/payments/requests/<pid>/quick-approve' => 'api/payments/quick-approve',
                 'api/payments/requests/<pid>/quick-reject' => 'api/payments/quick-reject',
                 'api/payments/requests/<pid>/complete' => 'api/payments/complete',

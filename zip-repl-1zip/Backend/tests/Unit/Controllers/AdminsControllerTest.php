@@ -81,7 +81,6 @@ final class AdminsControllerTest extends ApiControllerTestCase
 
         $this->assertSame('New Admin', $data['name']);
 
-        // Verify password was hashed
         $user = Yii::$app->db->createCommand(
             'SELECT password_hash FROM users WHERE email = :e', [':e' => 'newadmin@example.com']
         )->queryOne();
@@ -130,6 +129,7 @@ final class AdminsControllerTest extends ApiControllerTestCase
         ])->execute();
 
         $controller = new \app\modules\api\controllers\AdminsController('admins', Yii::$app, []);
+        $this->setMethod('DELETE');
         $result = $controller->actionDelete($otherAdminId);
         $data = $result->data;
 
@@ -139,5 +139,44 @@ final class AdminsControllerTest extends ApiControllerTestCase
             'SELECT id FROM users WHERE id = :id', [':id' => $otherAdminId]
         )->queryOne();
         $this->assertFalse($row);
+    }
+
+    public function testPutUpdatesAdminWithoutDeletingIt(): void
+    {
+        $actorId = $this->createTestUser('super_admin', 'super@example.com');
+        $targetId = $this->createTestUser('admin', 'target@example.com');
+        $this->authenticateAs($actorId, 'super_admin');
+        $this->setMethod('PUT');
+        $this->setBody([
+            'name' => 'Updated Admin',
+            'email' => 'updated@example.com',
+            'permissions' => ['shop', 'content'],
+        ]);
+
+        $controller = new \app\modules\api\controllers\AdminsController('admins', Yii::$app, []);
+        $data = $controller->actionView($targetId)->data;
+
+        $this->assertSame('Updated Admin', $data['name']);
+        $this->assertSame('updated@example.com', $data['email']);
+        $this->assertSame(['shop', 'content'], $data['permissions']);
+        $this->assertNotFalse(Yii::$app->db->createCommand(
+            'SELECT id FROM users WHERE id = :id', [':id' => $targetId]
+        )->queryOne());
+    }
+
+    public function testDeleteActionRejectsNonDeleteRequests(): void
+    {
+        $actorId = $this->createTestUser('super_admin', 'super@example.com');
+        $targetId = $this->createTestUser('admin', 'target@example.com');
+        $this->authenticateAs($actorId, 'super_admin');
+        $this->setMethod('PUT');
+
+        $controller = new \app\modules\api\controllers\AdminsController('admins', Yii::$app, []);
+        try {
+            $controller->actionDelete($targetId);
+            $this->fail('Expected 405');
+        } catch (\yii\web\HttpException $e) {
+            $this->assertSame(405, $e->statusCode);
+        }
     }
 }

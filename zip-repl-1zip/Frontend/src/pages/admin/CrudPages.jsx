@@ -164,7 +164,7 @@ export const AdminProducts = () => (
 );
 
 export const AdminOrders = () => (
-  <CrudResource resource="orders" title="অর্ডার" fields={[
+  <CrudResource resource="orders" title="অর্ডার" allowCreate={false} fields={[
     { name: "order_number", label: "অর্ডার নং", preview: true },
     { name: "customer_name", label: "কাস্টমার নাম" },
     { name: "customer_phone", label: "ফোন নম্বর" },
@@ -177,7 +177,6 @@ export const AdminOrders = () => (
     { name: "transaction_id", label: "ট্রানজেকশন ID" },
     { name: "note", label: "কাস্টমার নোট" },
     { name: "status", label: "ডেলিভারি স্ট্যাটাস", type: "select", options: ["pending","confirmed","shipped","delivered","cancelled"] },
-    { name: "payment_status", label: "পেমেন্ট স্ট্যাটাস", type: "select", options: ["unpaid","pending","paid","refunded"] },
   ]} listColumns={["order_number", "customer_name", "status"]} />
 );
 

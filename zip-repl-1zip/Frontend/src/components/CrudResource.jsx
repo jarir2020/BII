@@ -12,7 +12,7 @@ import ImageUpload from "./ImageUpload";
  *     types: text, textarea, number, checkbox, image, select, url, date, datetime-local, color
  *   listColumns: keys to show in the list (defaults: title_bn|name_bn|title|name)
  */
-export default function CrudResource({ resource, title, fields, listColumns, idField = "id", initial = {} }) {
+export default function CrudResource({ resource, title, fields, listColumns, idField = "id", initial = {}, allowCreate = true }) {
   const { pick } = useLang();
   const empty = Object.fromEntries(fields.map((f) => [f.name, initial[f.name] ?? (f.type === "checkbox" ? false : f.type === "number" ? 0 : "")]));
   const [items, setItems] = useState([]);
@@ -21,7 +21,9 @@ export default function CrudResource({ resource, title, fields, listColumns, idF
   const [err, setErr] = useState("");
 
   const reload = () => api.get(`/${resource}`).then((r) => setItems(Array.isArray(r.data) ? r.data : []));
-  useEffect(() => { reload(); /* eslint-disable-next-line */ }, [resource]);
+  // reload intentionally follows the resource prop; its function identity changes per render.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { reload(); }, [resource]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -53,7 +55,7 @@ export default function CrudResource({ resource, title, fields, listColumns, idF
 
   return (
     <div data-testid={`admin-${resource}-page`} className="grid grid-cols-1 lg:grid-cols-2 gap-5 min-w-0">
-      <form onSubmit={submit} className="bii-card p-5 space-y-3 self-start lg:sticky lg:top-4 min-w-0">
+      {(allowCreate || editing) && <form onSubmit={submit} className="bii-card p-5 space-y-3 self-start lg:sticky lg:top-4 min-w-0">
         <h2 className="font-heading text-xl text-[var(--bii-emerald)]">
           {editing ? pick(`${title} সম্পাদনা`, `Edit ${title}`) : pick(`নতুন ${title}`, `New ${title}`)}
         </h2>
@@ -77,7 +79,7 @@ export default function CrudResource({ resource, title, fields, listColumns, idF
             </button>
           )}
         </div>
-      </form>
+      </form>}
 
       <div className="space-y-3 min-w-0">
         <div className="text-sm text-[var(--bii-text-soft)]">{pick("মোট:", "Total:")} {items.length}</div>
