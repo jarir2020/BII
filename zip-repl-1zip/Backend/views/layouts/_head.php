@@ -19,6 +19,12 @@ $this->registerMetaTag(
         'content' => 'width=device-width, initial-scale=1',
     ],
 );
+$this->registerMetaTag(
+    [
+        'name' => 'monetag',
+        'content' => 'e8c3c670ddbfd79fea55d3cb9931eecc',
+    ],
+);
 if (!empty($this->params['meta_description'])) {
     $this->registerMetaTag(
         [
