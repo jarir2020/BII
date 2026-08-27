@@ -130,6 +130,8 @@ $config = [
                 'api/courses/<cid>/content' => 'api/courses/content',
                 'api/courses/<cid>/enroll' => 'api/courses/enroll',
                 'api/courses/<id:[0-9a-f-]+>' => 'api/courses/view',
+                'api/videos/<id:[^/]+>' => 'api/videos/view',
+                'api/live-classes/<id:[^/]+>' => 'api/live-classes/view',
 
                 'api/monthly-quizzes/<mid>/participants/<uid>/shipping' => 'api/monthly-quizzes/shipping',
                 'api/monthly-quizzes/<mid>/<action:(start|submit|leaderboard|my-result|results|winners)>' => 'api/monthly-quizzes/<action>',
