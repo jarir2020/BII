@@ -47,13 +47,26 @@ const PLACEHOLDER_HEIGHTS = {
   banner:       60,
 };
 
+let adsenseScriptPromise = null;
+
 function loadAdSenseScript(publisherId) {
   if (typeof document === "undefined") return Promise.resolve();
 
-  const existing = document.getElementById("adsense-script");
-  if (existing) return Promise.resolve();
+  // index.html owns the first-party script. Also recognize an already-added
+  // script so route changes cannot create a second AdSense loader.
+  const existing =
+    document.getElementById("adsense-script") ||
+    Array.from(document.scripts).find((script) =>
+      script.src.startsWith("https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js")
+    );
+  if (existing) {
+    existing.id = "adsense-script";
+    return Promise.resolve();
+  }
 
-  return new Promise((resolve, reject) => {
+  if (adsenseScriptPromise) return adsenseScriptPromise;
+
+  adsenseScriptPromise = new Promise((resolve, reject) => {
     const script = document.createElement("script");
     script.id = "adsense-script";
     script.async = true;
@@ -62,11 +75,17 @@ function loadAdSenseScript(publisherId) {
     script.onload = () => resolve();
     script.onerror = () => reject(new Error("AdSense script failed to load"));
     document.head.appendChild(script);
+  }).catch((error) => {
+    adsenseScriptPromise = null;
+    throw error;
   });
+
+  return adsenseScriptPromise;
 }
 
 export default function AdBanner({ slot, format = "responsive", className = "" }) {
   const { platform, publisherId, admob, adUnits, slotEnabled, adsEnabled, isLoaded } = useAds();
+  const adUnitId = adUnits[slot] || "";
   const insRef  = useRef(null);
   const pushed  = useRef(false);
 
@@ -88,7 +107,14 @@ export default function AdBanner({ slot, format = "responsive", className = "" }
   }, [admob?.bannerUnit, adsEnabled, isLoaded, platform, slot, slotEnabled]);
 
   useEffect(() => {
-    if (platform !== "web" || !publisherId || !adsEnabled || !isLoaded || pushed.current) return;
+    if (
+      platform !== "web" ||
+      !publisherId ||
+      !adUnitId ||
+      !adsEnabled ||
+      !isLoaded ||
+      pushed.current
+    ) return;
     if (!insRef.current) return;
     let cancelled = false;
     const run = async () => {
@@ -116,9 +142,8 @@ export default function AdBanner({ slot, format = "responsive", className = "" }
       cancelled = true;
       if (typeof cleanup === "function") cleanup();
     };
-  }, [platform, publisherId, adsEnabled, isLoaded]);
+  }, [adUnitId, platform, publisherId, adsEnabled, isLoaded]);
 
-  const adUnitId = adUnits[slot] || "";
   const adStyle  = FORMAT_STYLES[format] || FORMAT_STYLES.responsive;
   const phHeight = PLACEHOLDER_HEIGHTS[format] || 80;
 
@@ -140,6 +165,10 @@ export default function AdBanner({ slot, format = "responsive", className = "" }
 
   /* ── No publisher ID yet → render nothing ── */
   if (!publisherId) return null;
+
+  // A manual AdSense unit without a slot ID is invalid. Do not push a broken
+  // <ins> element; the admin can enable it after configuring the slot.
+  if (!adUnitId) return null;
 
   // 2026-08-24: Adsterra renders alongside AdSense on listed slots (both earn)
   const adsterra = (
